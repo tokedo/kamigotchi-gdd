@@ -22,8 +22,8 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 | Equipment & slots | 🔲 | `LibEquipment.sol`, `KamiEquipSystem.sol` | — |
 | Crafting & recipes | 🔲 | `LibRecipe.sol`, `CraftSystem.sol`, `recipes.csv` | — |
 | Droptables & loot | 🔲 | `LibDroptable.sol`, `droptables.csv` | — |
-| Harvesting (farming) | 🔲 | `LibHarvest.sol`, `HarvestStart/Stop/Collect`, configs | — |
-| Liquidation (harvest PvP) | 🔲 | `HarvestLiquidateSystem.sol`, `LibHarvest.sol`, configs | — |
+| Harvesting (farming) | ✅ | `LibHarvest.sol`, `HarvestStart/Stop/Collect`, configs | [harvesting.md](../mechanics/economy/harvesting.md) |
+| Liquidation (harvest PvP) | ✅ | `HarvestLiquidateSystem.sol`, `LibHarvest.sol`, configs | [harvesting.md](../mechanics/economy/harvesting.md#liquidation-pvp) |
 
 ## Combat & PvP
 | Mechanic | Status | Source Files | GDD File |
