@@ -28,6 +28,25 @@
   5. Completeness over polish — rough-but-complete beats polished-but-partial
   6. Every mechanic file should be self-contained enough to use in isolation
 
+  ## File Structure Rules
+
+  Separate **mechanics** (how things work) from **catalogs** (instance data):
+
+  - `mechanics/` — system logic, formulas, rules, validation
+  - `catalogs/` — collections of game objects (items, skills, quests, rooms, etc.)
+
+  A mechanic file describes _how_ the system works and references its catalog.
+  A catalog file contains _every instance_ with its properties.
+
+  **Examples:**
+  - `mechanics/economy/items.md` explains item types, usage rules, validation
+  - `catalogs/items.csv` lists every item with stats, rarity, cost, type
+  - `mechanics/progression/skills.md` explains the skill tree and upgrade logic
+  - `catalogs/skills/` contains skill definitions and effects
+
+  **Rule:** Never inline large collections in mechanic files. Reference catalogs
+  instead: _"See `catalogs/items.csv` for the full item catalog."_
+
   ## Rules
 
   - **Never commit directly to main** — work on a branch, founder merges
