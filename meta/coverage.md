@@ -7,9 +7,9 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 ## Core Kami Mechanics
 | Mechanic | Status | Source Files | GDD File |
 |---|---|---|---|
-| Kami creation & traits | 🔲 | `LibKamiCreate.sol`, `LibGacha.sol`, `_TraitRegistrySystem.sol` | — |
-| Kami stats (health, power, violence, harmony) | 🔲 | `LibStat.sol`, `LibKami.sol`, configs | — |
-| Experience & leveling | 🔲 | `LibExperience.sol`, `KamiLevelSystem.sol`, configs | — |
+| Kami creation & traits | ✅ | `LibKamiCreate.sol`, `LibTraitRegistry.sol` | [creation.md](../mechanics/core-kami/creation.md) |
+| Kami stats (health, power, violence, harmony) | ✅ | `LibStat.sol`, `Stat.sol`, `LibBonus.sol` | [stats.md](../mechanics/core-kami/stats.md) |
+| Experience & leveling | ✅ | `LibExperience.sol`, `KamiLevelSystem.sol`, configs | [experience-leveling.md](../mechanics/core-kami/experience-leveling.md) |
 | Health & healing (rest metabolism) | 🔲 | `LibKami.sol`, `LibStat.sol`, configs | — |
 | Death & revival | 🔲 | `LibKami.sol`, `KamiOnyxReviveSystem.sol` | — |
 | Naming & renaming | 🔲 | `KamiNameSystem.sol`, `KamiOnyxRenameSystem.sol` | — |
