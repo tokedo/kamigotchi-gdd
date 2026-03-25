@@ -28,10 +28,10 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 ## Combat & PvP
 | Mechanic | Status | Source Files | GDD File |
 |---|---|---|---|
-| Murder / kill | 🔲 | `LibKill.sol`, `Murder.t.sol` | — |
-| Hired hitman | 🔲 | `LibKill.sol`, `HiredHitman.t.sol` | — |
-| Sacrifice (commit-reveal) | 🔲 | `LibSacrifice.sol`, `LibCommit.sol` | — |
-| Bonus system | 🔲 | `LibBonus.sol` | — |
+| Murder / kill | ✅ | `LibKill.sol`, `Murder.t.sol` | [kill.md](../mechanics/combat/kill.md) |
+| Hired hitman | ✅ | `LibKill.sol`, `HiredHitman.t.sol` | [kill.md](../mechanics/combat/kill.md#hired-hitman-quest-integration) |
+| Sacrifice (commit-reveal) | ✅ | `LibSacrifice.sol`, `LibCommit.sol` | [sacrifice.md](../mechanics/combat/sacrifice.md) |
+| Bonus system | ✅ | `LibBonus.sol` | [bonus-system.md](../mechanics/combat/bonus-system.md) |
 
 ## World & Movement
 | Mechanic | Status | Source Files | GDD File |
