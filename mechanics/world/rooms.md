@@ -11,7 +11,7 @@ coordinate, a name, description, and optionally special exits to non-adjacent
 rooms. Rooms can have **gates** — conditional requirements that restrict access.
 Players move between rooms by spending stamina.
 
-See `catalogs/rooms.csv` for the full room catalog.
+See `catalogs/rooms/rooms.csv` for the full room catalog.
 
 ## Room Entity Shape
 

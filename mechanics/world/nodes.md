@@ -10,7 +10,7 @@ node type is `HARVEST` — nodes where Kamis can farm resources. Each node has a
 affinity type that affects harvest effectiveness, a specific item it yields, and
 optionally bonuses, requirements, and a scavenge bar.
 
-See `catalogs/nodes.csv` for the full node catalog.
+See `catalogs/rooms/nodes.csv` for the full node catalog.
 
 ## Node Entity Shape
 

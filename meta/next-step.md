@@ -17,7 +17,17 @@ All mechanics extraction is finished (50+ files). Suggested next steps:
    - ~~NPCs~~ ✅ `catalogs/npcs/` — 2 NPCs + 19 shop listings
    - ~~Recipes~~ ✅ `catalogs/crafting/` — 41 crafting recipes
    - ~~Traits~~ ✅ `catalogs/traits/` — 135 traits (30 bodies, 36 faces, 27 hands, 28 backgrounds, 14 colors)
-2. **Cross-reference review** — Verify inter-file links and source citations
+   - ~~Assets~~ ✅ `catalogs/assets.md` — asset path reference (700+ files, CDN patterns)
+2. ~~**Cross-reference review**~~ ✅ Completed — 5 broken catalog paths fixed, all 50+ mechanic
+   files verified, all source citations valid
+
+### Remaining gaps
+
+- **Quest catalog CSVs** — `catalogs/quests/README.md` references 4 CSV files
+  (quests.csv, objectives.csv, requirements.csv, rewards.csv) that were never
+  extracted. Source: `packages/contracts/deployment/world/data/quests/`
+- **Missing READMEs** — `catalogs/skills/` and `catalogs/factions/` have data
+  files but no README.md (minor, all other catalogs have them)
 
 ## Completed phases
 

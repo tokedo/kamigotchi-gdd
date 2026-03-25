@@ -14,7 +14,7 @@ same room as the NPC to transact (unless the NPC's room index is 0, making it
 globally accessible). Each listing ties one item to one NPC with a defined
 currency and pricing strategy.
 
-See `catalogs/listings.csv` for the full NPC shop catalog.
+See `catalogs/npcs/listings.csv` for the full NPC shop catalog.
 
 ## NPC Entity Shape
 

@@ -10,7 +10,7 @@ once in a **registry** and can be held by any number of accounts. Items can be
 consumed (used on Kamis/accounts), burned, traded, crafted, and some are backed
 by ERC-20 tokens.
 
-See `catalogs/items.csv` for the full item catalog.
+See `catalogs/items/items.csv` for the full item catalog.
 
 ## Item Registry Shape
 

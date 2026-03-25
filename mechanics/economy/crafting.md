@@ -10,7 +10,7 @@ Crafting converts input items into output items using predefined recipes. Recipe
 are registered in a global registry and can have requirements (level, location,
 etc.), stamina costs, and XP rewards.
 
-See `catalogs/recipes.csv` for the full recipe catalog.
+See `catalogs/crafting/recipes.csv` for the full recipe catalog.
 
 ## Recipe Registry Shape
 
