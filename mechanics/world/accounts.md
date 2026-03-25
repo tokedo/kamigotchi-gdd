@@ -106,6 +106,23 @@ Reverts with `"Account: insufficient stamina"` if cost exceeds current stamina.
 
 > Source: `LibAccount.sol:101–110`
 
+## Account XP
+
+Accounts have their own experience pool, separate from Kami XP. Account XP is
+awarded to the **account entity** (not to any individual Kami).
+
+Sources:
+- **Movement** — `ACCOUNT_STAMINA[3]` = **5 XP** per room move
+  (`LibAccount.sol:84`)
+- **Crafting** — XP defined per recipe, awarded as `xp × amount` after craft
+  (`LibRecipe.sol:153–158`)
+
+> **Important**: Account XP is a separate pool from Kami XP. There is no
+> account-level level-up mechanism — only Kamis level up. See
+> [experience-leveling.md](../core-kami/experience-leveling.md) for Kami XP.
+
+> Source: `LibAccount.sol:80–85`, `LibRecipe.sol:153–158`
+
 ## Movement
 
 `AccountMoveSystem.execute(toRoomIndex)`:
@@ -114,7 +131,7 @@ Reverts with `"Account: insufficient stamina"` if cost exceeds current stamina.
    current room (see [rooms.md](rooms.md))
 2. **Accessibility** — gate conditions on the destination room must be met
 3. **Sync** — recover stamina based on elapsed time
-4. **Move** — deduct stamina cost, set new room, grant movement XP
+4. **Move** — deduct stamina cost, set new room, grant **account XP**
 5. **Log** — increment `MOVE` counter, emit move event
 
 > Source: `AccountMoveSystem.sol:22–45`, `LibAccount.sol:80–85`

@@ -10,13 +10,30 @@ Kamis earn experience (XP) through activities and spend it to level up. Leveling
 up consumes XP and grants 1 skill point. The XP cost per level follows an
 exponential curve.
 
-## XP Sources
+> **Note on two XP pools**: The `LibExperience` library is entity-agnostic — it
+> operates on any entity ID. The game uses it for **two separate XP pools**:
+>
+> - **Kami XP** — earned per individual Kami, used to level up (this file)
+> - **Account XP** — earned per account (operator), from movement and crafting
+>   (see [accounts.md](../world/accounts.md))
+>
+> Only Kami XP feeds into the level-up system. There is no account-level
+> level-up mechanism.
 
-XP can be gained from:
-- **Moving between rooms** — awards `ACCOUNT_STAMINA[3]` = **5 XP** per move
-  (see `configs.ts:75`)
-- Other game activities (quests, harvesting, etc. — documented in their respective
-  mechanic files)
+## Kami XP Sources
+
+Kami XP is awarded directly to the Kami entity:
+
+- **Harvesting** — XP equal to harvest output amount, awarded on stop or collect
+  (`HarvestStopSystem.sol:97`, `HarvestCollectSystem.sol:95`)
+- **Kill salvage** — victim Kami receives XP equal to the salvage amount
+  (`LibKill.sol:53`)
+- **Rewards/effects** — quest rewards and item effects can award XP via the
+  allocation system (`LibSetter.sol:48-49`, type `"XP"`)
+
+Account XP (movement, crafting) is a **separate pool** on the account entity and
+does **not** contribute to Kami leveling. See [accounts.md](../world/accounts.md)
+for details.
 
 ## Level-Up Cost Formula
 
