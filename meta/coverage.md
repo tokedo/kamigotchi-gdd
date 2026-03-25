@@ -56,14 +56,14 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 ## Marketplace & Tokens
 | Mechanic | Status | Source Files | GDD File |
 |---|---|---|---|
-| Kami marketplace (list/buy/offer) | 🔲 | `LibKamiMarket.sol` | — |
+| Kami marketplace (list/buy/offer) | ✅ | `LibKamiMarket.sol`, `KamiMarketList/Buy/Offer/AcceptOffer/CancelSystem.sol`, `KamiMarketVault.sol` | [kami-market.md](../mechanics/marketplace/kami-market.md) |
 | Item trading (p2p) | ✅ | `LibTrade.sol`, `TradeCreate/Execute/Complete/Cancel` | [trading.md](../mechanics/economy/trading.md) |
 | NPC shop listings | ✅ | `LibListing.sol`, `LibListingRegistry.sol`, `LibGDA.sol`, `listings.csv` | [npc-shops.md](../mechanics/economy/npc-shops.md) |
-| Auctions (GDA) | 🔲 | `LibAuction.sol`, `LibGDA.sol` | — |
-| Token portal (L1↔L2) | 🔲 | `LibTokenPortal.sol` | — |
-| Tax system | 🔲 | `LibTax.sol` | — |
-| Newbie vendor (TWAP) | 🔲 | `LibTWAP.sol`, `NewbieVendorBuySystem.sol` | — |
-| VIP system | 🔲 | `LibVIP.sol`, `VipScore.sol` | — |
+| Auctions (GDA) | ✅ | `LibAuction.sol`, `LibAuctionRegistry.sol`, `LibGDA.sol`, `AuctionBuySystem.sol` | [auctions.md](../mechanics/marketplace/auctions.md) |
+| Token portal (L1↔L2) | ✅ | `LibTokenPortal.sol`, `TokenPortalSystem.sol` | [token-portal.md](../mechanics/marketplace/token-portal.md) |
+| Tax system | ✅ | `LibTax.sol` | [tax.md](../mechanics/marketplace/tax.md) |
+| Newbie vendor (TWAP) | ✅ | `LibTWAP.sol`, `NewbieVendorBuySystem.sol` | [newbie-vendor.md](../mechanics/marketplace/newbie-vendor.md) |
+| VIP system | ✅ | `LibVIP.sol`, `VipScore.sol`, `ProxyVIPScoreComponent.sol` | [vip.md](../mechanics/marketplace/vip.md) |
 
 ## Gacha & Minting
 | Mechanic | Status | Source Files | GDD File |

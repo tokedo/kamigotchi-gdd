@@ -1,0 +1,215 @@
+# Kami Marketplace
+
+> Source: `packages/contracts/src/libraries/LibKamiMarket.sol` (L1–503),
+> `packages/contracts/src/systems/KamiMarketListSystem.sol` (L1–56),
+> `packages/contracts/src/systems/KamiMarketBuySystem.sol` (L1–92),
+> `packages/contracts/src/systems/KamiMarketOfferSystem.sol` (L1–70),
+> `packages/contracts/src/systems/KamiMarketAcceptOfferSystem.sol` (L1–172),
+> `packages/contracts/src/systems/KamiMarketCancelSystem.sol`,
+> `packages/contracts/src/tokens/KamiMarketVault.sol` (L1–49)
+
+## Overview
+
+The Kami marketplace is an on-chain **orderbook** for trading Kami NFTs. It
+supports three order types: **listings** (sell for ETH), **specific offers**
+(buy a specific Kami for WETH), and **collection offers** (buy any Kami for
+WETH). The marketplace is non-custodial — Kamis stay in the seller's wallet
+during listings, and WETH stays in the buyer's wallet during offers.
+
+The marketplace can be globally enabled/disabled via the `KAMI_MARKET_ENABLED`
+config flag.
+
+## Order Types
+
+### Listings (Sell)
+
+Sellers list a specific Kami at a fixed ETH price. The Kami is marked as
+`LISTED` state (prevents harvesting, bridging, etc.) but stays in the
+seller's wallet — no escrow.
+
+| Component | Description |
+|---|---|
+| `EntityType` | `"KAMI_LISTING"` |
+| `State` | `"ACTIVE"` → `"FILLED"` or `"CANCELLED"` |
+| `IDOwnsKamiOrder` | Seller's account ID |
+| `IndexKamiListing` | Kami token index |
+| `Value` | Price in wei (ETH) |
+| `TimeStart` | Creation timestamp |
+| `TimeEnd` | (optional) Expiry timestamp (0 = never) |
+
+> Source: `LibKamiMarket.sol:46–62`
+
+### Specific Offers (Buy)
+
+Buyers offer WETH for a specific Kami. The WETH is held via approval to the
+`KamiMarketVault` contract — no transfer until the offer is accepted.
+
+| Component | Description |
+|---|---|
+| `EntityType` | `"KAMI_OFFER"` |
+| `State` | `"ACTIVE"` → `"FILLED"` or `"CANCELLED"` |
+| `IDOwnsKamiOrder` | Buyer's account ID |
+| `IndexKami` | Target Kami token index |
+| `Value` | Offer price in wei (WETH) |
+| `TimeStart` | Creation timestamp |
+| `TimeEnd` | (optional) Expiry timestamp |
+
+> Source: `LibKamiMarket.sol:65–81`
+
+### Collection Offers (Buy Any)
+
+Buyers offer WETH per Kami for **any** Kami, up to a specified quantity. Sellers
+can accept partially (selling one Kami at a time from the offer).
+
+| Component | Description |
+|---|---|
+| `EntityType` | `"KAMI_COLLECTION_OFFER"` |
+| `State` | `"ACTIVE"` → `"FILLED"` or `"CANCELLED"` |
+| `IDOwnsKamiOrder` | Buyer's account ID |
+| `Value` | Price per Kami in wei (WETH) |
+| `Balance` | Remaining quantity (decrements on each fill) |
+| `Max` | Original quantity |
+| `TimeStart` | Creation timestamp |
+| `TimeEnd` | (optional) Expiry timestamp |
+
+When `Balance` reaches 0, the order is automatically marked as FILLED.
+
+> Source: `LibKamiMarket.sol:84–101`
+
+## Listing Flow
+
+### Creating a Listing
+
+`KamiMarketListSystem.execute(kamiIndex, price, expiry)`:
+
+1. Verify marketplace is enabled
+2. Verify Kami is RESTING and owned by the caller
+3. Verify Kami is not soulbound (`LibSoulbound.verify`)
+4. Set Kami state to `LISTED`
+5. Create listing entity
+6. Emit `KAMI_MARKET_LIST` event, log `KAMI_MARKET_LIST`
+
+> Source: `KamiMarketListSystem.sol:18–43`
+
+### Buying a Listing
+
+`KamiMarketBuySystem.execute(listingIDs)` — supports batch buying:
+
+1. First pass: verify all listings (active, not expired, not self-trade),
+   calculate total price
+2. Verify `msg.value >= totalPrice`
+3. Second pass for each listing:
+   a. Reassign Kami ownership to buyer, set state to `RESTING`
+   b. Apply purchase cooldown (default: 1 hour)
+   c. Calculate fee: `fee = price × numerator / 10^precision` (from `KAMI_MARKET_FEE_RATE`)
+   d. Transfer `price - fee` ETH to seller
+   e. Feed sale price into TWAP oracle (`LibTWAP.poke`)
+4. Transfer total fees to fee recipient
+5. Refund excess ETH to buyer
+
+**Payment**: ETH (sent as msg.value). Buyer pays listing price + gas.
+
+> Source: `KamiMarketBuySystem.sol:28–86`
+
+## Offer Flow
+
+### Creating an Offer
+
+`KamiMarketOfferSystem.execute(isCollection, kamiIndex, price, quantity, expiry)`:
+
+- **Specific offer**: targets one Kami by index, quantity=1
+- **Collection offer**: targets any Kami, quantity > 0
+
+No WETH is transferred — the offer relies on pre-approval of the
+`KamiMarketVault` contract to spend the buyer's WETH.
+
+> Source: `KamiMarketOfferSystem.sol:17–51`
+
+### Accepting an Offer
+
+`KamiMarketAcceptOfferSystem.execute(isBatch, offerID, kamiIndex, kamiIndices)`:
+
+For **specific offers**:
+1. Verify Kami index matches the offer's target
+2. If Kami is LISTED, cancel all its listings first
+3. Reassign Kami ownership, set RESTING, apply cooldown
+4. Pull WETH from buyer via vault: `vault.transferWETH(buyer, seller, price - fee)`
+5. Transfer fee to fee recipient
+
+For **collection offers** (single or batch):
+1. Verify quantity remaining is sufficient
+2. For each Kami: verify ownership, cancel listings if needed, reassign
+3. Decrement offer balance (auto-fill if balance reaches 0)
+4. Batched WETH transfers for efficiency
+
+All sales feed the TWAP oracle via `LibTWAP.poke(price)`.
+
+> Source: `KamiMarketAcceptOfferSystem.sol:50–171`
+
+## Cancellation
+
+Any active order can be cancelled by its owner:
+
+- **Listing cancel**: Restores Kami to RESTING state (if still LISTED)
+- **Offer/collection cancel**: Simply marks as CANCELLED (no funds to return)
+
+Listings are also auto-cancelled when a Kami is transferred via offer acceptance
+or other mechanisms (`cancelListingsForKami`).
+
+> Source: `LibKamiMarket.sol:198–243`
+
+## Fee Calculation
+
+```
+fee = price × numerator / 10^precision
+```
+
+Fee parameters come from `KAMI_MARKET_FEE_RATE` config array: `[precision, numerator, ...]`
+
+Fees are paid in the same currency as the trade (ETH for listings, WETH for
+offers) and sent to the configured `KAMI_MARKET_FEE_RECIPIENT` address.
+
+> Source: `LibKamiMarket.sol:307–310`
+
+## Purchase Cooldown
+
+After any Kami purchase, a cooldown is applied to the Kami:
+
+```
+cooldown = KAMI_MARKET_PURCHASE_COOLDOWN (default: 3600 seconds / 1 hour)
+```
+
+This prevents immediate re-listing or other actions on newly purchased Kamis.
+
+> Source: `LibKamiMarket.sol:257–262`
+
+## KamiMarketVault
+
+The `KamiMarketVault` is a persistent relay contract that handles WETH and
+Kami721 transfers. Buyers approve the vault to spend their WETH, and the vault
+executes transfers when called by authorized systems.
+
+The vault's address persists across system upgrades, meaning buyer approvals
+remain valid even when marketplace system contracts are redeployed.
+
+> Source: `KamiMarketVault.sol:1–49`
+
+## TWAP Integration
+
+Every marketplace sale (listing buy or offer acceptance) feeds the sale price
+into the TWAP oracle via `LibTWAP.poke(price)`. This price data is used by the
+[Newbie Vendor](newbie-vendor.md) to determine fair market pricing.
+
+> Source: `KamiMarketBuySystem.sol:65`, `KamiMarketAcceptOfferSystem.sol:100`
+
+## Logging
+
+| Data Key | Description |
+|---|---|
+| `KAMI_MARKET_LIST` | Listings created |
+| `KAMI_MARKET_BUY` | Listings purchased |
+| `KAMI_MARKET_OFFER` | Offers created |
+| `KAMI_MARKET_ACCEPT` | Offers accepted |
+| `KAMI_MARKET_CANCEL` | Orders cancelled |
+
+> Source: `LibKamiMarket.sol:399–417`
