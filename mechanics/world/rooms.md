@@ -109,7 +109,7 @@ Used by: NPC shops (player must be in NPC's room), harvesting liquidation
 
 ## World Data
 
-The current world has **~65 rooms** across 4 z-planes, including:
+The current world has **70 rooms** across 4 z-planes, including:
 - Overworld areas: Misty Riverside, Torii Gate, Scrapyard, Forest paths
 - Interiors: Convenience Store, Plane Interior, Burning Room
 - Caves: Temple Cave, Cave Crossroads, Fungus Garden, Sacrarium
