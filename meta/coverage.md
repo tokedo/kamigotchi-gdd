@@ -44,14 +44,14 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 ## Progression & Social
 | Mechanic | Status | Source Files | GDD File |
 |---|---|---|---|
-| Skill tree | 🔲 | `LibSkill.sol`, `skills.csv`, `effects.csv` | — |
-| Quests | 🔲 | `LibQuest.sol`, `quests.csv`, objectives/requirements/rewards | — |
-| Community goals | 🔲 | `LibGoal.sol`, `GoalContribute/ClaimSystem.sol` | — |
-| Leaderboard / scoring | 🔲 | `LibScore.sol` | — |
-| Factions | 🔲 | `LibFaction.sol`, `factions.csv` | — |
-| Relationships (kami-to-kami) | 🔲 | `LibRelationship.sol` | — |
-| Friends | 🔲 | `LibFriend.sol` | — |
-| Chat & echo | 🔲 | `ChatSystem.sol`, `LibEcho.sol` | — |
+| Skill tree | ✅ | `LibSkill.sol`, `LibSkillRegistry.sol`, `skills.csv`, `effects.csv` | [skills.md](../mechanics/progression/skills.md) |
+| Quests | ✅ | `LibQuest.sol`, `LibQuestRegistry.sol`, `quests.csv`, objectives/requirements/rewards | [quests.md](../mechanics/progression/quests.md) |
+| Community goals | ✅ | `LibGoal.sol`, `GoalContribute/ClaimSystem.sol`, `_GoalRegistrySystem.sol` | [goals.md](../mechanics/progression/goals.md) |
+| Leaderboard / scoring | ✅ | `LibScore.sol` | [scoring.md](../mechanics/progression/scoring.md) |
+| Factions | ✅ | `LibFaction.sol`, `factions.csv` | [factions.md](../mechanics/social/factions.md) |
+| Relationships (NPC) | ✅ | `LibRelationship.sol`, `LibRelationshipRegistry.sol` | [relationships.md](../mechanics/social/relationships.md) |
+| Friends | ✅ | `LibFriend.sol`, `FriendRequest/Accept/Block/CancelSystem.sol` | [friends.md](../mechanics/social/friends.md) |
+| Chat & echo | ✅ | `ChatSystem.sol`, `LibEcho.sol` | [chat.md](../mechanics/social/chat.md) |
 
 ## Marketplace & Tokens
 | Mechanic | Status | Source Files | GDD File |
