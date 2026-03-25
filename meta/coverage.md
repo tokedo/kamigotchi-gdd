@@ -17,9 +17,9 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 ## Economy & Items
 | Mechanic | Status | Source Files | GDD File |
 |---|---|---|---|
-| Items (creation, types, properties) | 🔲 | `LibItem.sol`, `items.csv`, `allos.csv` | — |
-| Inventory management | 🔲 | `LibInventory.sol`, `LibEquipment.sol` | — |
-| Equipment & slots | 🔲 | `LibEquipment.sol`, `KamiEquipSystem.sol` | — |
+| Items (creation, types, properties) | ✅ | `LibItem.sol`, `LibInventory.sol` | [items.md](../mechanics/economy/items.md) |
+| Inventory management | ✅ | `LibInventory.sol` | [items.md](../mechanics/economy/items.md#inventory) |
+| Equipment & slots | ✅ | `LibEquipment.sol` | [equipment.md](../mechanics/economy/equipment.md) |
 | Crafting & recipes | 🔲 | `LibRecipe.sol`, `CraftSystem.sol`, `recipes.csv` | — |
 | Droptables & loot | 🔲 | `LibDroptable.sol`, `droptables.csv` | — |
 | Harvesting (farming) | ✅ | `LibHarvest.sol`, `HarvestStart/Stop/Collect`, configs | [harvesting.md](../mechanics/economy/harvesting.md) |
