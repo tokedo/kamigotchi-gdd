@@ -24,7 +24,10 @@ struct Stat {
 
 ## Stat Types
 
-There are **6 stat types**, each stored in its own ECS component:
+The stat system supports **6 stat types**, each stored in its own ECS component.
+Not all types are used by all entities — Kamis have 5 stats, accounts have 1.
+
+### Kami Stats (set at creation)
 
 | Stat | Index | Component | Depletable? |
 |---|---|---|---|
@@ -32,8 +35,16 @@ There are **6 stat types**, each stored in its own ECS component:
 | Harmony | 2 | `HarmonyComponent` | No |
 | Power | 3 | `PowerComponent` | No |
 | Slots | 4 | `SlotsComponent` | Yes — `sync` tracks available slots |
-| Stamina | 5 | `StaminaComponent` | Yes — `sync` tracks current stamina |
 | Violence | 6 | `ViolenceComponent` | No |
+
+### Account Stats
+
+| Stat | Index | Component | Depletable? |
+|---|---|---|---|
+| Stamina | 5 | `StaminaComponent` | Yes — `sync` tracks current stamina |
+
+Stamina is an **account-level** stat, not a Kami stat. It is consumed by movement
+and crafting. See [accounts.md](../world/accounts.md) for stamina mechanics.
 
 > Source: `LibStat.sol:22–27`
 
