@@ -1,0 +1,29 @@
+Index,Name,Rarity,Tier,Tuning,Health,Power,Violence,Harmony,Hex,BPs
+0,Blue,Common,9,2,0,0,0,2,A2F5F5,300
+1,Blue-Grey,Common,9,2,0,0,2,0,6D9295,300
+2,Default Green,Common,9,2,20,0,0,0,E1E3A4,500
+3,Alt Green,Common,9,2,0,2,0,0,B9FF98,500
+4,Grey!,Rare,7,4,40,0,0,0,867C7F,500
+5,Hot Pink,Common,9,2,10,0,1,0,FC5BA3,500
+6,Lavender!,Rare,7,4,0,0,4,0,C1A6FF,300
+7,BOG,Epic,6,5,20,3,0,0,,300
+8,BSOD,Epic,6,5,20,0,0,3,,500
+9,GOB,Epic,6,5,20,0,3,0,,500
+10,PURPLE!!!,Epic,6,5,0,5,0,0,,300
+11,RED!!!,Epic,6,5,0,0,5,0,,300
+12,GREY!!!!,Epic,6,5,0,0,0,5,,500
+13,Mustard,Common,9,2,10,0,0,1,F5D769,400
+14,Orange,Common,9,2,0,1,0,1,FF901C,300
+15,Pink,Common,9,2,10,0,0,1,F09EE7,300
+16,Purple,Common,9,2,10,0,1,0,C38DD9,300
+17,Red!,Rare,7,4,0,4,0,0,D1412C,300
+18,Rust,Common,9,2,10,1,0,0,BD685B,300
+19,White!,Rare,7,4,0,0,0,4,F7F2ED,300
+20,Yellow,Common,9,2,0,1,1,0,FFF981,300
+21,Butterfly,Legendary,4,7,0,0,7,0,,
+22,Maze,Legendary,4,7,0,3,4,0,,
+23,Nature 1,Legendary,4,7,30,0,2,2,,
+24,Nature 2,Legendary,4,7,30,2,0,2,,
+25,Nature 3,Legendary,4,7,30,2,2,0,,
+26,Textbook,Legendary,4,7,20,0,0,5,,
+27,Graveyard,Legendary,4,7,0,7,0,0,,

@@ -1,0 +1,37 @@
+Index,Name,Affinity,Rarity,Tier,Tuning,Health,Power,Violence,Harmony,Slots,BPs,Gated
+0,._.,Normal,Common,9,3,0,1,1,1,0,400,No
+1,.w.,Normal,Common,9,3,0,1,2,0,0,400,No
+2,n_n,Normal,Common,8,3,10,2,0,0,0,300,No
+3,>_>,Scrap,Common,9,3,20,1,0,0,0,400,Yes
+4,^-^,Normal,Common,9,3,0,1,0,2,0,400,No
+5,v_v,Scrap,Common,9,3,0,2,1,0,0,400,Yes
+6,o_O,Normal,Common,9,3,10,1,1,0,0,400,Yes
+7,O_o,Normal,Common,9,3,10,1,0,1,0,400,Yes
+8,-_-,Normal,Common,9,3,10,0,2,0,0,300,No
+9,x_x,Insect,Common,9,3,0,3,0,0,0,300,Yes
+10,o_o,Normal,Common,9,3,30,0,0,0,0,300,No
+11,O_0,Eerie,Common,9,3,20,0,0,1,0,300,Yes
+12,Teddy,Normal,Rare,7,5,10,2,0,2,0,300,Yes
+13,Disapproval,Insect,Uncommon,8,4,0,0,4,0,0,300,Yes
+14,HeartS,Normal,Rare,7,5,20,0,0,3,0,300,No
+15,Impacted,Normal,Rare,7,5,0,2,1,2,0,300,No
+16,Sideeye,Eerie,Uncommon,8,4,0,0,0,4,0,300,Yes
+17,Lenny 2,Normal,Rare,7,6,0,2,0,2,1,300,Yes
+18,:3,Insect,Uncommon,8,4,0,0,2,2,0,300,Yes
+19,Unamused,Normal,Uncommon,8,4,20,0,2,0,0,300,No
+20,Ou0,Eerie,Rare,7,5,0,0,0,5,0,300,Yes
+21,Concerned,Normal,Uncommon,8,4,40,0,0,0,0,300,No
+22,Lenny 1,Normal,Legendary,4,8,0,2,2,2,1,300,Yes
+23,Serious Teddy,Normal,Rare,7,5,0,3,2,0,0,300,Yes
+24,Drip,Eerie,Epic,6,6,0,4,0,2,0,300,Yes
+25,Insectoid,Insect,Epic,6,6,0,3,3,0,0,300,Yes
+26,Insectoid (Partisan),Insect,Epic,6,6,0,0,6,0,0,300,Yes
+27,N+B,Scrap,Epic,6,6,30,0,0,3,0,300,Yes
+28,Sensor,Scrap,Epic,6,6,0,0,0,6,0,300,Yes
+29,Sated,Eerie,Epic,6,6,0,3,3,0,0,300,Yes
+30,Hungry,Eerie,Epic,6,6,0,0,6,0,0,300,Yes
+31,Wassie,Normal,Rare,7,5,30,2,0,0,0,,No
+32,Jiangshi Hat,Normal,Epic,6,6,0,6,0,0,0,,No
+33,Sunglasses,Normal,Legendary,4,8,40,4,0,0,0,,No
+34,Nerd,Normal,Epic,6,6,0,0,0,4,1,,No
+35,Third Eye,Normal,Epic,6,6,60,0,0,0,0,,No

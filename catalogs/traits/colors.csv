@@ -1,0 +1,15 @@
+Index,Name,Rarity,Tier,Tuning,Health,Power,Violence,Harmony,Hex,BPs
+0,1BIT BW,Epic,6,5,0,0,0,5,,50
+1,1BIT GREEN,Epic,6,5,0,5,0,0,,50
+2,1BIT PINK,Epic,6,5,50,0,0,0,,50
+3,1BIT WR,Epic,6,5,0,0,5,0,,50
+4,Blue,Common,9,2,0,0,0,2,3BECFF,1300
+5,Green,Common,9,2,0,0,1,1,42F771,1300
+6,Grey,Uncommon,8,3,0,0,3,0,AAA398,500
+7,Lime Green,Uncommon,8,3,30,0,0,0,ADFF3A,500
+8,Orange,Common,9,2,20,0,0,0,FFB226,1300
+9,Pink,Common,9,2,0,2,0,0,FF77E1,1300
+10,Purple,Uncommon,8,3,0,3,0,0,BF6CFF,500
+11,Red,Common,9,2,0,0,2,0,FF2B1E,1300
+12,White,Uncommon,8,3,0,0,0,3,F7F2ED,500
+13,Yellow,Common,9,2,0,1,1,0,FFED15,1300

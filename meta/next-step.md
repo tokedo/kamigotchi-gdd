@@ -11,14 +11,12 @@ reads this at the start of every session to know where to pick up.
 
 All mechanics extraction is finished (50+ files). Suggested next steps:
 
-1. **Catalog expansion** — Extract remaining catalogs into CSV/data format:
-   - ~~Rooms catalog (from rooms.csv)~~ ✅ Done — `catalogs/rooms/`
-   - ~~Items catalog (from items.csv / item registry)~~ ✅ Done — `catalogs/items/` (177 items + 94 effects + 6 droptables)
-   - NPC catalog (from NPC registry)
-   - Recipes catalog (from recipes.csv)
-   - Droptables catalog (from droptables.csv)
-   - Traits catalog (body, face, hand, color, background variants)
-   - Listings catalog (NPC shop listings)
+1. **Catalog expansion** — ✅ All catalogs extracted:
+   - ~~Rooms~~ ✅ `catalogs/rooms/` — 70 rooms + 64 nodes + 50 scavenge droptables
+   - ~~Items~~ ✅ `catalogs/items/` — 177 items + 94 effects + 6 item droptables
+   - ~~NPCs~~ ✅ `catalogs/npcs/` — 2 NPCs + 19 shop listings
+   - ~~Recipes~~ ✅ `catalogs/crafting/` — 41 crafting recipes
+   - ~~Traits~~ ✅ `catalogs/traits/` — 135 traits (30 bodies, 36 faces, 27 hands, 28 backgrounds, 14 colors)
 2. **Cross-reference review** — Verify inter-file links and source citations
 
 ## Completed phases

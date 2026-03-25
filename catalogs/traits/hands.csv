@@ -1,0 +1,28 @@
+Index,Name,Affinity,Rarity,Tier,Tuning,Health,Power,Violence,Harmony,Slots,BPs
+0,Candles,Eerie,Epic,6,7,0,7,0,0,0,100
+1,Spectral,Eerie,Common,9,4,20,2,0,0,0,750
+2,Spinning Coins,Normal,Rare,7,6,30,3,0,0,0,50
+3,Coins,Normal,Uncommon,8,5,50,0,0,0,0,550
+4,Orbs,Normal,Common,9,4,0,2,0,2,0,1550
+5,Eyeballs,Eerie,Rare,7,6,0,6,0,0,0,750
+6,Fan Blades,Scrap,Epic,6,9,10,0,3,3,0,100
+7,Beetle,Insect,Common,9,4,0,0,2,2,0,1500
+8,Mantis,Insect,Epic,6,7,0,0,7,0,0,100
+9,Paws,Normal,Common,9,4,0,0,2,2,0,1550
+10,Plugs,Scrap,Common,9,4,10,1,0,2,0,750
+11,Scorpion,Insect,Common,9,4,0,0,4,0,0,500
+12,Tentacles,Eerie,Uncommon,8,5,0,0,5,0,0,500
+13,Toasters,Scrap,Uncommon,8,5,0,3,0,2,0,250
+14,UFO Catcher,Scrap,Rare,7,6,0,3,0,3,0,250
+15,Wrenches,Scrap,Common,9,4,0,0,4,0,0,750
+16,Mole Cricket,Insect,Uncommon,8,5,20,3,0,0,0,
+17,Plant,Normal,Uncommon,8,5,0,0,0,5,0,
+18,Guns,Normal,Rare,7,6,0,0,6,0,0,
+19,Torus,Normal,Epic,6,7,0,3,0,4,0,
+20,Crab,Insect,Rare,7,6,0,0,6,0,0,
+21,Melted,Eerie,Common,9,4,0,4,0,0,0,
+22,Wassie Flipper,Normal,Rare,7,6,20,2,0,2,0,
+23,Mudra,Eerie,Legendary,4,9,30,6,0,0,0,
+24,Van de Graaf,Scrap,Legendary,4,9,30,0,0,6,0,
+25,Fairy,Insect,Legendary,4,9,30,3,0,3,0,
+26,Wings,Normal,Legendary,4,9,90,0,0,0,0,

@@ -1,0 +1,31 @@
+Index,Name,Affinity,Rarity,Tier,Tuning,Health,Power,Violence,Harmony,Slots,BPs
+0,Battery,Scrap,Common,9,4,40,0,0,0,0,500
+1,Bee,Insect,Common,9,4,0,0,4,0,0,500
+2,Butterfly,Insect,Epic,6,7,0,0,7,0,0,100
+3,Caterpillar,Insect,Common,9,4,0,2,2,0,0,1500
+4,Cube,Normal,Rare,7,6,0,4,0,0,1,550
+5,Ghost,Normal,Common,9,4,10,1,1,1,0,2100
+6,Drip,Eerie,Common,9,4,10,3,0,0,0,500
+7,Lightbulb,Scrap,Common,9,4,0,3,0,1,0,1500
+8,Working CRT Monitor,Scrap,Epic,6,7,20,0,0,5,0,0
+9,Broken CRT Monitor,Scrap,Rare,7,6,40,0,0,2,0,100
+10,Octahedron,Normal,Epic,6,7,0,1,1,1,2,50
+11,Octopus,Eerie,Common,9,4,0,4,0,0,0,1500
+12,Orb,Normal,Common,9,4,0,0,0,4,0,500
+13,Pumpkin,Eerie,Epic,6,7,30,4,0,0,0,100
+14,Tube,Normal,Uncommon,8,5,10,1,2,1,0,500
+15,Jellyfish,Eerie,Uncommon,8,5,20,3,0,0,0,
+16,Eyes,Eerie,Rare,7,6,0,6,0,0,0,
+17,Amphora,Scrap,Rare,7,6,0,2,0,4,0,
+18,Shrimp,Insect,Uncommon,8,5,0,3,0,2,0,
+19,Spider,Insect,Rare,7,6,0,0,6,0,0,
+20,Plant,Normal,Uncommon,8,5,0,0,0,5,0,
+21,Magatama,Normal,Rare,7,6,30,3,0,0,0,
+22,Snake,Insect,Legendary,4,9,0,3,3,3,0,
+23,Tank,Scrap,Legendary,4,9,30,0,0,6,0,
+24,Hagoromo,Eerie,Legendary,4,9,0,9,0,0,0,
+25,Lotus,Eerie,Rare,7,6,20,0,0,4,0,
+26,Ant,Insect,Rare,7,6,20,2,0,2,0,
+27,Soda Cup,Scrap,Uncommon,8,5,50,0,0,0,0,
+28,Suit,Normal,Legendary,4,9,0,0,6,3,0,
+29,No Kami,Normal,Epic,6,7,70,0,0,0,0,
