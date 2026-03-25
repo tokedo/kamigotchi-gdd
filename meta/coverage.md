@@ -20,8 +20,8 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 | Items (creation, types, properties) | ✅ | `LibItem.sol`, `LibInventory.sol` | [items.md](../mechanics/economy/items.md) |
 | Inventory management | ✅ | `LibInventory.sol` | [items.md](../mechanics/economy/items.md#inventory) |
 | Equipment & slots | ✅ | `LibEquipment.sol` | [equipment.md](../mechanics/economy/equipment.md) |
-| Crafting & recipes | 🔲 | `LibRecipe.sol`, `CraftSystem.sol`, `recipes.csv` | — |
-| Droptables & loot | 🔲 | `LibDroptable.sol`, `droptables.csv` | — |
+| Crafting & recipes | ✅ | `LibRecipe.sol`, `CraftSystem.sol`, `recipes.csv` | [crafting.md](../mechanics/economy/crafting.md) |
+| Droptables & loot | ✅ | `LibDroptable.sol`, `droptables.csv` | [droptables.md](../mechanics/economy/droptables.md) |
 | Harvesting (farming) | ✅ | `LibHarvest.sol`, `HarvestStart/Stop/Collect`, configs | [harvesting.md](../mechanics/economy/harvesting.md) |
 | Liquidation (harvest PvP) | ✅ | `HarvestLiquidateSystem.sol`, `LibHarvest.sol`, configs | [harvesting.md](../mechanics/economy/harvesting.md#liquidation-pvp) |
 

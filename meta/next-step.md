@@ -9,10 +9,8 @@ reads this at the start of every session to know where to pick up.
 
 ## What to extract next
 
-1. Crafting & recipes — `LibRecipe.sol`, `CraftSystem.sol`, `recipes.csv`
-2. Droptables & loot — `LibDroptable.sol`, `droptables.csv`
-3. NPC shop listings — `LibListing.sol`, `listings.csv`
-4. Trading (P2P) — `LibTrade.sol`, `TradeCreate/Execute/CompleteSystem.sol`
+1. NPC shop listings — `LibListing.sol`, `listings.csv`
+2. Trading (P2P) — `LibTrade.sol`, `TradeCreate/Execute/CompleteSystem.sol`
 
 ## After this phase
 
@@ -21,4 +19,4 @@ Proceed to Phase 3 (Combat/PvP) per the extraction order in `survey/codebase-map
 ## Completed phases
 
 - Phase 1: Core Kami (6/6) — creation, stats, experience/leveling, health/healing, death/revival, naming
-- Phase 2 partial: Harvesting, Liquidation, Items, Inventory, Equipment (5/9 done)
+- Phase 2 partial: Harvesting, Liquidation, Items, Inventory, Equipment, Crafting, Droptables (7/9 done)
