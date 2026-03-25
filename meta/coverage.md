@@ -36,10 +36,10 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 ## World & Movement
 | Mechanic | Status | Source Files | GDD File |
 |---|---|---|---|
-| Accounts & stamina | 🔲 | `LibAccount.sol`, configs | — |
-| Rooms & exits | 🔲 | `LibRoom.sol`, `rooms.csv` | — |
-| Nodes (sub-locations) | 🔲 | `LibNode.sol`, `nodes.csv` | — |
-| Scavenging | 🔲 | `LibScavenge.sol`, `droptables.csv` | — |
+| Accounts & stamina | ✅ | `LibAccount.sol`, `AccountRegisterSystem.sol`, configs | [accounts.md](../mechanics/world/accounts.md) |
+| Rooms & exits | ✅ | `LibRoom.sol`, `AccountMoveSystem.sol`, `rooms.csv` | [rooms.md](../mechanics/world/rooms.md) |
+| Nodes (sub-locations) | ✅ | `LibNode.sol`, `nodes.csv` | [nodes.md](../mechanics/world/nodes.md) |
+| Scavenging | ✅ | `LibScavenge.sol`, `LibAllo.sol`, `ScavengeClaimSystem.sol` | [scavenging.md](../mechanics/world/scavenging.md) |
 
 ## Progression & Social
 | Mechanic | Status | Source Files | GDD File |
