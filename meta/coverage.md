@@ -20,7 +20,7 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 |---|---|---|---|
 | Items (creation, types, properties) | ✅ | `LibItem.sol`, `LibInventory.sol` | [items.md](../mechanics/economy/items.md) |
 | Inventory management | ✅ | `LibInventory.sol` | [items.md](../mechanics/economy/items.md#inventory) |
-| Equipment & slots | ✅ | `LibEquipment.sol` | [equipment.md](../mechanics/economy/equipment.md) |
+| Equipment & slots | ✅ | `LibEquipment.sol`, `KamiEquip/UnequipSystem.sol` | [equipment.md](../mechanics/economy/equipment.md) |
 | Crafting & recipes | ✅ | `LibRecipe.sol`, `CraftSystem.sol`, `recipes.csv` | [crafting.md](../mechanics/economy/crafting.md) |
 | Droptables & loot | ✅ | `LibDroptable.sol`, `droptables.csv` | [droptables.md](../mechanics/economy/droptables.md) |
 | Harvesting (farming) | ✅ | `LibHarvest.sol`, `HarvestStart/Stop/Collect`, configs | [harvesting.md](../mechanics/economy/harvesting.md) |
@@ -53,9 +53,9 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 | Community goals | ✅ | `LibGoal.sol`, `GoalContribute/ClaimSystem.sol`, `_GoalRegistrySystem.sol` | [goals.md](../mechanics/progression/goals.md) |
 | Leaderboard / scoring | ✅ | `LibScore.sol` | [scoring.md](../mechanics/progression/scoring.md) |
 | Factions | ✅ | `LibFaction.sol`, `factions.csv` | [factions.md](../mechanics/social/factions.md) |
-| Relationships (NPC) | ✅ | `LibRelationship.sol`, `LibRelationshipRegistry.sol` | [relationships.md](../mechanics/social/relationships.md) |
+| Relationships (NPC) | ✅ | `LibRelationship.sol`, `LibRelationshipRegistry.sol`, `RelationshipAdvanceSystem.sol` | [relationships.md](../mechanics/social/relationships.md) |
 | Friends | ✅ | `LibFriend.sol`, `FriendRequest/Accept/Block/CancelSystem.sol` | [friends.md](../mechanics/social/friends.md) |
-| Chat & echo | ✅ | `ChatSystem.sol`, `LibEcho.sol` | [chat.md](../mechanics/social/chat.md) |
+| Chat & echo | ✅ | `ChatSystem.sol`, `LibEcho.sol`, `EchoKamis/RoomSystem.sol` | [chat.md](../mechanics/social/chat.md) |
 
 ## Marketplace & Tokens
 | Mechanic | Status | Source Files | GDD File |

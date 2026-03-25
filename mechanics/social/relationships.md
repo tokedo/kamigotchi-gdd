@@ -1,7 +1,8 @@
 # NPC Relationships
 
 > Source: `packages/contracts/src/libraries/LibRelationship.sol` (L1–113),
-> `packages/contracts/src/libraries/LibRelationshipRegistry.sol` (L1–170)
+> `packages/contracts/src/libraries/LibRelationshipRegistry.sol` (L1–170),
+> `packages/contracts/src/systems/RelationshipAdvanceSystem.sol` (L1–51)
 
 ## Overview
 
@@ -42,6 +43,24 @@ relIndex) since each NPC can have multiple relationship states.
 Instance ID: `keccak256("relationship", accID, npcIndex, relIndex)`
 
 > Source: `LibRelationship.sol:21–33, 110–112`
+
+## System Entry Point
+
+`RelationshipAdvanceSystem.executeTyped(npcIndex, relIndex)`:
+
+1. Resolve account from operator address
+2. **NPC existence check** — NPC must exist
+3. **Room proximity** — account must be in the **same room** as the NPC
+   (`LibNPC.sharesRoomWith`)
+4. **Registry check** — the relationship flag (npcIndex + relIndex) must exist
+5. **Duplicate check** — account must not already have this flag
+6. **Blacklist check** — account must not hold any blacklisted relationships
+7. **Whitelist check** — account must hold at least one whitelisted relationship
+   (or whitelist is empty)
+8. Create the relationship instance
+9. Update account timestamp
+
+> Source: `RelationshipAdvanceSystem.sol:17–46`
 
 ## Advancement Rules
 

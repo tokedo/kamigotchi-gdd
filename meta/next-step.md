@@ -5,29 +5,45 @@ reads this at the start of every session to know where to pick up.
 
 ## Current Phase
 
-**All extraction phases + gap analysis complete.**
+**Technical layer complete.** All mechanics extracted, all catalogs populated,
+cross-references verified, config gaps filled.
 
 ## What to do next
 
-All mechanics extraction is finished (50+ files). Suggested next steps:
+The Layer 1 (technical GDD) is ready to serve as the foundation for Layer 2
+outputs:
 
-1. **Catalog expansion** — ✅ All catalogs extracted:
-   - ~~Rooms~~ ✅ `catalogs/rooms/` — 70 rooms + 64 nodes + 50 scavenge droptables
-   - ~~Items~~ ✅ `catalogs/items/` — 177 items + 94 effects + 6 item droptables
-   - ~~NPCs~~ ✅ `catalogs/npcs/` — 2 NPCs + 19 shop listings
-   - ~~Recipes~~ ✅ `catalogs/crafting/` — 41 crafting recipes
-   - ~~Traits~~ ✅ `catalogs/traits/` — 135 traits (30 bodies, 36 faces, 27 hands, 28 backgrounds, 14 colors)
-   - ~~Assets~~ ✅ `catalogs/assets.md` — asset path reference (700+ files, CDN patterns)
-2. ~~**Cross-reference review**~~ ✅ Completed — 5 broken catalog paths fixed, all 50+ mechanic
-   files verified, all source citations valid
+- **Layer 2a: Community docs** — player-friendly website (quest graph, mechanic
+  guides, item database)
+- **Layer 2b: AI game context** — compressed decision-relevant facts for AI
+  gameplay
+- **Layer 2c: Kami lore bot** — narrative context from quest dialogues and story
 
-### Remaining gaps
+No further Layer 1 extraction work needed unless the source code changes.
 
-- **Quest catalog CSVs** — `catalogs/quests/README.md` references 4 CSV files
-  (quests.csv, objectives.csv, requirements.csv, rewards.csv) that were never
-  extracted. Source: `packages/contracts/deployment/world/data/quests/`
-- **Missing READMEs** — `catalogs/skills/` and `catalogs/factions/` have data
-  files but no README.md (minor, all other catalogs have them)
+## What was completed in this session
+
+1. ~~**Assets catalog**~~ ✅ `catalogs/assets.md` — 700+ asset pointers, CDN patterns
+2. ~~**Cross-reference review**~~ ✅ 5 broken catalog paths fixed, all source citations verified
+3. ~~**Kami vs Account XP fix**~~ ✅ Corrected XP attribution in experience-leveling.md and accounts.md
+4. ~~**Quest catalog**~~ ✅ 155 quests + objectives + requirements + rewards + quest-lines.md + dialogues/
+5. ~~**System entry points**~~ ✅ Added to equipment.md, relationships.md, chat.md
+6. ~~**Catalog READMEs**~~ ✅ Added skills/README.md, factions/README.md
+7. ~~**Config gaps**~~ ✅ VIP_STAGE values, NEWBIE_VENDOR_CYCLE, token addresses, local/prod notes
+
+## All catalogs
+
+| Catalog | Directory | Contents |
+|---|---|---|
+| Rooms | `catalogs/rooms/` | 70 rooms + 64 nodes + 50 scavenge droptables |
+| Items | `catalogs/items/` | 177 items + 94 effects + 6 item droptables |
+| NPCs | `catalogs/npcs/` | 2 NPCs + 19 shop listings |
+| Recipes | `catalogs/crafting/` | 41 crafting recipes |
+| Traits | `catalogs/traits/` | 135 traits (5 categories) |
+| Assets | `catalogs/assets.md` | 700+ asset path references + CDN patterns |
+| Quests | `catalogs/quests/` | 155 quests + objectives + requirements + rewards + quest chains + dialogues |
+| Skills | `catalogs/skills/` | 71 skills + 16 effects |
+| Factions | `catalogs/factions/` | 3 factions |
 
 ## Completed phases
 

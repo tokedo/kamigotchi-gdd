@@ -160,3 +160,22 @@ Scale must be 0–18. Negative scales are not supported.
 | `PORTAL_TOKEN_CANCEL_TOTAL` | Per token address | Token units cancelled |
 
 > Source: `LibTokenPortal.sol:251–304`
+
+## Config
+
+| Key | Value | Description |
+|---|---|---|
+| `PORTAL_TOKEN_EXPORT_DELAY` | `86400` (1 day) | Timelock before token withdrawals can be claimed |
+| `PORTAL_ITEM_EXPORT_TAX` | `[1, 100]` | Item export tax: 1 flat + 100 basis points (1%) |
+| `PORTAL_ITEM_IMPORT_TAX` | `[1, 100]` | Item import tax: 1 flat + 100 basis points (1%) |
+| `ERC20_RECEIVER_ADDRESS` | `0x6a2350...1aAd40` | Address that receives ERC-20 tokens on deposit |
+| `ONYX_BURNER_ADDRESS` | `0x4A8B41...2465Ec` | Address where burned Onyx tokens are sent |
+
+> Source: `configs.ts:145–163`
+
+### Local/Test Overrides
+
+In test environments, `PORTAL_TOKEN_EXPORT_DELAY` is reduced to `60` seconds
+(1 minute) for faster iteration.
+
+> Source: `configs.ts:42–50`

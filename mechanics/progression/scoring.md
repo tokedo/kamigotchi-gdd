@@ -125,3 +125,11 @@ LibScore.get(components, scoreID) → uint256
 Returns 0 if the score doesn't exist (safe get).
 
 > Source: `LibScore.sol:56–135, 140–142`
+
+## Config
+
+| Key | Value | Description |
+|---|---|---|
+| `SCORE_EPOCH` | `1` | Current scoring epoch number |
+
+> Source: `configs.ts:67`

@@ -77,6 +77,9 @@ with base/shift/boost/sync fields. The `sync` field tracks current stamina.
 | `[3]` | XP per move | 5 | 5 |
 
 > Source: `configs.ts:24–29, 71–76`
+>
+> **Local override**: Recovery period is `1` second in local/test environments
+> (vs `60` seconds in production) for faster testing. See `configs.ts:24–29`.
 
 ### Recovery
 

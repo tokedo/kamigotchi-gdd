@@ -1,6 +1,8 @@
 # Equipment
 
-> Source: `packages/contracts/src/libraries/LibEquipment.sol` (L1–262)
+> Source: `packages/contracts/src/libraries/LibEquipment.sol` (L1–262),
+> `packages/contracts/src/systems/KamiEquipSystem.sol` (L1–44),
+> `packages/contracts/src/systems/KamiUnequipSystem.sol` (L1–39)
 
 ## Overview
 
@@ -39,6 +41,35 @@ When replacing an item in an existing slot, capacity is not consumed (swap).
 Capacity is only checked when adding equipment to a **new** slot.
 
 > Source: `LibEquipment.sol:51–53, 215–220`
+
+## System Entry Points
+
+### KamiEquipSystem
+
+`KamiEquipSystem.executeTyped(kamiID, itemIndex)`:
+
+1. Resolve account from operator address
+2. **Verify Kami ownership** — Kami must belong to caller's account
+3. **Verify equip state** — Kami must be in `RESTING` state
+4. **Verify item** — item must be enabled and have type `"EQUIPMENT"`
+5. Equip the item (delegates to `LibEquipment.equip`)
+6. Update account timestamp
+
+> Source: `KamiEquipSystem.sol:19–37`
+
+### KamiUnequipSystem
+
+`KamiUnequipSystem.executeTyped(kamiID, slot)`:
+
+1. Resolve account from operator address
+2. **Verify Kami ownership** — Kami must belong to caller's account
+3. **Verify equip state** — Kami must be in `RESTING` state
+4. Unequip the item from the named slot (delegates to `LibEquipment.unequip`)
+5. Update account timestamp
+
+Note: unequip takes a **slot name** (string), not an item index.
+
+> Source: `KamiUnequipSystem.sol:18–32`
 
 ## Equip Process
 

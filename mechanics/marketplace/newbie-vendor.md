@@ -147,10 +147,12 @@ Both `KamiMarketBuySystem` and `KamiMarketAcceptOfferSystem` call
 
 ## Config
 
-| Key | Description |
-|---|---|
-| `NEWBIE_VENDOR_ENABLED` | Boolean — enables/disables the vendor |
-| `NEWBIE_VENDOR_ADDRESS` | ETH recipient for sale proceeds |
-| `NEWBIE_VENDOR_MIN_PRICE` | Floor price (default: 0.005 ETH) |
-| `NEWBIE_VENDOR_CYCLE` | Display rotation period in seconds |
-| `NEWBIE_VENDOR_TWAP_WINDOW` | TWAP averaging window in seconds |
+| Key | Value | Description |
+|---|---|---|
+| `NEWBIE_VENDOR_ENABLED` | `true` | Boolean — enables/disables the vendor |
+| `NEWBIE_VENDOR_ADDRESS` | (deployment address) | ETH recipient for sale proceeds |
+| `NEWBIE_VENDOR_MIN_PRICE` | `5000000000000000` (0.005 ETH) | Floor price |
+| `NEWBIE_VENDOR_CYCLE` | `172800` (48 hours) | Display rotation period in seconds |
+| `NEWBIE_VENDOR_TWAP_WINDOW` | `86400` (24 hours) | TWAP averaging window in seconds |
+
+> Source: `configs.ts:182–188`

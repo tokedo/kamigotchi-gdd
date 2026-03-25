@@ -1,7 +1,9 @@
 # Chat & Echo
 
 > Source: `packages/contracts/src/systems/ChatSystem.sol` (L1–59),
-> `packages/contracts/src/libraries/LibEcho.sol` (L1–76)
+> `packages/contracts/src/libraries/LibEcho.sol` (L1–76),
+> `packages/contracts/src/systems/EchoKamisSystem.sol` (L1–29),
+> `packages/contracts/src/systems/EchoRoomSystem.sol` (L1–26)
 
 ## Chat System
 
@@ -58,6 +60,27 @@ The echo system is a utility for **re-emitting component values** as events.
 This is used to force the front-end to refresh its state for a specific entity
 without any actual data change. It works by reading and re-setting the same
 raw bytes, which triggers event emission.
+
+### System Entry Points
+
+`EchoKamisSystem.executeTyped()` — no arguments:
+
+1. Resolve account from operator address
+2. Get all Kamis owned by the account
+3. For each Kami, call `LibEcho.kami()` to re-emit all components
+
+This broadcasts the full state of all the caller's Kamis to connected clients.
+
+> Source: `EchoKamisSystem.sol:15–24`
+
+`EchoRoomSystem.executeTyped()` — no arguments:
+
+1. Resolve account from operator address
+2. Call `LibEcho.room()` with the account ID
+
+This re-emits the account's room assignment to connected clients.
+
+> Source: `EchoRoomSystem.sol:15–21`
 
 ### Kami Echo
 
