@@ -48,7 +48,7 @@
 |---|---|---|
 | Predator | 18 | Combat offense — violence, attack threshold, spoils, cooldown |
 | Enlightened | 18 | Sustain — resting recovery, strain reduction, cooldown |
-| Guardian | 18 | Defense — harmony, health, defense threshold, salvage |
+| Guardian | 18 | Defense — harmony, health, defense threshold, salvage, strain reduction |
 | Harvester | 17 | Economy — harvest power, fertility, bounty, intensity |
 
 ## Tier Unlock Requirements
