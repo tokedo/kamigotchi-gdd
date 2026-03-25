@@ -119,6 +119,8 @@ Sources:
   (`LibAccount.sol:84`)
 - **Crafting** — XP defined per recipe, awarded as `xp × amount` after craft
   (`LibRecipe.sol:153–158`)
+- **Quest rewards** — quests with XP-type allocations award XP to the account
+  (`LibQuest.sol:166` passes `accID` to `LibAllo.distribute`)
 
 > **Important**: Account XP is a separate pool from Kami XP. There is no
 > account-level level-up mechanism — only Kamis level up. See

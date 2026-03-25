@@ -28,8 +28,8 @@ Kami XP is awarded directly to the Kami entity:
   (`HarvestStopSystem.sol:97`, `HarvestCollectSystem.sol:95`)
 - **Kill salvage** — victim Kami receives XP equal to the salvage amount
   (`LibKill.sol:53`)
-- **Rewards/effects** — quest rewards and item effects can award XP via the
-  allocation system (`LibSetter.sol:48-49`, type `"XP"`)
+- **Item effects on Kami** — items used on a Kami (via `KamiUseItemSystem`) can
+  award XP if the item has an XP-type allocation (`LibSetter.sol:48-49`)
 
 Account XP (movement, crafting) is a **separate pool** on the account entity and
 does **not** contribute to Kami leveling. See [accounts.md](../world/accounts.md)
