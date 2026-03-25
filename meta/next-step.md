@@ -13,7 +13,7 @@ All mechanics extraction is finished (50+ files). Suggested next steps:
 
 1. **Catalog expansion** — Extract remaining catalogs into CSV/data format:
    - ~~Rooms catalog (from rooms.csv)~~ ✅ Done — `catalogs/rooms/`
-   - Items catalog (from items.csv / item registry)
+   - ~~Items catalog (from items.csv / item registry)~~ ✅ Done — `catalogs/items/` (177 items + 94 effects + 6 droptables)
    - NPC catalog (from NPC registry)
    - Recipes catalog (from recipes.csv)
    - Droptables catalog (from droptables.csv)
