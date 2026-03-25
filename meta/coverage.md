@@ -57,8 +57,8 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 | Mechanic | Status | Source Files | GDD File |
 |---|---|---|---|
 | Kami marketplace (list/buy/offer) | 🔲 | `LibKamiMarket.sol` | — |
-| Item trading (p2p) | 🔲 | `LibTrade.sol`, `TradeCreate/Execute/Complete` | — |
-| NPC shop listings | 🔲 | `LibListing.sol`, `listings.csv` | — |
+| Item trading (p2p) | ✅ | `LibTrade.sol`, `TradeCreate/Execute/Complete/Cancel` | [trading.md](../mechanics/economy/trading.md) |
+| NPC shop listings | ✅ | `LibListing.sol`, `LibListingRegistry.sol`, `LibGDA.sol`, `listings.csv` | [npc-shops.md](../mechanics/economy/npc-shops.md) |
 | Auctions (GDA) | 🔲 | `LibAuction.sol`, `LibGDA.sol` | — |
 | Token portal (L1↔L2) | 🔲 | `LibTokenPortal.sol` | — |
 | Tax system | 🔲 | `LibTax.sol` | — |

@@ -9,14 +9,18 @@ reads this at the start of every session to know where to pick up.
 
 ## What to extract next
 
-1. NPC shop listings — `LibListing.sol`, `listings.csv`
-2. Trading (P2P) — `LibTrade.sol`, `TradeCreate/Execute/CompleteSystem.sol`
+Phase 2 Economy is complete. Proceed to **Phase 3: Combat/PvP**:
+
+1. Murder / kill — `LibKill.sol`
+2. Hired hitman — `LibKill.sol`
+3. Sacrifice (commit-reveal) — `LibSacrifice.sol`, `LibCommit.sol`
+4. Bonus system — `LibBonus.sol`
 
 ## After this phase
 
-Proceed to Phase 3 (Combat/PvP) per the extraction order in `survey/codebase-map.md`.
+Proceed to Phase 4 (World & Movement) per the extraction order in `survey/codebase-map.md`.
 
 ## Completed phases
 
 - Phase 1: Core Kami (6/6) — creation, stats, experience/leveling, health/healing, death/revival, naming
-- Phase 2 partial: Harvesting, Liquidation, Items, Inventory, Equipment, Crafting, Droptables (7/9 done)
+- Phase 2: Economy (9/9) — Harvesting, Liquidation, Items, Inventory, Equipment, Crafting, Droptables, NPC Shops, Trading
