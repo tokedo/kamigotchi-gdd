@@ -21,10 +21,12 @@ A commit entity is created with:
 | `IdHolder` | Entity that owns this commit (e.g., account ID) |
 | `Type` | Commit type string (e.g., `"GACHA_COMMIT"`, `"DROPTABLE_COMMIT"`) |
 
-Batch commits derive IDs deterministically:
+Batch commits derive IDs via **iterative chaining** (each ID feeds into the next):
 ```
-baseID = world.getUniqueEntityId()
-commitID[i] = keccak256(baseID, i)
+id = world.getUniqueEntityId()
+for i in 0..amount:
+    id = keccak256(id, i)     // each iteration uses the previous id
+    commitID[i] = id
 ```
 
 > Source: `LibCommit.sol:29–64`

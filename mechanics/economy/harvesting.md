@@ -164,7 +164,7 @@ Four affinities exist: `EERIE`, `SCRAP`, `INSECT`, `NORMAL`
 |---|---|---|
 | Same as node | — | **Strong** (+bonus) |
 | Different (non-NORMAL) | Different (non-NORMAL) | **Weak** (−penalty) |
-| `NORMAL` | Any | **Neutral** (half of matching bonus) |
+| `NORMAL` | Any | **Neutral** (half of equipment/skill bonus shift, not config shift) |
 | Any | `NORMAL` | **Neutral** |
 
 > Source: `LibAffinity.sol:82–90`

@@ -93,7 +93,7 @@ See [allocations.md](../utility/allocations.md) for the distribution framework.
 
 `ItemBurnSystem.execute(indices[], amounts[])`:
 
-1. Verify all items are flagged as **burnable** (`ITEM_BURNABLE` flag)
+1. Verify no items have the `ITEM_UNBURNABLE` flag (items are burnable by default)
 2. Deduct items from inventory (batch operation)
 3. Log burn amounts per item
 

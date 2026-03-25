@@ -33,9 +33,10 @@ LibSoulbound.verify(components, kamiID)
 ```
 
 Reverts with `"kami is soulbound"` if `block.timestamp < expiry`.
+Equivalently, the source check is `require(block.timestamp >= expiry)`.
 
-If never set, `safeGet` returns 0, and the check passes (0 < timestamp is
-always false).
+If never set, `safeGet` returns 0, and the check passes (`timestamp >= 0` is
+always true).
 
 > Source: `LibSoulbound.sol:26–29`
 

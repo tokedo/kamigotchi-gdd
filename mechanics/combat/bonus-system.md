@@ -113,8 +113,10 @@ Used across combat, harvesting, and stat systems:
 
 ## Clear All
 
-The `clearAll()` function removes **every** bonus from a holder. This is used
-by the "Cleaning Fluid" item to reset all bonuses at once.
+The `clearAll()` function removes all **temporary** bonuses from a holder
+(UPON_HARVEST_STOP, UPON_DEATH, UPON_KILL_OR_KILLED, UPON_LIQUIDATION, TIMED).
+Permanent bonuses and ON_UNEQUIP bonuses are not affected. Used by the
+"Cleaning Fluid" item to reset active temporary effects.
 
 > Source: `LibBonus.sol:337–344`
 

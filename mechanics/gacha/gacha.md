@@ -42,10 +42,12 @@ Creates one or more commit entities with:
 | `IdHolder` | Account ID of the committer |
 | `Type` | `"GACHA_COMMIT"` |
 
-Commit IDs are deterministically derived:
+Commit IDs are derived via iterative chaining (each feeds into the next):
 ```
-baseID = world.getUniqueEntityId()
-commitID[i] = keccak256(baseID, i)
+id = world.getUniqueEntityId()
+for i in 0..amount:
+    id = keccak256(id, i)
+    commitID[i] = id
 ```
 
 > Source: `LibCommit.sol:44–64`, `LibGacha.sol:27–35`

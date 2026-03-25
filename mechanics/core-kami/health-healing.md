@@ -53,10 +53,10 @@ After syncing, `TimeLast` is updated to `block.timestamp`.
 The **metabolism rate** determines HP recovered per second while resting:
 
 ```
-Metabolism = (Harmony + nudge) × ratio × boost / 3600
+Metabolism = precision × (Harmony + nudge) × ratio × boost / 3600
 ```
 
-With **1e9 precision** (9 decimal places).
+The result is a **1e9 fixed-point** value (9 decimal places).
 
 Config `KAMI_REST_METABOLISM` = `[nudge, n_prec, ratio, r_prec, shift, s_prec, boost, b_prec]`
 
@@ -95,22 +95,16 @@ A resting Kami with Harmony = 10, no bonuses, idle for 1 hour (3600s):
 
 ```
 Metabolism = 1000 × (10 + 20) × 600 × 1000 / 3600
-           = 1000 × 30 × 600 × 1000 / 3600
-           = 5,000,000,000  (= 5.0 in 1e9 precision → 5 HP/s)
+           = 18,000,000,000 / 3600
+           = 5,000,000  (in 1e9 precision → 0.005 HP/s)
 
-Wait — let's recalculate more carefully:
-precision = 10^(9 - 6) = 10^3 = 1000
-Metabolism = 1000 × (10 + 20) × 600 × 1000 / 3600
-           = 1000 × 30 × 600,000 / 3600
-           = 5,000,000,000
+recovery = 3600 × 5,000,000 / 1,000,000,000 = 18
 
-recovery = 3600 × 5,000,000,000 / 1,000,000,000 = 18,000
-
-HP recovered in 1 hour = 18,000 → capped at max HP (total Health stat)
+HP recovered in 1 hour = 18 HP → capped at max HP (total Health stat)
 ```
 
-> In practice, a Harmony-10 Kami heals from 0 to 50 HP in ~10 seconds.
-> The 8-param config array allows fine-tuning across wide ranges.
+> At 0.005 HP/s, a Harmony-10 Kami recovers its full 50 HP in approximately
+> 10,000 seconds (~2.8 hours). Higher Harmony significantly speeds recovery.
 
 ## Harvest Strain (HP Drain)
 

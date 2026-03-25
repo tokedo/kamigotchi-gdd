@@ -36,7 +36,7 @@ Animosity measures how aggressive the attacker is relative to the victim's
 defense. It uses a **Gaussian CDF** over the log ratio of stats:
 
 ```
-imbalance = ln(sourceViolence / targetHarmony)          (WAD precision)
+imbalance = lnWad(sourceViolence × 1e18 / targetHarmony)  (WAD precision)
 base = Φ(imbalance)                                     (Gaussian CDF)
 animosity = (base × ratio) / precision
 ```
@@ -118,13 +118,14 @@ Total attacker HP damage combines karma and harvest strain:
 
 ```
 core = strain × ratio + karma × 10^config[3]
-recoil = (core × (boost + ATK_RECOIL_BOOST)) / precision
+boost = config[6] + ATK_RECOIL_BOOST bonus
+recoil = (core × boost) / precision
 ```
 
 Where:
 - `strain` = attacker's harvest strain from their own harvest output
 - `ratio` = `KAMI_LIQ_RECOIL[2]`
-- `boost` = `KAMI_LIQ_RECOIL[6]` + `ATK_RECOIL_BOOST` bonus
+- `boost` = `KAMI_LIQ_RECOIL[6]` + `ATK_RECOIL_BOOST` bonus (combined into single multiplier)
 
 > Source: `LibKill.sol:181–195`
 
@@ -135,7 +136,9 @@ When a kill succeeds, the victim's harvest bounty is split:
 ### Salvage (to victim's account)
 
 ```
-salvage = bounty × (config[2] + (config[0] + power) × scaleFactor + DEF_SALVAGE_RATIO) / precision
+scaleFactor = 10^(config[3] - config[1])
+ratio = config[2] + (config[0] + power) × scaleFactor + DEF_SALVAGE_RATIO bonus
+salvage = bounty × ratio / precision
 ```
 
 - `power` = victim's Power stat (higher Power = more salvage)
@@ -149,7 +152,9 @@ XP equal to the salvage amount.
 ### Spoils (to killer's harvest)
 
 ```
-spoils = (bounty - salvage) × (config[2] + (config[0] + power) × scaleFactor + ATK_SPOILS_RATIO) / precision
+scaleFactor = 10^(config[3] - config[1])
+ratio = config[2] + (config[0] + power) × scaleFactor + ATK_SPOILS_RATIO bonus
+spoils = (bounty - salvage) × ratio / precision
 ```
 
 - `power` = attacker's Power stat

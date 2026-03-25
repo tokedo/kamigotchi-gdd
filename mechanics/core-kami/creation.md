@@ -15,7 +15,7 @@ it in the Gacha pool awaiting claim.
 `LibKamiCreate.create()` performs these steps in order:
 
 1. **Assign index** — `nextIndex = Kami721.totalSupply() + 1`
-2. **Generate entity ID** — deterministic: `id = keccak256("kami", index)`
+2. **Generate entity ID** — deterministic: `id = keccak256("kami.id", index)`
 3. **Verify uniqueness** — reverts if entity type `KAMI` already exists for this ID
 4. **Set base properties** (see below)
 5. **Roll traits** (5 trait slots, weighted random)
