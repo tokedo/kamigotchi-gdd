@@ -75,9 +75,9 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 ## Math & Utility (cross-cutting)
 | Mechanic | Status | Source Files | GDD File |
 |---|---|---|---|
-| Fixed-point math | 🔲 | `FixedPointMathLib.sol` | — |
-| Gaussian RNG | 🔲 | `Gaussian.sol`, `LibRandom.sol` | — |
-| Cooldown system | 🔲 | `LibCooldown.sol` | — |
-| Affinity matching | 🔲 | `LibAffinity.sol` | — |
-| Conditional/requirement logic | 🔲 | `LibConditional.sol`, `LibAllo.sol` | — |
-| Soulbound items | 🔲 | `LibSoulbound.sol` | — |
+| Fixed-point math & Gaussian RNG | ✅ | `FixedPointMathLib.sol`, `Gaussian.sol`, `Units.sol`, `LibRandom.sol` | [math-random.md](../mechanics/utility/math-random.md) |
+| Cooldown system | ✅ | `LibCooldown.sol` | [cooldowns.md](../mechanics/utility/cooldowns.md) |
+| Affinity matching | ✅ | `LibAffinity.sol` | [affinity.md](../mechanics/utility/affinity.md) |
+| Conditional/requirement logic | ✅ | `LibConditional.sol` | [conditionals.md](../mechanics/utility/conditionals.md) |
+| Allocation/reward system | ✅ | `LibAllo.sol` | [allocations.md](../mechanics/utility/allocations.md) |
+| Soulbound locks | ✅ | `LibSoulbound.sol` | [soulbound.md](../mechanics/utility/soulbound.md) |

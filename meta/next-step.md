@@ -5,22 +5,15 @@ reads this at the start of every session to know where to pick up.
 
 ## Current Phase
 
-**Phase 8: Math & Utility** (next)
+**All extraction phases complete.**
 
-## What to extract next
+## What to do next
 
-Phase 7 Gacha & Minting is complete. Proceed to **Phase 8: Math & Utility**:
+All 8 extraction phases are finished. Suggested next steps:
 
-1. Fixed-point math — `FixedPointMathLib.sol`
-2. Gaussian RNG — `Gaussian.sol`, `LibRandom.sol`
-3. Cooldown system — `LibCooldown.sol`
-4. Affinity matching — `LibAffinity.sol`
-5. Conditional/requirement logic — `LibConditional.sol`, `LibAllo.sol`
-6. Soulbound items — `LibSoulbound.sol`
-
-## After this phase
-
-All phases complete. Final review and cross-referencing pass.
+1. **Final review pass** — Cross-reference mechanic files for consistency, check all source citations
+2. **Gap analysis** — Scan source repo for any libraries/systems not covered
+3. **Catalog expansion** — Extract remaining catalogs (rooms, items, NPCs, etc.) into CSV format
 
 ## Completed phases
 
@@ -31,3 +24,4 @@ All phases complete. Final review and cross-referencing pass.
 - Phase 5: Progression & Social (8/8) — Skills, Quests, Community Goals, Scoring/Leaderboard, Factions, Relationships, Friends, Chat/Echo
 - Phase 6: Marketplace & Tokens (8/8) — Kami Market, Auctions, Token Portal, Tax, Newbie Vendor, VIP, Item Trading, NPC Shops
 - Phase 7: Gacha & Minting (3/3) — Gacha (mint/reroll/reveal/tickets), Kami Creation, ERC-721
+- Phase 8: Math & Utility (6/6) — Fixed-point math, Gaussian RNG, Random selection, Cooldowns, Affinity, Conditionals, Allocations, Soulbound
