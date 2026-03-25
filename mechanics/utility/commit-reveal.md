@@ -1,0 +1,74 @@
+# Commit-Reveal Pattern
+
+> Source: `packages/contracts/src/libraries/LibCommit.sol` (L1–168)
+
+## Overview
+
+The commit-reveal pattern is the **core randomness mechanism** in Kamigotchi.
+Since blockchains are deterministic, true randomness is obtained by committing
+to a future block number, then using that block's hash as entropy after it is
+mined.
+
+## How It Works
+
+### Step 1: Commit
+
+A commit entity is created with:
+
+| Component | Description |
+|---|---|
+| `BlockReveal` | Target block number to use for randomness |
+| `IdHolder` | Entity that owns this commit (e.g., account ID) |
+| `Type` | Commit type string (e.g., `"GACHA_COMMIT"`, `"DROPTABLE_COMMIT"`) |
+
+Batch commits derive IDs deterministically:
+```
+baseID = world.getUniqueEntityId()
+commitID[i] = keccak256(baseID, i)
+```
+
+> Source: `LibCommit.sol:29–64`
+
+### Step 2: Reveal
+
+After the target block is mined, the seed is extracted:
+
+```
+seed = keccak256(blockhash(revealBlock), entityID)
+```
+
+The seed is then used by `LibRandom` for selection.
+
+> Source: `LibCommit.sol:90–93, 134–138`
+
+## 256-Block Window
+
+`blockhash()` only returns values for the most recent 256 blocks. If a reveal
+is not claimed within ~256 blocks (~50 minutes), the blockhash returns 0 and
+the reveal fails.
+
+### Force Reveal (Admin Recovery)
+
+When the window is missed:
+1. Admin verifies `blockhash(revealBlock) == 0`
+2. Reset the commit's block to `block.number - 1`
+3. Proceed with normal reveal flow using the new blockhash
+
+> Source: `LibCommit.sol:143–149`
+
+## Availability Check
+
+```solidity
+LibCommit.isAvailable(blockNum) → bool
+// true if blockhash(blockNum) != 0
+```
+
+> Source: `LibCommit.sol:69–71`
+
+## Usage
+
+| System | Commit Type | Purpose |
+|---|---|---|
+| Gacha mint/reroll | `GACHA_COMMIT` | Random Kami selection from pool |
+| Droptable rewards | `DROPTABLE_COMMIT` | Random loot from weighted tables |
+| Sacrifice | `SACRIFICE_COMMIT` | Random sacrifice outcome |

@@ -13,6 +13,7 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 | Health & healing (rest metabolism) | ✅ | `LibKami.sol`, `LibCooldown.sol`, configs | [health-healing.md](../mechanics/core-kami/health-healing.md) |
 | Death & revival | ✅ | `LibKami.sol`, `KamiOnyxReviveSystem.sol` | [death-revival.md](../mechanics/core-kami/death-revival.md) |
 | Naming & renaming | ✅ | `KamiNameSystem.sol`, `KamiOnyxRenameSystem.sol` | [naming.md](../mechanics/core-kami/naming.md) |
+| Kami send (in-game transfer) | ✅ | `KamiSendSystem.sol` | [kami-send.md](../mechanics/core-kami/kami-send.md) |
 
 ## Economy & Items
 | Mechanic | Status | Source Files | GDD File |
@@ -24,6 +25,7 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 | Droptables & loot | ✅ | `LibDroptable.sol`, `droptables.csv` | [droptables.md](../mechanics/economy/droptables.md) |
 | Harvesting (farming) | ✅ | `LibHarvest.sol`, `HarvestStart/Stop/Collect`, configs | [harvesting.md](../mechanics/economy/harvesting.md) |
 | Liquidation (harvest PvP) | ✅ | `HarvestLiquidateSystem.sol`, `LibHarvest.sol`, configs | [harvesting.md](../mechanics/economy/harvesting.md#liquidation-pvp) |
+| Item usage (use/cast/burn/transfer) | ✅ | `KamiUseItem/CastItem/AccountUseItemSystem.sol`, `ItemBurn/TransferSystem.sol` | [item-usage.md](../mechanics/economy/item-usage.md) |
 
 ## Combat & PvP
 | Mechanic | Status | Source Files | GDD File |
@@ -40,6 +42,8 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 | Rooms & exits | ✅ | `LibRoom.sol`, `AccountMoveSystem.sol`, `rooms.csv` | [rooms.md](../mechanics/world/rooms.md) |
 | Nodes (sub-locations) | ✅ | `LibNode.sol`, `nodes.csv` | [nodes.md](../mechanics/world/nodes.md) |
 | Scavenging | ✅ | `LibScavenge.sol`, `LibAllo.sol`, `ScavengeClaimSystem.sol` | [scavenging.md](../mechanics/world/scavenging.md) |
+| Day/night cycle | ✅ | `LibPhase.sol` | [day-night-cycle.md](../mechanics/world/day-night-cycle.md) |
+| Account customization | ✅ | `AccountSetName/Bio/PFP/OperatorSystem.sol` | [account-customization.md](../mechanics/world/account-customization.md) |
 
 ## Progression & Social
 | Mechanic | Status | Source Files | GDD File |
@@ -81,3 +85,6 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 | Conditional/requirement logic | ✅ | `LibConditional.sol` | [conditionals.md](../mechanics/utility/conditionals.md) |
 | Allocation/reward system | ✅ | `LibAllo.sol` | [allocations.md](../mechanics/utility/allocations.md) |
 | Soulbound locks | ✅ | `LibSoulbound.sol` | [soulbound.md](../mechanics/utility/soulbound.md) |
+| Commit-reveal pattern | ✅ | `LibCommit.sol` | [commit-reveal.md](../mechanics/utility/commit-reveal.md) |
+| Flag system | ✅ | `LibFlag.sol` | [flags.md](../mechanics/utility/flags.md) |
+| NPC system | ✅ | `LibNPC.sol` | [npcs.md](../mechanics/utility/npcs.md) |

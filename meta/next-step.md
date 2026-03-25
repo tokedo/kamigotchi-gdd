@@ -5,15 +5,21 @@ reads this at the start of every session to know where to pick up.
 
 ## Current Phase
 
-**All extraction phases complete.**
+**All extraction phases + gap analysis complete.**
 
 ## What to do next
 
-All 8 extraction phases are finished. Suggested next steps:
+All mechanics extraction is finished (50+ files). Suggested next steps:
 
-1. **Final review pass** — Cross-reference mechanic files for consistency, check all source citations
-2. **Gap analysis** — Scan source repo for any libraries/systems not covered
-3. **Catalog expansion** — Extract remaining catalogs (rooms, items, NPCs, etc.) into CSV format
+1. **Catalog expansion** — Extract remaining catalogs into CSV/data format:
+   - Items catalog (from items.csv / item registry)
+   - Rooms catalog (from rooms.csv)
+   - NPC catalog (from NPC registry)
+   - Recipes catalog (from recipes.csv)
+   - Droptables catalog (from droptables.csv)
+   - Traits catalog (body, face, hand, color, background variants)
+   - Listings catalog (NPC shop listings)
+2. **Cross-reference review** — Verify inter-file links and source citations
 
 ## Completed phases
 
