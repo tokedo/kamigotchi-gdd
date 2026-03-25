@@ -68,9 +68,9 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 ## Gacha & Minting
 | Mechanic | Status | Source Files | GDD File |
 |---|---|---|---|
-| Gacha mint/reroll/reveal | 🔲 | `LibGacha.sol`, `KamiGachaMint/Reroll/RevealSystem.sol` | — |
-| Mint config & pricing | 🔲 | `configs.ts` (initMint) | — |
-| ERC-721 (Kami NFT) | 🔲 | `Kami721.sol`, `LibKami721.sol` | — |
+| Gacha mint/reroll/reveal | ✅ | `LibGacha.sol`, `KamiGachaMint/Reroll/RevealSystem.sol`, `GachaBuyTicketSystem.sol` | [gacha.md](../mechanics/gacha/gacha.md) |
+| Kami creation (entity + traits + stats) | ✅ | `LibKamiCreate.sol`, `_721BatchMinterSystem.sol` | [kami-creation.md](../mechanics/gacha/kami-creation.md) |
+| ERC-721 (Kami NFT) | ✅ | `Kami721.sol`, `LibKami721.sol`, `Kami721Stake/Unstake/Transfer/Metadata/IsInWorldSystem.sol` | [erc721.md](../mechanics/gacha/erc721.md) |
 
 ## Math & Utility (cross-cutting)
 | Mechanic | Status | Source Files | GDD File |
