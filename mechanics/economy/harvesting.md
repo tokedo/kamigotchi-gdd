@@ -103,7 +103,36 @@ Where:
 
 Config `KAMI_HARV_BOUNTY` = `[0, 9, 0, 0, 0, 0, 1000, 3]`
 
+> **Important**: Fertility and Intensity are intermediate scaled values (internal
+> precision), NOT direct Musu/s. The bounty formula's Precision divisor (10^9)
+> converts them to actual Musu. Always compute the full bounty formula for
+> real-world harvest rates.
+
 > Source: `LibHarvest.sol:156–171`
+
+### Worked Example
+
+A Kami with Power=10, Violence=10, neutral affinity, no bonuses, harvesting
+for 1 hour (3600s), 60 minutes of intensity:
+
+```
+Fertility = 1 × 10 × 1500 × 1000 / 3600 = 4,167        (intermediate value)
+Intensity = 1,000,000 × (10×5 + 60) × 10 / (480 × 3600) = 636   (intermediate)
+
+Rate      = 4,167 + 636 = 4,803
+Duration  = 3,600 seconds
+Boost     = 1,000 (no bonuses)
+Precision = 10^(6 + 0 + 3) = 10^9
+
+Bounty = 4,803 × 3,600 × 1,000 / 1,000,000,000
+       ≈ 17 Musu in 1 hour
+```
+
+For comparison — a Power=20 Kami with perfect affinity match (efficacy 2000):
+```
+Fertility = 1 × 20 × 1500 × 2000 / 3600 = 16,667
+Bounty = 16,667 × 3,600 × 1,000 / 1,000,000,000 ≈ 60 Musu/hr (before Intensity)
+```
 
 ### Fertility (Power-Based Rate)
 
