@@ -104,6 +104,9 @@ supply/demand equilibrium.
 
 ### SCALED (sell only)
 
+> **Currently unused.** The SCALED pricing type is fully implemented in contract
+> code but no NPC listings use it — all sell-side pricing is currently FIXED.
+
 Sell price is a fraction of the current buy price:
 
 ```

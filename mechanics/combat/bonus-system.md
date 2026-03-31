@@ -75,7 +75,11 @@ Values are signed — bonuses can be negative (debuffs).
 - Like temporary, but expire after a **duration** (stored as end timestamp)
 - Each instance gets a unique ID (based on expiration time)
 
-> Source: `LibBonus.sol:30–52, 176–192`
+> **Partially implemented.** Timed bonuses can be created and queried, but the
+> cleanup function (`unassignTimed`) has its unassign logic **commented out** in
+> source — timed bonuses are not automatically removed on expiry.
+
+> Source: `LibBonus.sol:30–52, 176–192, 219–223`
 
 ## End Types (Temporary Bonus Lifecycle)
 
@@ -106,8 +110,8 @@ Used across combat, harvesting, and stat systems:
 | `ATK_SPOILS_RATIO` | Kill | Modifies spoils percentage (attacker) |
 | `DEF_SALVAGE_RATIO` | Kill | Modifies salvage percentage (defender) |
 | `ATK_RECOIL_BOOST` | Kill | Modifies recoil boost (attacker-side, added to boost total) |
-| `DEF_RECOIL_BOOST` | Kill | Modifies recoil boost (defender-side, added to boost total) |
-| `EQUIP_CAPACITY_SHIFT` | Equipment | Increases equipment slot capacity |
+| `DEF_RECOIL_BOOST` | Kill | Modifies recoil boost (defender-side, added to boost total). **Currently unused** — no item or skill grants this bonus. |
+| `EQUIP_CAPACITY_SHIFT` | Equipment | Increases equipment slot capacity. **Currently unused** — no item or skill grants this bonus. |
 | `STND_COOLDOWN_SHIFT` | Cooldown | Modifies standard cooldown duration |
 
 > Source: `LibKill.sol`, `LibStat.sol`, `LibEquipment.sol`, `LibCooldown.sol`

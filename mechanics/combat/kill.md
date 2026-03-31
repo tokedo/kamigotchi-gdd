@@ -162,7 +162,7 @@ Where:
 - `strain` = attacker's harvest strain from their own harvest output
 - `karma` = Gaussian CDF multiplier (see [Karma](#karma-recoil-multiplier))
 - `nudge` = affinity-based efficacy (see [Recoil Efficacy](#recoil-efficacy))
-- `boost` = `KAMI_LIQ_RECOIL[6]` + `DEF_RECOIL_BOOST` (defender) + `ATK_RECOIL_BOOST` (attacker)
+- `boost` = `KAMI_LIQ_RECOIL[6]` + `DEF_RECOIL_BOOST` (defender, **currently unused** — no source grants it) + `ATK_RECOIL_BOOST` (attacker)
 - `precision` = `10^(config[1] + config[3] + config[7])`
 - Boost is clamped to min 0
 - `calcKarma` is called internally (not passed as a parameter)

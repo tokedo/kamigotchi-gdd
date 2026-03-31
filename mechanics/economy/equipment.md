@@ -34,7 +34,8 @@ capacity = DEFAULT_CAPACITY + EQUIP_CAPACITY_SHIFT bonus
 ```
 
 - **Default capacity**: `1`
-- Capacity can be increased via the `EQUIP_CAPACITY_SHIFT` bonus
+- Capacity can be increased via the `EQUIP_CAPACITY_SHIFT` bonus (**currently
+  unused** — no item or skill grants this bonus; all entities have default capacity)
 - Capacity cannot go below 0
 
 When replacing an item in an existing slot, capacity is not consumed (swap).
