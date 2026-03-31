@@ -2,7 +2,7 @@
 
 > Source: `packages/contracts/deployment/world/data/npc/npc.csv`,
 > `packages/contracts/deployment/world/data/listings/listings.csv`
-> Commit: `d9b50091`
+> Commit: `0af5d9f0`
 
 ## Files
 
@@ -62,15 +62,22 @@ or dynamic pricing.
 
 ### Onyx Shard Pricing
 
-Mina sells Wooden Stick (0.05 Onyx) and Stone (1 Onyx) for premium currency.
-All other items are priced in MUSU.
+> **Currently unused.** Mina has two Onyx Shard listings registered on-chain
+> (Wooden Stick at 0.05 Onyx, Stone at 1 Onyx), but **no pricing strategy is
+> assigned** — these listings have no buy or sell side, so `calcBuyPrice()`
+> reverts. Players cannot purchase these items from Mina. The deployment script
+> contains a commented-out `initLocalListings()` that was used for local ERC-20
+> testing of these listings.
+
+All active shop items are priced in MUSU.
 
 ## Statistics
 
 - **Total listings**: 19 (18 in-game, 1 shelved)
+- **Active buyable listings**: 16 (2 Onyx listings are registered but non-functional)
 - **Unique items sold**: 11 distinct items
-- **Currency split**: 2 Onyx Shard listings, 17 MUSU listings
-- **Pricing models**: 15 GDA, 2 FIXED, 2 Onyx (no model)
+- **Currency split**: 2 Onyx Shard listings (dormant), 17 MUSU listings
+- **Pricing models**: 15 GDA, 2 FIXED, 2 dormant (no pricing assigned)
 
 ## Cross-References
 
