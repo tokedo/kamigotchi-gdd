@@ -105,7 +105,8 @@ Used across combat, harvesting, and stat systems:
 | `DEF_THRESHOLD_SHIFT` | Kill | Flat shift to kill threshold (defender) |
 | `ATK_SPOILS_RATIO` | Kill | Modifies spoils percentage (attacker) |
 | `DEF_SALVAGE_RATIO` | Kill | Modifies salvage percentage (defender) |
-| `ATK_RECOIL_BOOST` | Kill | Modifies recoil damage (attacker) |
+| `ATK_RECOIL_BOOST` | Kill | Modifies recoil boost (attacker-side, added to boost total) |
+| `DEF_RECOIL_BOOST` | Kill | Modifies recoil boost (defender-side, added to boost total) |
 | `EQUIP_CAPACITY_SHIFT` | Equipment | Increases equipment slot capacity |
 | `STND_COOLDOWN_SHIFT` | Cooldown | Modifies standard cooldown duration |
 
