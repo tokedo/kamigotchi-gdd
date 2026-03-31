@@ -3,7 +3,7 @@
 Technical Game Design Document for [Kamigotchi](https://kamigotchi.io/) — a
 pure on-chain MMORPG on Yominet.
 
-Extracted from source code at commit `d9b50091`.
+Extracted from source code at commit `0af5d9f0`.
 
 ## What's Here
 
@@ -20,10 +20,10 @@ this directory and paste the following prompt:
 
 ```
 The Kamigotchi source repo is at /tmp/kamigotchi (pull latest first with
-git -C /tmp/kamigotchi pull). Our GDD was scribed against commit d9b50091.
+git -C /tmp/kamigotchi pull). Our GDD was scribed against commit 0af5d9f0.
 
-1. Run: git -C /tmp/kamigotchi log d9b50091..HEAD --oneline
-2. If there are new commits, run: git -C /tmp/kamigotchi diff d9b50091..HEAD --stat
+1. Run: git -C /tmp/kamigotchi log 0af5d9f0..HEAD --oneline
+2. If there are new commits, run: git -C /tmp/kamigotchi diff 0af5d9f0..HEAD --stat
 3. For any changed files in src/libraries/, src/systems/, or deployment/world/state/,
    read the diffs and compare against our GDD files in mechanics/ and catalogs/
 4. Produce a report:
@@ -41,4 +41,5 @@ git -C /tmp/kamigotchi pull). Our GDD was scribed against commit d9b50091.
 This GDD serves as the foundation for downstream outputs:
 
 - **[kamigotchi-wiki](https://github.com/tokedo/kamigotchi-wiki)** — community
-  website with interactive guides, databases, and tools
+  website with interactive guides, databases, and tools — live at
+  [kamiwiki.xyz](https://kamiwiki.xyz)
