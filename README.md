@@ -43,3 +43,6 @@ This GDD serves as the foundation for downstream outputs:
 - **[kamigotchi-wiki](https://github.com/tokedo/kamigotchi-wiki)** — community
   website with interactive guides, databases, and tools — live at
   [kamiwiki.xyz](https://kamiwiki.xyz)
+- **[kamigotchi-context](https://github.com/tokedo/kamigotchi-context)** — AI
+  agent knowledge base: decision-oriented game context, on-chain integration
+  docs, ABIs, and state reading patterns for agents that play Kamigotchi
