@@ -1,7 +1,7 @@
 # Token Portal (ERC-20 Bridge)
 
-> Source: `packages/contracts/src/libraries/LibTokenPortal.sol` (L1–394),
-> `packages/contracts/src/systems/TokenPortalSystem.sol` (L1–173),
+> Source: `packages/contracts/src/libraries/LibTokenPortal.sol` (L1–403),
+> `packages/contracts/src/systems/TokenPortalSystem.sol` (L1–192),
 > `packages/contracts/deployment/world/data/portal/tokens.csv`
 
 ## Overview
@@ -14,6 +14,18 @@ tokens (with export tax and a time delay).
 The portal uses a **receipt system** for withdrawals — items are immediately
 removed from the player's inventory, but the ERC-20 transfer is delayed behind
 a configurable timelock. Admins can pause or cancel pending withdrawals.
+
+## Enabled / Disabled Toggle
+
+The whole portal is gated by a single `isEnabled` boolean (stored in the
+system's local storage, default `false`). An `onlyEnabled` modifier guards
+**`deposit`, `withdraw`, `claim`, and `cancel`** — when disabled, all four
+revert with `"Token Portal: disabled"`. The owner flips it via
+`adminToggleEnabled(bool)`. The portal is currently **enabled** (re-enabled
+after a maintenance window).
+
+> Source: `TokenPortalSystem.sol:25–35, 134` (`isEnabled`, `onlyEnabled`,
+> `adminToggleEnabled`)
 
 ## Deposit Flow
 
@@ -55,8 +67,17 @@ a configurable timelock. Admins can pause or cancel pending withdrawals.
 1. Verify caller owns the receipt
 2. Verify receipt is not paused/disabled
 3. Verify delay has elapsed: `block.timestamp >= endTime`
-4. Transfer ERC-20 tokens from `TokenHolderComponent` to player's wallet
-5. Remove the receipt entity
+4. Re-read the token address from the Portal's **local registry**
+   (`itemAddrs[itemIndex]`), which **overrides** the address stored on the
+   receipt; reverts if the item is no longer registered
+5. Transfer ERC-20 tokens from `TokenHolderComponent` to player's wallet
+6. Remove the receipt entity
+
+> **Token migration semantics**: because claim reads the address from the
+> Portal's local registry (not the receipt), an admin can migrate a portal
+> item to a new token address. Clearing/unsetting a portal item makes new
+> `deposit`/`withdraw` calls revert, while existing receipts still resolve —
+> claiming against whatever address the Portal currently holds for that item.
 
 ### Step 3: Cancel (optional, before claim)
 
@@ -139,11 +160,12 @@ Scale must be 0–18. Negative scales are not supported.
 
 | Function | Description |
 |---|---|
+| `adminToggleEnabled(enabled)` | Enables/disables the entire portal (owner only) |
 | `adminPause(receiptID)` | Disables a pending withdrawal (prevents claim) |
 | `adminUnpause(receiptID)` | Re-enables a paused withdrawal (owner only) |
 | `adminCancel(receiptID)` | Force-cancels a withdrawal, returning items to player |
 
-> Source: `TokenPortalSystem.sol:102–118`
+> Source: `TokenPortalSystem.sol:113–135`
 
 ## Logging
 

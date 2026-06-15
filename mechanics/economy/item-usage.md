@@ -42,10 +42,7 @@ Items define which target they can be used on via a `ForShape` component:
 9. Reset Kami intensity
 10. Log usage
 
-**Special case**: Room 19 ("Temple of the Wheel") is restricted to account
-index 833 only.
-
-> Source: `KamiUseItemSystem.sol:19–58`
+> Source: `KamiUseItemSystem.sol:19–51`
 
 ## Cast on Enemy Kami
 

@@ -2,7 +2,7 @@
 
 > Source: `packages/contracts/src/libraries/LibGacha.sol` (L1–184),
 > `packages/contracts/src/systems/KamiGachaMintSystem.sol` (L1–46),
-> `packages/contracts/src/systems/KamiGachaRerollSystem.sol` (L1–55),
+> `packages/contracts/src/systems/KamiGachaRerollSystem.sol` (L1–61),
 > `packages/contracts/src/systems/KamiGachaRevealSystem.sol` (L1–57),
 > `packages/contracts/src/systems/GachaBuyTicketSystem.sol` (L1–143)
 
@@ -99,18 +99,21 @@ receives random Kamis from the pool (not necessarily the ones just created).
 `KamiGachaRerollSystem.reroll(kamiIDs)`:
 
 1. Verify all Kamis are owned by caller and in `RESTING` state
-2. Extract previous reroll counts from the Kamis
-3. Deduct `kamiIDs.length` Reroll Tokens (item 11) from inventory
-4. **Deposit** the player's Kamis into the gacha pool (ownership → `GACHA_ID`)
-5. Create commits (same amount as Kamis deposited)
-6. Store previous reroll counts on the commit entities
-7. Log reroll
+2. **Force-unequip all items** from each Kami back to the player's inventory
+   (`LibEquipment.unequipAll`) — equipment is recovered before the Kami leaves
+   the player's ownership
+3. Extract previous reroll counts from the Kamis
+4. Deduct `kamiIDs.length` Reroll Tokens (item 11) from inventory
+5. **Deposit** the player's Kamis into the gacha pool (ownership → `GACHA_ID`)
+6. Create commits (same amount as Kamis deposited)
+7. Store previous reroll counts on the commit entities
+8. Log reroll
 
 On reveal, the player receives the same number of random Kamis. Each received
 Kami's reroll counter is incremented by 1 (tracking how many times it has been
 rerolled).
 
-> Source: `KamiGachaRerollSystem.sol:21–49`, `LibGacha.sol:41–69`
+> Source: `KamiGachaRerollSystem.sol:21–54`, `LibGacha.sol:41–69`
 
 ## Reroll Counter
 

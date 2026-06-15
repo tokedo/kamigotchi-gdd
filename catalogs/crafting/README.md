@@ -51,9 +51,7 @@
 
 | Status | Count |
 |---|---|
-| In Game | 25 |
-| To Update | 13 |
-| To Deploy | 3 |
+| In Game | 41 |
 
 ## Level Requirements
 

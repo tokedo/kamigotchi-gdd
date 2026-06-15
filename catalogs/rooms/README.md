@@ -87,8 +87,7 @@ Drop probability: `P(item) = tier / sum(all tiers)`
 
 - **Total rooms**: 70
 - **Rooms with nodes**: 64 (6 rooms have no harvest node)
-- **In Game**: 68 rooms / 64 nodes
-- **To Update**: 2 rooms (19, 59)
+- **In Game**: 70 rooms / 64 nodes (rooms 19 Temple of the Wheel + 59 Black Pool now live)
 - **Rooms with special exits**: 14
 - **Unique droptables**: 50
 - **Missing exit targets**: Rooms 20, 24, 28 are referenced as exits but not defined in the CSV

@@ -61,7 +61,9 @@ shrink.
 5. Verify Kami is in the current display window; remove from pool
 6. Verify vendor account owns the Kami and it is `RESTING`
 7. Reassign Kami ownership to buyer
-8. Send ETH to vendor address (`NEWBIE_VENDOR_ADDRESS` config)
+8. Send ETH to the **marketplace fee recipient** (`KAMI_MARKET_FEE_RECIPIENT`),
+   falling back to `NEWBIE_VENDOR_ADDRESS` if the fee recipient is unset.
+   Vendor (Zevana) proceeds now flow to the shared marketplace fee wallet.
 9. Refund excess ETH to buyer
 10. **Soulbind** the purchased Kami for **3 days** (prevents listing, unstaking,
     or accepting offers)
@@ -150,7 +152,8 @@ Both `KamiMarketBuySystem` and `KamiMarketAcceptOfferSystem` call
 | Key | Value | Description |
 |---|---|---|
 | `NEWBIE_VENDOR_ENABLED` | `true` | Boolean — enables/disables the vendor |
-| `NEWBIE_VENDOR_ADDRESS` | (deployment address) | ETH recipient for sale proceeds |
+| `NEWBIE_VENDOR_ADDRESS` | (deployment address) | Vendor account; fallback ETH recipient if no fee recipient set |
+| `KAMI_MARKET_FEE_RECIPIENT` | `0x3d7f111B3b69C657624b8633a997A56300212872` | Shared marketplace fee wallet; primary recipient of vendor proceeds |
 | `NEWBIE_VENDOR_MIN_PRICE` | `5000000000000000` (0.005 ETH) | Floor price |
 | `NEWBIE_VENDOR_CYCLE` | `172800` (48 hours) | Display rotation period in seconds |
 | `NEWBIE_VENDOR_TWAP_WINDOW` | `86400` (24 hours) | TWAP averaging window in seconds |

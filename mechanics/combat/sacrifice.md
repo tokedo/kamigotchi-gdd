@@ -1,6 +1,6 @@
 # Sacrifice
 
-> Source: `packages/contracts/src/libraries/LibSacrifice.sol` (L1–433),
+> Source: `packages/contracts/src/libraries/LibSacrifice.sol` (L1–437),
 > `packages/contracts/src/systems/KamiSacrificeCommitSystem.sol` (L1–70),
 > `packages/contracts/src/systems/KamiSacrificeRevealSystem.sol` (L1–67)
 
@@ -32,12 +32,14 @@ rewards at regular intervals.
 4. Select which droptable to use based on pity count
 5. Create commit entity (`KAMI_SACRIFICE_COMMIT` type) with droptable ID and
    Kami ID stored
-6. **Burn the Kami**:
+6. **Force-unequip all items** back to the account's inventory
+   (`LibEquipment.unequipAll`) — equipment is recovered, not burned with the Kami
+7. **Burn the Kami**:
    - Transfer ERC-721 token to burn address (`0x...dEaD`)
    - Set Kami state to `DEAD`, health to 0
    - Clear ownership (Kami no longer appears in party)
 
-> Source: `LibSacrifice.sol:62–88, 98–110`
+> Source: `LibSacrifice.sol:62–91, 98–110`
 
 ### Step 2: Reveal
 

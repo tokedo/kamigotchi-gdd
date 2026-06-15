@@ -2,7 +2,7 @@
 
 > Source: `packages/contracts/deployment/world/data/npc/npc.csv`,
 > `packages/contracts/deployment/world/data/listings/listings.csv`
-> Commit: `0af5d9f0`
+> Commit: `91f69796` (npc/listings data unchanged since `0af5d9f0`)
 
 ## Files
 

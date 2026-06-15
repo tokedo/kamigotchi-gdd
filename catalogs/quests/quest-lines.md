@@ -279,9 +279,9 @@ MSQ102  Axis Mundi  (In Room: Sacrarium)
 MSQ104  An Ounce of Sense
 ```
 
-### Act IV: Temple of the Wheel (MSQ105-MSQ109, To Deploy)
+### Act IV: Temple of the Wheel (MSQ105-MSQ109, In Game)
 
-Not yet deployed. Continues from MSQ104.
+Now live (In Game). Continues from MSQ104.
 
 ```
 MSQ104
@@ -431,6 +431,71 @@ These quests are accessed through portal rooms in the deep caves.
 (In Room: Scenic View) --- SQ021  Castle in the Air  (Giver: ROB)
                               |
                             SQ022  Sweet Deal  (Giver: ROB)
+```
+
+### Adoption, Trading & Resonant Side Quests (SQ028-SQ045)
+
+Rob's trading chain, Zevana's adoption/training chain, and the Dowsing-Rod–
+gated "Resonant" cave quests.
+
+```
+Rob's trading chain (Giver: ROB):
+(In Room: Restricted Area) --- SQ028  The More the Merrier
+                                 |--- SQ029  Let’s Have a Look
+                                       |--- SQ030  Container Deposit
+                                             |--- SQ031  More Than a Fair Exchange
+                                                   |--- SQ032  Unfettered
+                                                         |--- SQ033  Trading Lunches
+
+Zevana's adoption / training chain (Giver: ZEVANA):
+(In Room: Torii Gate) --- SQ034  Not Right Now
+                            |--- SQ035  Rookie Training I
+                                  |--- SQ036  Rookie Training II
+                                        |--- SQ037  Old Acquaintance
+                                              |--- SQ038  Push it to the Limit
+
+Resonant / Dowsing-Rod cave quests (require Own the Dowsing Rod):
+SQ039  Danger Lies Ahead…  (In Room: Vending Machine, Giver: MENU)
+SQ040  A Cautionary Note  (In Room: Shady Path, Giver: MENU)
+SQ041  The Rot Creeps  (Complete MSQ094, In Room: Centipedes, Giver: MINA)
+SQ042  Some Alien Vastness  (Complete MSQ094, In Room: Lab Entrance)
+SQ043  Ringing Other Bells  (Complete MSQ094, In Room: Scrap Confluence)
+SQ044  Resonant Drip  (Complete MSQ099, In Room: Wheel Temple, Giver: DIMIDIATUS)
+SQ045  Resonant Flow  (Complete MSQ094, In Room: Black Pool, Giver: MINA)
+```
+
+### Spirit / Ring of Spirits Side Quests (SQ100-SQ118)
+
+Unlocks after Act IV (MSQ109). Centered on the **Ring of Spirits** key item
+(22802), which lets the bearer speak with lost souls scattered across the world.
+SQ113-SQ118 are **To Deploy**.
+
+```
+(Complete MSQ109) --- SQ100  Get On the Other Side  (Giver: MENU)
+                        |--- SQ101  Don’t Look Back  (Giver: MINA)
+                              |--- SQ102  Find a Needle in the Haystack
+
+Ring-of-Spirits soul conversations (require Own the Ring of Spirits):
+SQ104  Call Your Grandparents  (In Room: Trash-Strewn Graves)
+SQ105  Get Blood From a Stone  (In Room: Clearing)
+SQ107  Look Who’s Talking  (In Room: Shabby Deck)
+  |--- SQ108  My Ears Are Burning
+SQ109  Get the Story Straight I  (In Room: Lost Skeleton)
+  |--- SQ110  Get the Story Straight II
+        |--- SQ111  Get the Story Straight III
+SQ112  See the Glass as Half Full  (In Room: Guardian Skull)
+
+To Deploy:
+SQ113  Airing it Out  (Complete SQ108)  ──→  SQ114  Conditioned Environment
+SQ115  Dry Conversation  (Complete SQ014)
+SQ116  Lost and Found  (Complete SQ111)  ──→  SQ117  Trash Pickers  ──→  SQ118  Janitorial Supplies
+```
+
+### Diagnostics Side Quests (SQ802-SQ803)
+
+```
+SQ802  Quest Diagnostics  (temp quest, Giver: MENU)
+  |--- SQ803  Never Brought to Mind  (Giver: ROB)
 ```
 
 ### Special / Conditional Side Quests

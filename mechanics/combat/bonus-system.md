@@ -1,6 +1,6 @@
 # Bonus System
 
-> Source: `packages/contracts/src/libraries/LibBonus.sol` (L1–368)
+> Source: `packages/contracts/src/libraries/LibBonus.sol` (L1–374)
 
 ## Overview
 
@@ -90,10 +90,21 @@ Values are signed — bonuses can be negative (debuffs).
 | `UPON_DEATH` | Kami dies | Death-triggered effects |
 | `UPON_KILL_OR_KILLED` | Kill or get killed | Combat-round effects |
 | `UPON_LIQUIDATION` | Liquidate another Kami | Post-kill effects |
-| `ON_UNEQUIP_{SLOT}` | Unequip from slot | Equipment stat bonuses |
+| `UPON_COOLDOWN_SET` | Cooldown is (re)set — harvest start/stop/collect, liquidation | Cooldown buffs (Energy Drink) |
+| `UPON_UNEQUIP_{SLOT}` | Unequip from slot | Equipment stat bonuses |
 | `TIMED` | Duration expires | Timed consumable buffs |
 
-> Source: `LibBonus.sol:308–344`
+> `UPON_COOLDOWN_SET` was added so cooldown-modifying buffs (e.g. **Energy
+> Drink**, `STND_COOLDOWN_SHIFT`) are consumed exactly when a cooldown is set,
+> then cleared. Every cooldown-reset path calls `resetUponCooldownSet`:
+> harvest start, collect, stop, and liquidation.
+
+> The unequip end-type prefix was corrected from `ON_UNEQUIP_` to
+> `UPON_UNEQUIP_` so that generated end types match the `UPON_UNEQUIP`
+> terminators used in the item/allo catalog (previously equipment bonuses were
+> not cleared on unequip).
+
+> Source: `LibBonus.sol:308–349`, `LibEquipment.sol:48` (`END_TYPE_PREFIX`)
 
 ## Known Bonus Types
 
@@ -119,11 +130,11 @@ Used across combat, harvesting, and stat systems:
 ## Clear All
 
 The `clearAll()` function removes all **temporary** bonuses from a holder
-(UPON_HARVEST_STOP, UPON_DEATH, UPON_KILL_OR_KILLED, UPON_LIQUIDATION, TIMED).
-Permanent bonuses and ON_UNEQUIP bonuses are not affected. Used by the
-"Cleaning Fluid" item to reset active temporary effects.
+(UPON_HARVEST_STOP, UPON_COOLDOWN_SET, UPON_DEATH, UPON_KILL_OR_KILLED,
+UPON_LIQUIDATION, TIMED). Permanent bonuses and UPON_UNEQUIP bonuses are not
+affected. Used by the "Cleaning Fluid" item to reset active temporary effects.
 
-> Source: `LibBonus.sol:337–344`
+> Source: `LibBonus.sol:337–351`
 
 ## Query Patterns
 

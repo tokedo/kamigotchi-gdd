@@ -1,13 +1,13 @@
 # Items Catalog
 
 > Source: `packages/contracts/deployment/world/data/items/`
-> Commit: `d9b50091`
+> Commit: `91f69796`
 
 ## Files
 
 | File | Entries | Description |
 |---|---|---|
-| `items.csv` | 177 items | Complete item catalog with stats, effects, and descriptions |
+| `items.csv` | 178 items | Complete item catalog with stats, effects, and descriptions |
 | `effects.csv` | 94 effects | Item effect definitions (what items do when used/equipped) |
 | `droptables.csv` | 6 tables | Weighted loot pools for lootbox items |
 
@@ -35,7 +35,7 @@
 | Equipment | 36 | Equipable pet-slot items with passive stat bonuses |
 | NFT | 14 | Passport items (equippable cosmetics) |
 | Potion | 11 | Consumables with targeted effects (Kami or Enemy_Kami) |
-| Key Item | 10 | Quest-related unique items |
+| Key Item | 11 | Quest-related unique items (incl. Ring of Spirits, 22802) |
 | Misc | 7 | Currencies and special items (MUSU, Gacha Ticket, etc.) |
 | Lootbox | 6 | Openable containers that roll on a droptable |
 | Tool | 3 | Crafting tools (Grinder, Burner, Screwdriver) |
@@ -48,9 +48,9 @@
 | Rarity | Count | Numeric Value |
 |---|---|---|
 | Common | 21 | 1 |
-| Uncommon | 52 | 2 |
+| Uncommon | 51 | 2 |
 | Rare | 66 | 3 |
-| Epic | 32 | 4 |
+| Epic | 34 | 4 |
 | Legendary | 6 | 5 |
 
 ## Index Ranges
@@ -79,7 +79,7 @@
 | Column | Type | Description |
 |---|---|---|
 | Name | string | Effect key (referenced by items.csv Effects column) |
-| Type | enum | `BONUS`, `STAT`, `ITEM`, `ITEM_DROPTABLE`, `STATE`, `ROOM`, `VIP`, `COOLDOWN`, `XP` |
+| Type | enum | `BONUS`, `STAT`, `CLEAR_BONUS`, `ITEM`, `ITEM_DROPTABLE`, `STATE`, `ROOM`, `VIP`, `COOLDOWN`, `XP` |
 | Descriptor | string | Specific stat/bonus being modified |
 | Index | uint32 | Item index (for ITEM type) or room index (for ROOM type) |
 | Value | int | Magnitude of the effect (can be negative) |
@@ -91,7 +91,8 @@
 | Type | Description | Example |
 |---|---|---|
 | BONUS | Temporary combat/harvest bonuses | `BOUNTY+25%` → +250 HARV_BOUNTY_BOOST, removed on next harvest |
-| STAT | Permanent or equipment stat changes | `HP+50` → restore 50 HP; `E_POWER+5` → +5 Power while equipped |
+| STAT | Permanent or equipment stat changes; HP/SP point restores | `HP+50` → restore 50 HP; `SP+80` → restore 80 Stamina; `E_POWER+5` → +5 Power while equipped |
+| CLEAR_BONUS | Clears all temporary bonuses on the target | `CLEARALL` → wipes active temporary effects (Cleaning Fluid) |
 | ITEM | Gives an item as side effect | `ITEM1003` → gives 1x Plastic Bottle (empty container return) |
 | ITEM_DROPTABLE | Rolls a droptable | `DT Mochibox` → random Mochi from DT Mochibox table |
 | STATE | Changes Kami state | `STATE-RESTING` → sets state to RESTING (used by revive items) |
@@ -135,3 +136,15 @@ Tier weights determine drop probability: `P(item) = tier / sum(all tiers)`.
 - Effects → Items: `ITEM` type effects reference other items by index
 - Droptables → Items: `droptables.csv:Indices` reference `items.csv:Index`
 - Room droptables (in `catalogs/rooms/`) are separate from item droptables — room droptables define scavenging/node drops, while these define lootbox contents
+
+## Known Discrepancies
+
+> ⚠️ **UNCERTAIN / source bug — Cultivation III Spell Card (11213).** Its
+> `Effects` column references the effect key `XP+10000`, but **no `XP+10000`
+> row exists in `effects.csv`** (`allos.csv` in source). Allo resolution is an
+> exact name-match (`LibBonus`/`addAllos`): an unmatched key is logged as an
+> error and **skipped** at deploy. As written, Cultivation III therefore grants
+> only its `HP+100` effect — the intended 10,000 XP would not apply until an
+> `XP+10000` effect/allo is added. The item description ("grant 10000 XP")
+> reflects the design intent. Source: `items.csv` row 11213 vs `allos.csv`
+> (no `XP+10000`); `deployment/world/state/items/allos.ts:30–33`.

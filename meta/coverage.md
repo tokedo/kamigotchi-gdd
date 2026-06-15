@@ -88,3 +88,37 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 | Commit-reveal pattern | ✅ | `LibCommit.sol` | [commit-reveal.md](../mechanics/utility/commit-reveal.md) |
 | Flag system | ✅ | `LibFlag.sol` | [flags.md](../mechanics/utility/flags.md) |
 | NPC system | ✅ | `LibNPC.sol` | [npcs.md](../mechanics/utility/npcs.md) |
+
+## Sync Notes & Open Flags
+
+### 2026-06-15 — sync `0af5d9f..91f69796` (27 commits)
+
+Mechanics touched and re-extracted:
+
+- **Harvesting** — starve cutoff: bounty now capped at `calcMaxMusu` (inverse
+  strain). Strain formula + cap documented in `harvesting.md`.
+- **Bonuses** — new `UPON_COOLDOWN_SET` end type (Energy Drink), consumed on
+  every cooldown reset; `END_TYPE_PREFIX` corrected `ON_UNEQUIP_`→`UPON_UNEQUIP_`.
+- **Equipment** — new `unequipAll`; force-unequip on every ownership-change path
+  (send, list, market sale, bridge-out, sacrifice, gacha reroll).
+- **Token Portal** — global enable/disable toggle (`isEnabled`/`adminToggleEnabled`);
+  claim reads token address from Portal registry (overrides receipt → token
+  migration semantics).
+- **Newbie Vendor** — proceeds routed to `KAMI_MARKET_FEE_RECIPIENT`
+  (`0x3d7f…2872`), fallback to vendor address.
+- **Marketplace** — accept-offer custom errors + simplified batch fee.
+- **Temple of the Wheel** — temporary account-833 blocker removed (rooms 19/59
+  now In Game; node 19 open).
+- **Catalogs** — quest CSVs re-copied verbatim (192 quests; Act IV MSQ105-109 +
+  Ring-of-Spirits SQ100-118 lines now live); items/effects/recipes/rooms updated.
+
+### Open flags
+
+- ⚠️ **`XP+10000` undefined allo** — Cultivation III Spell Card (11213)
+  references effect `XP+10000`, which is **not defined** in `effects.csv`/
+  `allos.csv`. Unmatched allos are skipped at deploy, so the card currently
+  grants only `HP+100`. See [items README → Known Discrepancies](../catalogs/items/README.md#known-discrepancies).
+- 📝 **Quest-line graph** — `catalogs/quests/quest-lines.md` side-quest chains
+  for the new SQ028-045 / SQ100-118 / SQ802-803 lines were reconstructed from
+  the `Requirements` column (best-effort edges); the source-of-truth CSVs are
+  fully synced, but a deeper narrative pass over the new lines is worthwhile.

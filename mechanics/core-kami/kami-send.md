@@ -1,6 +1,6 @@
 # Kami Send (In-Game Transfer)
 
-> Source: `packages/contracts/src/systems/KamiSendSystem.sol` (L1–84)
+> Source: `packages/contracts/src/systems/KamiSendSystem.sol` (L1–88)
 
 ## Overview
 
@@ -18,15 +18,18 @@ bypasses the marketplace.
 4. For each Kami:
    a. Verify Kami is owned by sender and in `RESTING` or `LISTED` state
    b. If Kami is `LISTED`, cancel all marketplace listings
-   c. Reassign ownership to target account
-   d. Set state to `RESTING`
-   e. Apply **purchase cooldown** (default: 1 hour, from
+   c. **Force-unequip all items** back to the sender's inventory
+      (`LibEquipment.unequipAll`) — equipment stays with the sender, not the recipient
+   d. Reassign ownership to target account
+   e. Set state to `RESTING`
+   f. Apply **purchase cooldown** (default: 1 hour, from
       `KAMI_MARKET_PURCHASE_COOLDOWN` config)
-   f. Log `KAMI_SEND` and emit event
+   g. Log `KAMI_SEND` and emit event
 
-Supports batch sending of multiple Kamis in one transaction.
+Supports batch sending of multiple Kamis in one transaction. See
+[Equipment → Force-Unequip on Ownership Change](../economy/equipment.md#force-unequip-on-ownership-change).
 
-> Source: `KamiSendSystem.sol:39–74`
+> Source: `KamiSendSystem.sol:39–77`
 
 ## Cooldown
 

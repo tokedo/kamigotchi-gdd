@@ -3,13 +3,13 @@
 Technical Game Design Document for [Kamigotchi](https://kamigotchi.io/) — a
 pure on-chain MMORPG on Yominet.
 
-Extracted from source code at commit `0af5d9f0`.
+Extracted from source code at commit `91f69796`.
 
 ## What's Here
 
 - `mechanics/` — 48 mechanic files covering all game systems with formulas,
   configs, and source citations
-- `catalogs/` — complete game data: 177 items, 71 skills, 155 quests, 70 rooms,
+- `catalogs/` — complete game data: 178 items, 71 skills, 192 quests, 70 rooms,
   64 nodes, 135 traits, 41 recipes, 3 factions, 2 NPCs
 - `meta/` — coverage tracker, sync status, next steps
 
@@ -20,10 +20,10 @@ this directory and paste the following prompt:
 
 ```
 The Kamigotchi source repo is at /tmp/kamigotchi (pull latest first with
-git -C /tmp/kamigotchi pull). Our GDD was scribed against commit 0af5d9f0.
+git -C /tmp/kamigotchi pull). Our GDD was scribed against commit 91f69796.
 
-1. Run: git -C /tmp/kamigotchi log 0af5d9f0..HEAD --oneline
-2. If there are new commits, run: git -C /tmp/kamigotchi diff 0af5d9f0..HEAD --stat
+1. Run: git -C /tmp/kamigotchi log 91f69796..HEAD --oneline
+2. If there are new commits, run: git -C /tmp/kamigotchi diff 91f69796..HEAD --stat
 3. For any changed files in src/libraries/, src/systems/, or deployment/world/state/,
    read the diffs and compare against our GDD files in mechanics/ and catalogs/
 4. Produce a report:

@@ -41,9 +41,9 @@ START → [accruing bounty, taking strain] → COLLECT (partial) or STOP (full)
 4. Create or reuse harvest entity, link to node
 5. Set up tax (if `taxAmt > 0`, the `taxerID` receives that % of output)
 6. Set Kami state → `HARVESTING`
-7. Start cooldown
+7. Start cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
 
-> Source: `HarvestStartSystem.sol:24–65`
+> Source: `HarvestStartSystem.sol:24–57`
 
 ### Collect (`HarvestCollectSystem`)
 
@@ -57,10 +57,10 @@ Withdraws accrued bounty **without stopping** the harvest.
 3. Transfer items to account (and tax recipients)
 4. Grant **XP equal to collected amount** to the Kami
 5. Trigger scavenge chance (node-based loot roll)
-6. Reset cooldown
+6. Reset cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
 7. Reset harvest-action bonuses
 
-> Source: `HarvestCollectSystem.sol:92–120`
+> Source: `HarvestCollectSystem.sol:84–112`
 
 ### Stop (`HarvestStopSystem`)
 
@@ -76,7 +76,7 @@ Collects all accrued bounty **and ends** the harvest.
 5. Grant XP equal to collected amount
 6. Trigger scavenge chance
 7. Reset all harvest-stop bonuses
-8. Reset cooldown
+8. Reset cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
 9. Log harvest time
 
 > Source: `HarvestStopSystem.sol:88–123`
@@ -109,6 +109,55 @@ Config `KAMI_HARV_BOUNTY` = `[0, 9, 0, 0, 0, 0, 1000, 3]`
 > real-world harvest rates.
 
 > Source: `LibHarvest.sol:156–171`
+
+### Starve Cutoff (Bounty Cap by HP)
+
+The raw bounty above is **capped** so a Kami can never accrue more Musu than its
+**current HP** can physically sustain. This prevents a long-running harvest from
+generating bounty that would have starved the Kami to death before it could be
+collected.
+
+```
+Bounty = min(rawBounty, MaxMusu)
+```
+
+`MaxMusu` is the inverse of the strain formula — the largest Musu amount whose
+strain damage would not exceed current HP:
+
+```
+MaxMusu = floor(HP × Divisor / (core × boost))
+        = floor(HP × Precision × (Harmony + config[0]) / (core × boost))
+```
+
+Where (from `KAMI_HARV_STRAIN` = `[20, 0, 6500, 3, 0, 0, 1000, 3]`):
+- **core** = `config[2]` = 6500
+- **boost** = `config[6]` + `STND_STRAIN_BOOST` bonus = 1000 (+ bonus)
+- **Harmony** = Kami's total HARMONY stat
+- **config[0]** = 20 (denominator base — "hijacked" nudge, added to Harmony)
+- **Precision** = `10^(config[3] + config[7])` = `10^(3+3)` = 10^6
+
+If current HP ≤ 0, `MaxMusu` = 0. If `core × boost` = 0, no cap is applied.
+
+This is the exact inverse of strain (rounded the opposite way): collecting Musu
+inflicts strain damage, and the cap guarantees that damage tops out at current HP.
+
+> Source: `LibHarvest.sol:170–194` (`calcMaxMusu`), `LibKami.sol:155–170`
+> (`calcStrain`), `configs.ts:136`
+
+#### Strain (HP cost of harvesting)
+
+Each Musu collected inflicts HP **strain** (rounded up):
+
+```
+Strain = ceil(amt × core × boost / Divisor)
+       = ceil(amt × core × boost / (Precision × (Harmony + config[0])))
+```
+
+Higher **Harmony** increases the divisor, reducing strain per Musu (more Harmony
+= more Musu before starving). The starve cutoff above is this equation solved
+for `amt` at `Strain = HP`.
+
+> Source: `LibKami.sol:155–170`, `configs.ts:136`
 
 ### Worked Example
 
@@ -255,7 +304,7 @@ One harvesting Kami can raid another's active harvest if they share the same nod
 2. **Salvage** — victim retains a portion: `salvage = calcSalvage(victimID, bounty)`
 3. **Spoils** — killer steals a portion: `spoils = calcSpoils(killerID, bounty - salvage)`
 4. **Recoil** — killer takes HP damage: `recoil = calcRecoil(killerID, strain, karma)`
-5. Killer's cooldown resets
+5. Killer's cooldown resets (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink), and `UPON_LIQUIDATION` bonuses reset
 6. **Victim dies** — state → `DEAD`, HP → 0, harvest stops, all bonuses reset
 
 The victim's **unsalvaged, unspoiled bounty is destroyed** (not transferred).

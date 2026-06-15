@@ -1,7 +1,7 @@
 # Kami Marketplace
 
-> Source: `packages/contracts/src/libraries/LibKamiMarket.sol` (L1–503),
-> `packages/contracts/src/systems/KamiMarketListSystem.sol` (L1–56),
+> Source: `packages/contracts/src/libraries/LibKamiMarket.sol` (L1–513),
+> `packages/contracts/src/systems/KamiMarketListSystem.sol` (L1–58),
 > `packages/contracts/src/systems/KamiMarketBuySystem.sol` (L1–92),
 > `packages/contracts/src/systems/KamiMarketOfferSystem.sol` (L1–70),
 > `packages/contracts/src/systems/KamiMarketAcceptOfferSystem.sol` (L1–172),
@@ -85,11 +85,12 @@ When `Balance` reaches 0, the order is automatically marked as FILLED.
 1. Verify marketplace is enabled
 2. Verify Kami is RESTING and owned by the caller
 3. Verify Kami is not soulbound (`LibSoulbound.verify`)
-4. Set Kami state to `LISTED`
-5. Create listing entity
-6. Emit `KAMI_MARKET_LIST` event, log `KAMI_MARKET_LIST`
+4. **Force-unequip all items** back to the seller's inventory (`LibEquipment.unequipAll`)
+5. Set Kami state to `LISTED`
+6. Create listing entity
+7. Emit `KAMI_MARKET_LIST` event, log `KAMI_MARKET_LIST`
 
-> Source: `KamiMarketListSystem.sol:18–43`
+> Source: `KamiMarketListSystem.sol:18–44`
 
 ### Buying a Listing
 
@@ -132,19 +133,30 @@ No WETH is transferred — the offer relies on pre-approval of the
 For **specific offers**:
 1. Verify Kami index matches the offer's target
 2. If Kami is LISTED, cancel all its listings first
-3. Reassign Kami ownership, set RESTING, apply cooldown
-4. Pull WETH from buyer via vault: `vault.transferWETH(buyer, seller, price - fee)`
-5. Transfer fee to fee recipient
+3. **Force-unequip all items** back to the seller's inventory (`LibEquipment.unequipAll`)
+4. Reassign Kami ownership, set RESTING, apply cooldown
+5. Pull WETH from buyer via vault: `vault.transferWETH(buyer, seller, price - fee)`
+6. Transfer fee to fee recipient
 
 For **collection offers** (single or batch):
 1. Verify quantity remaining is sufficient
-2. For each Kami: verify ownership, cancel listings if needed, reassign
+2. For each Kami: verify ownership, cancel listings if needed, **force-unequip
+   all items to the seller**, reassign
 3. Decrement offer balance (auto-fill if balance reaches 0)
-4. Batched WETH transfers for efficiency
+4. Batched WETH transfers for efficiency: a single per-Kami fee is computed once
+   and multiplied by the batch count (`feePerKami × batchCount`)
+
+All three fill paths (`fillOffer`, `fillCollectionOffer`, `fillListing`) call
+`unequipAll` before reassigning ownership — equipment never transfers with a
+sold Kami. See [Equipment → Force-Unequip on Ownership Change](../economy/equipment.md#force-unequip-on-ownership-change).
+
+Accept-offer validation now reverts with **custom errors**
+(`KamiMarketAcceptKamiMismatch`, `KamiMarketAcceptInvalidOrderType`,
+`KamiMarketAcceptEmptyBatch`) instead of string messages.
 
 All sales feed the TWAP oracle via `LibTWAP.poke(price)`.
 
-> Source: `KamiMarketAcceptOfferSystem.sol:50–171`
+> Source: `KamiMarketAcceptOfferSystem.sol:50–171`, `LibKamiMarket.sol:125–188`
 
 ## Cancellation
 

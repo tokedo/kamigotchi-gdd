@@ -11,40 +11,39 @@ See `mechanics/progression/quests.md` for how the quest system works
 
 ## Summary
 
-**155 quests total** across 4 categories:
+**192 quests total** across 4 categories:
 
 | Category | Key Prefix | Index Range | Count | Primary Giver |
 |----------|-----------|-------------|-------|---------------|
-| Main Story | MSQ | 1-109 | 109 | MENU (52), MINA (54), DIMIDIATUS (3) |
-| Mina Line | MIN | 2001-2016 | 16 | MINA |
-| Side Quests | SQ | 3001-3998 | 24 | MENU (14), MINA (8), ROB (2) |
+| Main Story | MSQ | 1-109 | 109 | MENU (65), MINA (41), DIMIDIATUS (3) |
+| Mina Line | MIN | 2001-2016 | 16 | MINA (16) |
+| Side Quests | SQ | 3001-3998 | 60 | MENU (27), MINA (18), ROB (9), ZEVANA (5), DIMIDIATUS (1) |
 | Event/Misc | SQ999/SQ997 | 10002-10003 | 2 | MENU / unset |
 | Test | test-* | 1000000-1000004 | 5 | unset |
 
 > Note: Both MSQ and MIN quests have Type=MAIN in the data. The MIN quests
 > form a distinct parallel storyline given exclusively by Mina, focused on
 > crafting education and the Elders faction. They are separated here for
-> clarity. Combined MAIN type count: 125. Combined SIDE type count: 24.
+> clarity. Combined MAIN type count: 128. Combined SIDE type count: 58.
 > Remaining 6 have no type set (event + test quests).
 
 ### By Status
 
 | Status | Count |
 |--------|-------|
-| In Game | 139 |
-| To Deploy | 5 |
-| To Update Text | 4 |
-| To Update | 2 |
+| In Game | 181 |
+| To Deploy | 6 |
 | Test | 5 |
 
 ### By Giver
 
 | Giver | Count |
 |-------|-------|
-| MENU | 79 |
-| MINA | 65 |
-| DIMIDIATUS | 3 |
-| ROB | 2 |
+| MENU | 93 |
+| MINA | 75 |
+| ROB | 9 |
+| ZEVANA | 5 |
+| DIMIDIATUS | 4 |
 | (unset) | 6 |
 
 ### Quest Features
@@ -60,10 +59,10 @@ See `mechanics/progression/quests.md` for how the quest system works
 
 | File | Rows | Description |
 |------|------|-------------|
-| `quests.csv` | 155 quests | Full quest definitions: key, index, status, title, type, giver, dialogues, requirements, objectives, rewards |
-| `objectives.csv` | 167 objectives | Objective definitions: description, operator, delta type, tracking type, index, value |
-| `requirements.csv` | 159 requirements | Prerequisite definitions: quest completions, item ownership, room presence, time windows |
-| `rewards.csv` | 55 rewards | Reward definitions: items, reputation, flags |
+| `quests.csv` | 192 quests | Full quest definitions: key, index, status, title, type, giver, dialogues, requirements, objectives, rewards |
+| `objectives.csv` | 201 objectives | Objective definitions: description, operator, delta type, tracking type, index, value |
+| `requirements.csv` | 200 requirements | Prerequisite definitions: quest completions, item ownership, room presence, time windows |
+| `rewards.csv` | 66 rewards | Reward definitions: items, reputation, flags |
 | `quest-lines.md` | — | Quest chain map showing all prerequisite links, storyline branches, and convergence points |
 | `dialogues/` | — | NPC dialogue data (see below) |
 
@@ -76,7 +75,7 @@ See `mechanics/progression/quests.md` for how the quest system works
 - `Index`: Numeric ID used on-chain (1-109, 2001-2016, 3001-3998, 10002-10003, 1000000-1000004)
 - `Status`: Deployment state (In Game, To Deploy, To Update Text, To Update, Test)
 - `Daily`: Yes/No — whether the quest is repeatable daily
-- `Giver`: The NPC or system that presents the quest (MENU, MINA, DIMIDIATUS, ROB)
+- `Giver`: The NPC or system that presents the quest (MENU, MINA, DIMIDIATUS, ROB, ZEVANA)
 - `Introduction Dialogue` / `Resolution Dialogue`: Full NPC dialogue text with speaker tags
 - `Requirements`: Comma-separated prerequisite IDs referencing `requirements.csv` entries
 - `Objectives`: Comma-separated objective descriptions referencing `objectives.csv` entries
@@ -123,8 +122,10 @@ The main story (MSQ) progresses through four acts:
    parallel branches exploring different cave areas, the Crystal Set sub-arc,
    Dowsing Rod discovery quests, and the "Ordinary Intermediate Potion
    Crafting" series
-4. **Act IV — Temple of the Wheel** (MSQ105-MSQ109): Not yet deployed.
-   Introduces Dimidiatus as quest giver
+4. **Act IV — Temple of the Wheel** (MSQ105-MSQ109): Now **In Game**.
+   Introduces Dimidiatus as quest giver. Titles: "The Turning of the Wheel",
+   "Two Faces Under One Hood", "Get a Foot In The Door", "Treat Yourself",
+   "Remain Unburdened of Attachments"
 
 ### Mina's Parallel Line
 
@@ -142,8 +143,18 @@ main story at two critical junctures:
 - **Crafting education** (SQ010-SQ014): Advanced hex/potion crafting
 - **Economy** (SQ009, SQ012-SQ013): Spending at Mina's shop
 - **Obols chain** (SQ015-SQ016): Mystery currency investigation
-- **Annfwn quests** (SQ017-SQ022): Other-world treasure room exploration,
+- **Annfwn / Rob quests** (SQ017-SQ022): Other-world treasure room exploration,
   introduces Rob as quest giver
+- **Adoption / trading line** (SQ028-SQ045): ZEVANA's Kami Adoption Agency
+  errands, trading chains ("Trading Lunches", "Container Deposit"), Rookie
+  Training, and the "Resonant" cave-bell quests
+- **Spirit / Ring of Spirits line** (SQ100-SQ118): speaking with lost souls —
+  "Get the Story Straight I-III", "Call Your Grandparents", "Look Who's
+  Talking", "My Ears Are Burning". Tied to the **Ring of Spirits** key item
+  (22802). SQ113-SQ118 ("Airing it Out", "Conditioned Environment", "Dry
+  Conversation", "Lost and Found", "Trash Pickers", "Janitorial Supplies") are
+  **To Deploy**
+- **Diagnostics** (SQ802-SQ803): "Quest Diagnostics", "Never Brought to Mind"
 - **Special** (SQ998, SQ997, SQ999): Conditional/event quests
 
 ---

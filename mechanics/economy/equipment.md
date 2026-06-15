@@ -1,6 +1,6 @@
 # Equipment
 
-> Source: `packages/contracts/src/libraries/LibEquipment.sol` (L1–262),
+> Source: `packages/contracts/src/libraries/LibEquipment.sol` (L1–279),
 > `packages/contracts/src/systems/KamiEquipSystem.sol` (L1–44),
 > `packages/contracts/src/systems/KamiUnequipSystem.sol` (L1–39)
 
@@ -93,11 +93,37 @@ Kamis must be in `RESTING` state to equip.
 `LibEquipment.unequip(world, components, holderID, inventoryID, slot)`:
 
 1. **Get equipment instance** from the slot
-2. **Clear bonuses** — unassign all bonuses with end type `ON_UNEQUIP_{SLOT}`
+2. **Clear bonuses** — unassign all bonuses with end type `UPON_UNEQUIP_{SLOT}`
 3. **Remove equipment instance** — delete the ECS entity
 4. **Return to inventory** — add 1 of the item back to the inventory
 
-> Source: `LibEquipment.sol:132–155`
+Single-slot unequip and bulk `unequipAll` share the internal `_unequipByID`
+helper (reads the item index + slot, clears bonuses, removes the instance,
+returns the item).
+
+> Source: `LibEquipment.sol:132–155, 240–253`
+
+## Force-Unequip on Ownership Change
+
+`LibEquipment.unequipAll(components, holderID, inventoryID)` strips **every**
+equipped item from a Kami and returns each to the given inventory. It is called
+on every path that changes a Kami's ownership or removes it from the world, so
+equipment never travels with a Kami across owners. Returned items always go to
+the **previous owner / seller**.
+
+| Path | System / Library | When |
+|---|---|---|
+| Direct transfer | `KamiSendSystem` | Sending a Kami to another account |
+| Marketplace list | `KamiMarketListSystem` | Listing a Kami for sale |
+| Marketplace sale | `LibKamiMarket.fillOffer` / `fillCollectionOffer` / `fillListing` | Offer/listing filled (ownership → buyer) |
+| Bridge out | `Kami721UnstakeSystem` | Unstaking the ERC-721 out of the world |
+| Sacrifice | `LibSacrifice` | Burning a Kami in the sacrifice ritual |
+| Gacha reroll | `KamiGachaRerollSystem` | Depositing Kamis into the gacha pool |
+
+> Source: `LibEquipment.sol:224–256`, `KamiSendSystem.sol:62`,
+> `KamiMarketListSystem.sol:34`, `LibKamiMarket.sol:128–188`,
+> `Kami721UnstakeSystem.sol:46`, `LibSacrifice.sol:84`,
+> `KamiGachaRerollSystem.sol:28–31`
 
 ## Equipment Instance Shape
 
@@ -114,8 +140,10 @@ Entity ID: `keccak256("equipment.instance", holderID, slot)` — one per holder 
 
 ## Bonus Lifecycle
 
-Equipment bonuses use the naming convention `ON_UNEQUIP_{SLOT}` as their end type.
-This means:
+Equipment bonuses use the naming convention `UPON_UNEQUIP_{SLOT}` as their end
+type (`END_TYPE_PREFIX = "UPON_UNEQUIP_"`; corrected from the earlier
+`ON_UNEQUIP_`, which mismatched the `UPON_UNEQUIP` terminators in the allo
+catalog and left bonuses uncleared). This means:
 - On equip: bonuses are assigned as temporary bonuses to the holder
 - On unequip: all bonuses tagged with that slot's end type are cleared
 - Replacing equipment in the same slot properly clears old and applies new bonuses

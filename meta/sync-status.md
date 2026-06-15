@@ -5,9 +5,9 @@ Tracks which commit of the Kamigotchi source repo this GDD was last synced again
 | Field | Value |
 |---|---|
 | **Source repo** | `https://github.com/Asphodel-OS/kamigotchi` |
-| **Pinned commit** | `0af5d9f040eaf1160b99d484e0140995c651f61e` |
-| **Commit message** | `Fix: ATK_RECOIL_BOOST sign inversion in new recoil formula (#2400)` |
-| **Sync date** | 2026-03-31 |
+| **Pinned commit** | `91f69796627d38a678889b2b2bac103a79d3c68a` |
+| **Commit message** | `add new spirit ring quests (#2423)` |
+| **Sync date** | 2026-06-15 |
 | **Synced by** | Scribe Agent (sync) |
 
 ## How to clone at pinned commit
@@ -16,7 +16,7 @@ Always clone at the pinned commit to ensure line numbers and logic match the GDD
 
 ```bash
 git clone https://github.com/Asphodel-OS/kamigotchi /tmp/kamigotchi
-git -C /tmp/kamigotchi checkout 0af5d9f040eaf1160b99d484e0140995c651f61e
+git -C /tmp/kamigotchi checkout 91f69796627d38a678889b2b2bac103a79d3c68a
 ```
 
 ## How to handle source repo updates
@@ -38,3 +38,4 @@ This keeps the GDD internally consistent at all times.
 |---|---|---|---|
 | 2026-03-24 | `d9b5009` | Full repo clone | Initial survey + began Phase 1 Core Kami extraction |
 | 2026-03-31 | `0af5d9f` | `d9b5009..0af5d9f` (3 commits) | Recoil formula rewrite: Karma→Gaussian CDF multiplier, new Recoil Efficacy (affinity nudge), multiplicative recoil formula, DEF_RECOIL_BOOST bonus, KAMI_LIQ_KARMA_EFFICACY config. Co-op re-added to Black Pool dialogue. |
+| 2026-06-15 | `91f6979` | `0af5d9f..91f6979` (27 commits) | Harvest starve cutoff (`calcMaxMusu` inverse-strain bounty cap, #2368); `UPON_COOLDOWN_SET` bonus end type for Energy Drink (#2356); force-unequip on all kami ownership-change paths + `unequipAll` + `ON_UNEQUIP_`→`UPON_UNEQUIP_` prefix fix (#2406, #2408); Token Portal enable/disable toggle + claim address-override / onyx migration (#2415, #2417); newbie-vendor proceeds → marketplace fee recipient `KAMI_MARKET_FEE_RECIPIENT` (#2410, #2414); accept-offer custom errors + batch-fee simplification (#2407); Temple of the Wheel account-833 blocker removed, rooms 19/59 live (#2404). Catalogs: quest CSVs re-copied verbatim (155→192 quests; Act IV + Ring-of-Spirits lines live, #2311/#2421/#2422/#2423); items (Ring of Spirits 22802, Cultivation Spell Card XP rebalance, status flips), effects (SP→STAT, CLEARALL→CLEAR_BONUS), recipes & rooms status flips. Flag: undefined `XP+10000` allo on Cultivation III. |
