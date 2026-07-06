@@ -60,9 +60,14 @@ Values are signed — bonuses can be negative (debuffs).
 
 ### Permanent
 
-- Anchored to a specific entity (skill instance, equipment instance)
+- Anchored to a specific entity (skill instance)
 - Stack via **level** — assigning the same bonus again increments level
-- Removed when the source is removed (e.g., unequipping, respecing skill)
+- Removed when the source is removed (e.g., respecing skill)
+- Equipment bonuses are **not** permanent: `LibEquipment.equip` assigns them
+  via `LibBonus.assignTemporary` with an `UPON_UNEQUIP_{SLOT}` end anchor
+  (`LibEquipment.sol:121–124`) — see the end-type table below. (The
+  `LibBonus.sol:30` header comment lists "equip" as a permanent anchor, but
+  the code path does not.)
 
 ### Temporary
 
@@ -90,21 +95,35 @@ Values are signed — bonuses can be negative (debuffs).
 | `UPON_DEATH` | Kami dies | Death-triggered effects |
 | `UPON_KILL_OR_KILLED` | Kill or get killed | Combat-round effects |
 | `UPON_LIQUIDATION` | Liquidate another Kami | Post-kill effects |
-| `UPON_COOLDOWN_SET` | Cooldown is (re)set — harvest start/stop/collect, liquidation | Cooldown buffs (Energy Drink) |
+| `UPON_COOLDOWN_SET` | Cooldown is (re)set — harvest start/stop/collect, liquidation | *(no deployed bonus uses this)* |
 | `UPON_UNEQUIP_{SLOT}` | Unequip from slot | Equipment stat bonuses |
 | `TIMED` | Duration expires | Timed consumable buffs |
 
-> `UPON_COOLDOWN_SET` was added so cooldown-modifying buffs (e.g. **Energy
-> Drink**, `STND_COOLDOWN_SHIFT`) are consumed exactly when a cooldown is set,
-> then cleared. Every cooldown-reset path calls `resetUponCooldownSet`:
-> harvest start, collect, stop, and liquidation.
+> Every cooldown-reset path calls `resetUponCooldownSet`: harvest start
+> (`HarvestStartSystem.sol:54`), collect (`HarvestCollectSystem.sol:89`), stop
+> (`HarvestStopSystem.sol:99`), and liquidation
+> (`HarvestLiquidateSystem.sol:81`). However, **no bonus in the deployed
+> catalog registers `UPON_COOLDOWN_SET` as its terminator**, so the hook
+> currently clears nothing. **Energy Drink**'s `STND_COOLDOWN_SHIFT` −30 buff
+> is registered with terminator `UPON_HARVEST_ACTION`
+> (`deployment/world/data/items/allos.csv:11`; item 11409 at `items.csv:111`
+> carries the `BYPASS_BONUS_RESET` flag, so feeding it does not itself clear
+> `UPON_HARVEST_ACTION` bonuses — `KamiUseItemSystem.sol:35–37`).
 
-> The unequip end-type prefix was corrected from `ON_UNEQUIP_` to
-> `UPON_UNEQUIP_` so that generated end types match the `UPON_UNEQUIP`
-> terminators used in the item/allo catalog (previously equipment bonuses were
-> not cleared on unequip).
+> ⚠️ **SUSPECTED UPSTREAM DATA BUG**: the deployment pipeline registers *all*
+> item bonus allos — including equipment bonuses — under the `USE` use case
+> with the bare terminator string from the catalog (`UPON_UNEQUIP`, no slot
+> suffix) (`deployment/world/state/items/allos.ts:64`,
+> `deployment/world/data/items/allos.csv:6–35`). Equipping reads the `EQUIP`
+> use-case anchor (`LibEquipment.getEquipBonusAlloID`,
+> `LibEquipment.sol:216–225`) and finds no registry entries there, so
+> `assignTemporary` attaches nothing (`LibBonus.sol:182–183`); even if
+> attached, the bare `UPON_UNEQUIP` terminator would not match the
+> `UPON_UNEQUIP_{SLOT}` end type cleared on unequip (`LibEquipment.sol:48,
+> 252, 276–278`). Per source data, catalog equipment bonuses neither attach
+> on equip nor clear on unequip.
 
-> Source: `LibBonus.sol:308–349`, `LibEquipment.sol:48` (`END_TYPE_PREFIX`)
+> Source: `LibBonus.sol:308–350`, `LibEquipment.sol:48` (`END_TYPE_PREFIX`)
 
 ## Known Bonus Types
 
@@ -129,12 +148,14 @@ Used across combat, harvesting, and stat systems:
 
 ## Clear All
 
-The `clearAll()` function removes all **temporary** bonuses from a holder
-(UPON_HARVEST_STOP, UPON_COOLDOWN_SET, UPON_DEATH, UPON_KILL_OR_KILLED,
-UPON_LIQUIDATION, TIMED). Permanent bonuses and UPON_UNEQUIP bonuses are not
+The `clearAll()` function removes all **temporary** bonuses from a holder. It
+clears exactly these end types: `UPON_HARVEST_ACTION` and `UPON_HARVEST_STOP`
+(both via `resetUponHarvestStop`, `LibBonus.sol:314–317`),
+`UPON_COOLDOWN_SET`, `UPON_DEATH`, `UPON_KILL_OR_KILLED`, `UPON_LIQUIDATION`,
+and `TIMED`. Permanent bonuses and `UPON_UNEQUIP_{SLOT}` bonuses are not
 affected. Used by the "Cleaning Fluid" item to reset active temporary effects.
 
-> Source: `LibBonus.sol:337–351`
+> Source: `LibBonus.sol:341–350`
 
 ## Query Patterns
 

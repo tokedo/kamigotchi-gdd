@@ -30,7 +30,7 @@ See `catalogs/quests/` for the full quest data files.
 | `Name` | Display name |
 | `Description` | Quest description text |
 | `DescriptionAlt` | Resolution/end text |
-| `Type` | Quest type: `"MAIN"`, `"SIDE"`, `"FACTION"`, etc. |
+| `Type` | Quest type: `"MAIN"` or `"SIDE"` (a few quests have no type) |
 | `Subtype` | Quest giver: `"MENU"`, `"MINA"`, etc. |
 | `Disabled` | Initially `true` — must be enabled to accept |
 | `Flag REPEATABLE` | (optional) Marks quest as repeatable |
@@ -170,15 +170,17 @@ Most quests require completion of the previous quest in the main story chain.
 
 1. Verify quest is valid, enabled, owned by caller, not completed
 2. Remove quest instance entity and all snapshot data
-3. The player can re-accept the quest later (if non-repeatable: only if not
-   previously accepted — dropping does not reset acceptance)
+3. Dropping **fully resets acceptance**, even for non-repeatable quests:
+   `drop` erases the instance's `EntityType` (`LibQuest.sol:97–104`), so
+   `getAccQuestIndex` returns 0 afterward (`LibQuest.sol:338–345`) and the
+   accept-time guard `questID != 0` (`QuestAcceptSystem.sol:33`) passes again.
+   A dropped quest can be re-accepted and completed for rewards as if it had
+   never been accepted. Completed quests cannot be dropped
+   (`verifyNotCompleted`, `QuestDropSystem.sol:23`), so rewards cannot be
+   collected twice this way.
 
-> ⚠️ UNCERTAIN: The drop function removes the entity entirely (`LibEntityType.remove`),
-> which may allow re-acceptance of non-repeatable quests since `getAccQuestIndex`
-> checks entity type existence. The `QuestAcceptSystem` checks `questID != 0`
-> which would return 0 after entity removal. Needs verification.
-
-> Source: `QuestDropSystem.sol:16–29`, `LibQuest.sol:97–104`
+> Source: `QuestDropSystem.sol:15–30`, `LibQuest.sol:97–104, 338–345`,
+> `QuestAcceptSystem.sol:33`
 
 ## Rewards
 
@@ -197,17 +199,21 @@ Reward anchor: `keccak256("registry.quest.reward", questIndex)`
 
 ## Quest Data Summary
 
-The game has **~130+ quests** across multiple categories:
+The catalog contains **192 quests** — 181 In Game, 6 To Deploy, 5 Test:
 
-| Type | Index Range | Giver | Description |
-|---|---|---|---|
-| MAIN | 1–108 | MENU | Main story quests (MSQ001–MSQ108) |
-| FACTION (Mina) | 2001–2016 | MINA | Mina's faction quests (MIN001–MIN016) |
-| SIDE | 3001–3024+ | Various | Side quests (SQ001–SQ024+) |
-| TEST | 10001–10003 | — | Test quests (TTX01–TTX03) |
+| Type | Indices | Keys | Givers | Description |
+|---|---|---|---|---|
+| MAIN | 1–109 | MSQ001–MSQ109 | MENU (65), MINA (41), DIMIDIATUS (3) | Main story chain |
+| MAIN | 2001–2016 | MIN001–MIN016 | MINA | Mina's quest line |
+| MAIN | 3100–3102 | SQ100–SQ102 | MENU, MINA | Side-numbered but typed MAIN |
+| SIDE | 3001–3022, 3028–3045, 3104–3118, 3802–3803, 3998, 10003 | SQ001–SQ118, SQ802–SQ803, SQ998, SQ997 | MENU (27), MINA (16), ROB (9), ZEVANA (5), DIMIDIATUS (1) | Side quests (58 total; 3113–3118 are Status=To Deploy) |
+| (no type) | 10002, 1000000–1000004 | SQ999, test-0…test-4 | — | SQ999 ("Claim Your Free Gift!") is live; test-0…test-4 are Status=Test |
+
+There is **no `FACTION` quest type** — Mina's MIN quests are `Type=MAIN` with
+`Giver=MINA`. Indices 10002 (SQ999) and 10003 (SQ997) are live quests, not
+test entries. The only `Daily=Yes` quest is test-0.
 
 Most main quests are sequential — each requires completion of the previous one.
-Faction quests (MINA) are unlocked through specific main quest requirements.
 
 > Source: `data/quests/quests.csv`
 

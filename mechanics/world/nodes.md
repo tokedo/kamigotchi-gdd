@@ -23,7 +23,7 @@ See `catalogs/rooms/nodes.csv` for the full node catalog.
 | `IndexRoom` | Room this node belongs to |
 | `Name` | Display name |
 | `Description` | Flavor text |
-| `Affinity` | (optional) Node affinity: `NORMAL`, `EERIE`, `SCRAP`, `INSECT`, or compound (e.g., `"EERIE, SCRAP"`) |
+| `Affinity` | (optional) Node affinity: `NORMAL`, `EERIE`, `SCRAP`, `INSECT`, or compound (e.g., `"EERIE-SCRAP"`) |
 
 Entity ID: `keccak256("node", nodeIndex)`
 
@@ -52,9 +52,12 @@ full efficacy formula).
 
 **Affinity validation rule**: A node cannot combine `NORMAL` with a typed
 affinity (e.g., `"NORMAL-EERIE"` is invalid). Compound affinities must be
-two typed affinities (e.g., `"EERIE, SCRAP"` is valid).
+two typed affinities (e.g., `"EERIE-SCRAP"` is valid). The on-chain format
+is hyphen-separated — `isValidAffinity` splits on `"-"` (`LibNode.sol:164`),
+and deployment converts the CSV's comma format via `.replace(',', '-')`
+(`deployment/world/state/rooms/nodes.ts:11`).
 
-> Source: `LibNode.sol:163–167`
+> Source: `LibNode.sol:163–167`, `nodes.ts:11`
 
 ## Node Bonuses
 
@@ -104,16 +107,16 @@ practice, node indices correspond to room indices for harvest nodes.
 
 ## World Data
 
-The current world has **~63 harvest nodes** with the following affinity
+The current world has **64 in-game harvest nodes** with the following affinity
 distribution:
 
 | Affinity | Count | Examples |
 |---|---|---|
-| Normal | ~20 | Tunnel of Trees, Torii Gate, Forest paths |
-| Eerie | ~15 | Misty Riverside, Labs Entrance, Blooming Tree |
-| Insect | ~12 | Forest: Insect Node, Cave Crossroads, Centipedes |
-| Scrap | ~11 | Scrap Confluence, Scrapyard Entrance, Deeper Into Scrap |
-| Compound | ~5 | Techno Temple (Eerie+Scrap), Hatch to Nowhere (Insect+Scrap) |
+| Normal | 19 | Tunnel of Trees, Torii Gate, Forest paths |
+| Insect | 15 | Forest: Insect Node, Cave Crossroads, Centipedes |
+| Eerie | 14 | Misty Riverside, Labs Entrance, Blooming Tree |
+| Scrap | 12 | Scrap Confluence, Scrapyard Entrance, Deeper Into Scrap |
+| Compound | 4 | Techno Temple (Eerie-Scrap), Temple of the Wheel (Eerie-Scrap), Hatch to Nowhere (Insect-Scrap), Guardian Skull (Eerie-Insect) |
 
 Scavenge costs range from 100 to 500, with higher costs on more rewarding nodes.
 

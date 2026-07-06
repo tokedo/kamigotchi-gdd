@@ -38,7 +38,9 @@ On creation every Kami receives:
 | Skill Points | `1` | `LibKamiCreate.sol:102` |
 | Experience | `0` | `LibKamiCreate.sol:103` |
 
-Possible Kami states: `RESTING`, `HARVESTING`, `DEAD`, `721_EXTERNAL`
+Possible Kami states: `RESTING`, `HARVESTING`, `DEAD`, `721_EXTERNAL`, plus
+`LISTED` (marketplace listing — not in the `KamiState` enum but a real
+`StateComponent` value, set by `KamiMarketListSystem.sol:35`)
 
 > Source: `LibKamiCreate.sol:50–51, 96–104`
 
@@ -69,9 +71,17 @@ for each trait type i in [FACE, HAND, BODY, BACKGROUND, COLOR]:
     trait[i] = weightedRandomSelect(registeredTraits[type], traitSeed)
 ```
 
-The weight for each registered trait comes from its `RarityComponent` value.
-Higher rarity weight = more likely to be selected (weights are processed through
-`LibRandom.processWeightedRarity()`).
+The weight for each registered trait comes from its `RarityComponent` value,
+transformed as:
+
+```
+weight = 2^(rarity − 1)    (rarity 0 → weight 0, never selected)
+```
+
+via `LibRandom.calcRarityWeight` (`LibRandom.sol:32–34`). The rarity value is
+the CSV `Tier` column (`traits.ts:40`) — **higher tier = more common**, and
+each +1 tier doubles the selection weight (e.g. Common tier 9 → weight 256,
+Legendary tier 4 → weight 8).
 
 > Source: `LibKamiCreate.sol:106–114, 137–149`, `LibTraitRegistry.sol:246–253`
 
@@ -90,6 +100,10 @@ Each registered trait has:
 | `rarity` | uint256 | Weight for random selection (higher = more common) |
 | `affinity` | string | Affinity tag (used in harvesting efficacy) |
 
+`LibTraitRegistry.create` only stores stat deltas **greater than 0** — a zero or
+negative delta is dropped at registration (`LibTraitRegistry.sol:77–81`). All
+current trait CSV deltas are non-negative, so nothing is lost in practice.
+
 > Source: `LibTraitRegistry.sol:36–45`
 
 ### Trait Catalogs
@@ -98,11 +112,11 @@ The trait data is registered from CSVs at deployment:
 
 | CSV | Entries |
 |---|---|
-| `data/traits/bodies.csv` | 29 body types |
-| `data/traits/faces.csv` | 35 face types |
-| `data/traits/hands.csv` | 26 hand types |
-| `data/traits/colors.csv` | 13 color types |
-| `data/traits/backgrounds.csv` | 27 background types |
+| `data/traits/bodies.csv` | 30 body types |
+| `data/traits/faces.csv` | 36 face types |
+| `data/traits/hands.csv` | 27 hand types |
+| `data/traits/colors.csv` | 14 color types |
+| `data/traits/backgrounds.csv` | 28 background types |
 
 ## Initial Stats
 

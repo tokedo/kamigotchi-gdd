@@ -1,6 +1,6 @@
 # Newbie Vendor
 
-> Source: `packages/contracts/src/systems/NewbieVendorBuySystem.sol` (L1–186),
+> Source: `packages/contracts/src/systems/NewbieVendorBuySystem.sol` (L1–189),
 > `packages/contracts/src/libraries/LibTWAP.sol` (L1–60)
 
 ## Overview
@@ -158,4 +158,4 @@ Both `KamiMarketBuySystem` and `KamiMarketAcceptOfferSystem` call
 | `NEWBIE_VENDOR_CYCLE` | `172800` (48 hours) | Display rotation period in seconds |
 | `NEWBIE_VENDOR_TWAP_WINDOW` | `86400` (24 hours) | TWAP averaging window in seconds |
 
-> Source: `configs.ts:182–188`
+> Source: `configs.ts:195–201`

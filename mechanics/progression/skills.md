@@ -4,6 +4,7 @@
 > `packages/contracts/src/libraries/LibSkillRegistry.sol` (L1–215),
 > `packages/contracts/src/systems/SkillUpgradeSystem.sol` (L1–59),
 > `packages/contracts/src/systems/SkillRespecSystem.sol` (L1–59),
+> `packages/contracts/src/systems/KamiOnyxRespecSystem.sol` (L1–49),
 > `packages/contracts/deployment/world/data/skills/skills.csv`,
 > `packages/contracts/deployment/world/data/skills/effects.csv`
 
@@ -83,7 +84,7 @@ tree before skills at that tier become available:
 | 6 | 75 | `KAMI_TREE_REQ[6]` |
 | 7 | 95 | `KAMI_TREE_REQ[7]` |
 
-> Source: `configs.ts:173`, `LibSkill.sol:226–228`
+> Source: `configs.ts:186`, `LibSkill.sol:226–228`
 
 > **Index mapping caution**: this table is 0-indexed by config slot, while
 > `catalogs/skills/skills.csv` numbers tiers **1–6**. CSV tier N gates at
@@ -140,7 +141,15 @@ Skill points are gained from leveling up (see
 
 `SkillRespecSystem.execute(targetID)`:
 
-1. Verify ownership (account or Kami)
+1. Ownership/state checks depend on the target's entity type:
+   - **Kami target**: verify the Kami belongs to the caller's account
+     (`LibKami.verifyAccount`). There is **no resting requirement** — unlike
+     upgrades, a Kami can be respecced in any state
+     (`SkillRespecSystem.sol:32–33`)
+   - **Account target**: verify `targetID == accID`, then call
+     `LibKami.verifyState(targetID, "RESTING")` **on the account entity**
+     (`SkillRespecSystem.sol:34–38`). Accounts never have a `StateComponent`,
+     so the read reverts — account-targeted respec always fails
 2. Consume 1 **Respec Potion** (item index `11403`) from account inventory
 3. Apply potion allocations via `LibItem.applyAllos`
 4. Call `LibSkill.resetAll(targetID)`:
@@ -151,7 +160,31 @@ Skill points are gained from leveling up (see
    e. Add refunded points back to holder
 5. If Kami, sync stats after reset
 
-> Source: `SkillRespecSystem.sol:24–53`, `LibSkill.sol:69–87, 104–116`
+> ⚠️ UNCERTAIN: the `RESTING` check sits in the account branch yet carries the
+> comment "kami must be resting" (`SkillRespecSystem.sol:37`) and runs against
+> the account entity, where it always reverts. This looks like a check
+> intended for the Kami branch that was misplaced — suspected source bug.
+
+> Source: `SkillRespecSystem.sol:24–54`, `LibSkill.sol:69–87, 104–116`
+
+### Onyx Respec (dormant)
+
+`KamiOnyxRespecSystem.execute(kamiID)` offers a potion-free full skill reset
+for Onyx, but the system body begins with
+`revert("Onyx Features are temporarily disabled.")`
+(`KamiOnyxRespecSystem.sol:21`) — the same disabled state as the Onyx rename
+(see [naming.md](../core-kami/naming.md)). The flow behind the revert:
+
+1. Verify the Kami belongs to the caller's account
+2. Verify the Kami is `RESTING` (`KamiOnyxRespecSystem.sol:28`)
+3. Deduct **10,000 Onyx Shards** (item index `100`) from the account
+   (`PRICE`, `KamiOnyxRespecSystem.sol:14, 31`)
+4. `LibSkill.resetAll(kamiID)`, then `LibKami.sync` to resync stats
+5. Log `TOKEN_SPEND` (per-account and global) and `TOKEN_SPEND_RESPEC`
+   (global) for the Onyx index (`KamiOnyxRespecSystem.sol:39–41`)
+
+> Source: `KamiOnyxRespecSystem.sol:14–42`, `LibInventory.sol:27`
+> (`ONYX_INDEX = 100`)
 
 ## Skill Effects
 

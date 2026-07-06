@@ -87,6 +87,13 @@ Three separate droptables with different reward pools:
 Each droptable has `Keys` (item indices) and `Weights` (rarity weights),
 registered via `_SacrificeRegistrySystem`.
 
+Stored weights are **not** used linearly: before selection, each weight `w` is
+transformed to `2^(w−1)` (weight 0 stays 0) via
+`LibRandom.processWeightedRarityInPlace` (`LibSacrifice.sol:178`,
+`LibRandom.sol:28–34`) — selection probability is **exponential** in the
+stored value. See
+[droptables.md](../economy/droptables.md#weighted-selection).
+
 > Source: `LibSacrifice.sol:32–34, 272–280`
 
 ## Burn Mechanics

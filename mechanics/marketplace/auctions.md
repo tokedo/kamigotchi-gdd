@@ -93,7 +93,7 @@ Requirement anchor: `keccak256("auction.requirement", auctionID)`
 | Name | Sale Item | Currency | Supply | Target Price | Period | Decay | Rate | Start |
 |---|---|---|---|---|---|---|---|---|
 | Gacha ↔ Musu | Gacha Ticket (10) | MUSU (1) | 17,222 | 32,000 | 86,400s (1 day) | 0.75 | 32/day | 2025-05-16 |
-| Reroll ↔ Onyx | Reroll Token (11) | ONYX (100) | 100,000 | 50 | 86,400s (1 day) | 0.5 | 16/day | 2025-10-15 |
+| Reroll ↔ Onyx | Reroll Token (11) | ONYX (100) | 100,000 | 50 | 86,400s (1 day) | 0.5 | 16/day | 2025-10-16 |
 
 > Source: `data/auctions/auctions.csv`
 

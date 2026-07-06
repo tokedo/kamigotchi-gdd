@@ -28,7 +28,7 @@ plus 16 effect types.
 | Name | Display name |
 | Tree | Skill tree: Predator, Enlightened, Guardian, Harvester |
 | Tier | Tier level (1-6) |
-| Tree req | Tree points needed to unlock this tier (0, 5, 15, 25, 40, 55) |
+| Tree req | Tree points to unlock this tier **as shipped in the source CSV** (0, 5, 15, 20, 30, 40) — stale for tiers 4–6; see warning above and use the Tier Unlock table instead |
 | Max | Maximum ranks purchasable |
 | Cost | Skill points per rank |
 | Effect | Effect key (e.g., SVS, HFB) — see effects.csv |

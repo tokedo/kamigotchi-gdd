@@ -7,18 +7,16 @@
 ## Overview
 
 Kamis start with a default sequential name (e.g., "Kamigotchi 42"). Players can
-name their Kami once for free (costs Holy Dust) and rename it later for Onyx
-Shards. Names are globally unique and max 16 characters.
+name their Kami via `KamiNameSystem` — repeatable without limit, costing 1 Holy
+Dust each time — or rename it for Onyx Shards (currently disabled). Names are
+globally unique and max 16 characters.
 
-## First Naming (KamiNameSystem)
+## Naming (KamiNameSystem)
 
-The first naming uses the **`NOT_NAMEABLE` flag** — it defaults to `false` (Kamis
-are nameable), and is set to `true` after the first naming. This is a one-time
-free naming opportunity.
-
-> **Note**: The current code does not explicitly check the flag in KamiNameSystem;
-> instead it consumes Holy Dust. The flag mechanism exists in LibKami for
-> future use or was used in a prior version.
+Naming is **repeatable without limit** — the system performs no
+nameable/already-named check; each naming simply consumes 1 Holy Dust in
+room 11. (A `NOT_NAMEABLE` flag mechanism exists in `LibKami` but is unused —
+see [Nameable Flag](#nameable-flag).)
 
 ### Requirements
 
@@ -86,12 +84,19 @@ Both systems enforce:
 This is an **inverse flag** (NOT_NAMEABLE) for gas optimization — new Kamis don't
 need a flag component set on creation.
 
+**This machinery is dead code**: `useNameable` has zero callers anywhere in
+`src/` — neither `KamiNameSystem` nor `KamiOnyxRenameSystem` consults the flag,
+so it never gates naming.
+
 > Source: `LibKami.sol:107–119`
 
 ## Tracking
 
 Name changes are logged:
 - `KAMI_NAME` counter incremented per account
-- For first naming: Holy Dust usage logged via `LibItem.logUse`
+- For naming: Holy Dust usage logged via `LibItem.logUse`
+- For Onyx renaming, spend counters are also incremented:
+  `TOKEN_SPEND[accID, ONYX_INDEX]`, `TOKEN_SPEND[0, ONYX_INDEX]`, and
+  `TOKEN_SPEND_RENAME[0, ONYX_INDEX]`
 
-> Source: `KamiNameSystem.sol:45–46`, `KamiOnyxRenameSystem.sol:43`
+> Source: `KamiNameSystem.sol:45–46`, `KamiOnyxRenameSystem.sol:42, 44–46`

@@ -19,7 +19,7 @@ A commit entity is created with:
 |---|---|
 | `BlockReveal` | Target block number to use for randomness |
 | `IdHolder` | Entity that owns this commit (e.g., account ID) |
-| `Type` | Commit type string (e.g., `"GACHA_COMMIT"`, `"DROPTABLE_COMMIT"`) |
+| `Type` | Commit type string (e.g., `"GACHA_COMMIT"`, `"ITEM_DROPTABLE_COMMIT"`) |
 
 Batch commits derive IDs via **iterative chaining** (each ID feeds into the next):
 ```
@@ -46,13 +46,20 @@ The seed is then used by `LibRandom` for selection.
 ## 256-Block Window
 
 `blockhash()` only returns values for the most recent 256 blocks. If a reveal
-is not claimed within ~256 blocks (~50 minutes), the blockhash returns 0 and
-the reveal fails.
+is not claimed within 256 blocks, the blockhash returns 0 and the reveal
+fails. The wall-clock duration of the window depends on Yominet's block time,
+which nothing in the contracts fixes.
 
-### Force Reveal (Admin Recovery)
+> ⚠️  UNCERTAIN: Yominet's actual block time (and therefore the wall-clock
+> length of the 256-block window) is not defined in the source code.
 
-When the window is missed:
-1. Admin verifies `blockhash(revealBlock) == 0`
+### Force Reveal (Community Manager Recovery)
+
+When the window is missed, a community manager (`ROLE_COMMUNITY_MANAGER`) can
+force-reveal — both `forceReveal` entrypoints are gated by `onlyCommManager`
+(`DroptableRevealSystem.sol:35`, `KamiGachaRevealSystem.sol:33–36`):
+1. Verify the blockhash is no longer available (reverts
+   `"no need for force reveal"` otherwise)
 2. Reset the commit's block to `block.number - 1`
 3. Proceed with normal reveal flow using the new blockhash
 
@@ -71,6 +78,6 @@ LibCommit.isAvailable(blockNum) → bool
 
 | System | Commit Type | Purpose |
 |---|---|---|
-| Gacha mint/reroll | `GACHA_COMMIT` | Random Kami selection from pool |
-| Droptable rewards | `DROPTABLE_COMMIT` | Random loot from weighted tables |
-| Sacrifice | `SACRIFICE_COMMIT` | Random sacrifice outcome |
+| Gacha mint/reroll | `GACHA_COMMIT` | Random Kami selection from pool (`LibGacha.sol:34, 127`) |
+| Droptable rewards | `ITEM_DROPTABLE_COMMIT` | Random loot from weighted tables (`LibDroptable.sol:38, 137`) |
+| Sacrifice | `KAMI_SACRIFICE_COMMIT` | Random sacrifice outcome (`LibSacrifice.sol:76, 262`) |

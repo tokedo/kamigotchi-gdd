@@ -30,8 +30,8 @@ Index,Name,Affinity,Rarity,Tier,Tuning,Health,Power,Violence,Harmony,Slots,BPs,G
 28,Sensor,Scrap,Epic,6,6,0,0,0,6,0,300,Yes
 29,Sated,Eerie,Epic,6,6,0,3,3,0,0,300,Yes
 30,Hungry,Eerie,Epic,6,6,0,0,6,0,0,300,Yes
-31,Wassie,Normal,Rare,7,5,30,2,0,0,0,,No
-32,Jiangshi Hat,Normal,Epic,6,6,0,6,0,0,0,,No
-33,Sunglasses,Normal,Legendary,4,8,40,4,0,0,0,,No
-34,Nerd,Normal,Epic,6,6,0,0,0,4,1,,No
-35,Third Eye,Normal,Epic,6,6,60,0,0,0,0,,No
+31,Wassie,,Rare,7,5,30,2,0,0,0,,No
+32,Jiangshi Hat,,Epic,6,6,0,6,0,0,0,,No
+33,Sunglasses,,Legendary,4,8,40,4,0,0,0,,No
+34,Nerd,,Epic,6,6,0,0,0,4,1,,No
+35,Third Eye,,Epic,6,6,60,0,0,0,0,,No

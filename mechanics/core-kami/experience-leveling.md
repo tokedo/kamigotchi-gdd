@@ -2,7 +2,7 @@
 
 > Source: `packages/contracts/src/libraries/LibExperience.sol` (L1–109),
 > `packages/contracts/src/systems/KamiLevelSystem.sol` (L1–51),
-> `packages/contracts/deployment/world/state/configs/configs.ts` (L84–87)
+> `packages/contracts/deployment/world/state/configs/configs.ts` (L92–93)
 
 ## Overview
 
@@ -25,9 +25,9 @@ exponential curve.
 Kami XP is awarded directly to the Kami entity:
 
 - **Harvesting** — XP equal to harvest output amount, awarded on stop or collect
-  (`HarvestStopSystem.sol:97`, `HarvestCollectSystem.sol:95`)
+  (`HarvestStopSystem.sol:97`, `HarvestCollectSystem.sol:87`)
 - **Kill salvage** — victim Kami receives XP equal to the salvage amount
-  (`LibKill.sol:53`)
+  (`LibKill.sol:55`)
 - **Item effects on Kami** — items used on a Kami (via `KamiUseItemSystem`) can
   award XP if the item has an XP-type allocation (`LibSetter.sol:48-49`)
 
@@ -57,7 +57,7 @@ multiplier = powWad(multiplierBaseFormatted, (level - 1) × 1e18)
 cost = (base × multiplier) / 1e18
 ```
 
-> Source: `LibExperience.sol:46–60`, `configs.ts:84–87`
+> Source: `LibExperience.sol:46–60`, `configs.ts:92–93`
 
 ### XP Cost Table (first 10 levels)
 
@@ -66,13 +66,13 @@ cost = (base × multiplier) / 1e18
 | 1 | 40 | 40 |
 | 2 | 50 | 90 |
 | 3 | 63 | 153 |
-| 4 | 80 | 233 |
-| 5 | 100 | 333 |
-| 6 | 126 | 459 |
-| 7 | 159 | 618 |
-| 8 | 200 | 818 |
-| 9 | 252 | 1,070 |
-| 10 | 317 | 1,387 |
+| 4 | 79 | 232 |
+| 5 | 100 | 332 |
+| 6 | 126 | 458 |
+| 7 | 159 | 617 |
+| 8 | 200 | 817 |
+| 9 | 252 | 1,069 |
+| 10 | 317 | 1,386 |
 
 > Computed from: `cost(L) = floor(40 × 1.259^(L-1))`
 

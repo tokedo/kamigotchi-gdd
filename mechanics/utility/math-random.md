@@ -8,15 +8,19 @@
 ## Overview
 
 These libraries provide the mathematical foundation used throughout Kamigotchi:
-fixed-point arithmetic for price calculations, Gaussian distribution functions
-for stat generation, and random selection utilities for loot, gacha, and trait
+WAD fixed-point arithmetic, a Gaussian CDF used by the kill (liquidation)
+formulas, and random selection utilities for loot, gacha, and trait
 assignment.
 
 ## Fixed-Point Math (FixedPointMathLib)
 
 A fork of Solmate's `FixedPointMathLib` providing WAD-precision (18 decimals)
-arithmetic. Used by the GDA auction system, Gaussian library, and other
-price/value calculations.
+arithmetic. Its only in-repo consumer is the Gaussian library
+(`Gaussian.sol:4`). The GDA auction system does **not** use it — `LibGDA`
+imports `SD59x18`/`UD60x18` from prb-math instead (`LibGDA.sol:4–5`). Game
+logic outside `utils/` uses the equivalent solady `FixedPointMathLib`: `lnWad`
+in the kill formulas (`LibKill.sol:4, 101, 174`) and `powWad` in the level
+requirement curve (`LibExperience.sol:4, 57`).
 
 ### Constants
 
@@ -37,9 +41,9 @@ price/value calculations.
 
 | Function | Description | Used By |
 |---|---|---|
-| `expWad(x)` | `e^x` in WAD precision, range (-42, 136) | GDA pricing, Gaussian |
-| `lnWad(x)` | `ln(x)` in WAD precision, x > 0 | GDA pricing, Gaussian |
-| `powWad(x, y)` | `x^y = e^(ln(x) × y)` in WAD | GDA pricing |
+| `expWad(x)` | `e^x` in WAD precision, range (-42, 136) | Gaussian internals (`Gaussian.sol:122, 166, 208`) |
+| `lnWad(x)` | `ln(x)` in WAD precision, x > 0 | Gaussian internals (`Gaussian.sol:152`); kill formulas use the solady equivalent (`LibKill.sol:101, 174`) |
+| `powWad(x, y)` | `x^y = e^(ln(x) × y)` in WAD | No in-repo callers; the level curve uses the solady equivalent (`LibExperience.sol:57`) |
 
 ### Low-Level Operations
 
@@ -56,8 +60,10 @@ price/value calculations.
 ## Gaussian Distribution (Gaussian)
 
 A Solidity implementation of the standard normal distribution (mean=0,
-variance=1) using the complementary error function. Used for generating
-normally-distributed random values in stat calculations.
+variance=1) using the complementary error function. It is not a randomness
+source: the only game-logic callers are the kill formulas, where
+`Gaussian.cdf` computes the deterministic sigmoid `Φ(ln(violence/harmony))`
+used for liquidation animosity and karma (`LibKill.sol:101, 174`).
 
 ### Functions
 
@@ -132,9 +138,15 @@ Rarity values map to exponentially increasing weights:
 
 All seed derivation uses: `newSeed = keccak256(abi.encode(seed, i))`
 
-No-replacement selection uses a **virtual swap** pattern: after selecting index
-`pos`, the item at `pos` is replaced with the last item, and `max` is
-decremented. This ensures unique draws.
+Only `selectMultipleFromNoReplacement` uses a **virtual swap** pattern: after
+selecting index `pos`, the item at `pos` is overwritten with the last item and
+`max` is decremented, which guarantees unique elements
+(`LibRandom.sol:116–156`). `getRandomBatchNoReplacement` performs no swap — it
+only decrements `max` after each draw (`LibRandom.sol:61–91`), so the returned
+indices can numerically repeat. Uniqueness there is the caller's
+responsibility: the gacha draws against a shrinking pool, removing each
+selected Kami from the pool order via swap-pop between draws
+(`LibGacha.sol:94–115`).
 
 > Source: `LibRandom.sol:40–156`
 

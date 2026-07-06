@@ -1,8 +1,17 @@
 # NPCs & Shop Listings Catalog
 
 > Source: `packages/contracts/deployment/world/data/npc/npc.csv`,
-> `packages/contracts/deployment/world/data/listings/listings.csv`
+> `packages/contracts/deployment/world/data/listings/listings.csv`,
+> `packages/contracts/deployment/world/data/listings/pricing.csv`,
+> `packages/contracts/deployment/world/data/listings/requirements.csv`
 > Commit: `91f69796` (npc/listings data unchanged since `0af5d9f0`)
+
+`listings.csv` here merges the source listing sheet with two lookup sheets:
+the `Buy Price Model` keys resolve via `data/listings/pricing.csv` (GDA tier
+definitions — Type, Period in seconds [86400 = Daily / 172800 = Bidaily],
+Decay 0.5, Rate = supply), and the `Requirements` keys resolve via
+`data/listings/requirements.csv` (one entry: `Shop Co-op Completion` =
+`COMPLETE_COMP BOOL_IS` on goal 5).
 
 ## Files
 
@@ -89,6 +98,7 @@ All active shop items are priced in MUSU.
 
 - Item 21100 (Mina Shop Scroll) is referenced in a shelved listing but does not
   exist in the current items catalog — likely a planned but undeployed item
-- The Vending Machine (Room 18) has lower GDA supply than Mina (Room 13) but
-  uses `Bidaily` periods, making items available less frequently but at lower
-  competition
+- The Vending Machine (Room 18) has lower GDA supply than Mina (Room 13) and
+  mostly uses `Bidaily` periods (6 of its 7 listings), making those items
+  available less frequently but at lower competition; the exception is Red
+  Ribbon Gummy, which uses a `Daily` period

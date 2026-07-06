@@ -47,6 +47,7 @@ always true).
 | Newbie Vendor purchase | 3 days | Prevent immediate flip of discounted Kami |
 | Kami721 unstake | Checked | Prevents unstaking while locked |
 | Kami marketplace listing | Checked | Cannot list soulbound Kami for sale |
+| Kami marketplace offer acceptance | Checked | Cannot sell a soulbound Kami by accepting a direct or collection offer |
 
-> Source: `NewbieVendorBuySystem.sol:70`, `Kami721UnstakeSystem.sol:43`,
-> `KamiMarketListSystem.sol:26`
+> Source: `NewbieVendorBuySystem.sol:71`, `Kami721UnstakeSystem.sol:44`,
+> `KamiMarketListSystem.sol:33`, `KamiMarketAcceptOfferSystem.sol:66, 141`

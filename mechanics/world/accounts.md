@@ -99,7 +99,13 @@ updated on sync.
 
 ### Depletion
 
-Actions consume stamina (currently only movement):
+Three actions consume stamina:
+
+| Action | Cost |
+|---|---|
+| Movement | `ACCOUNT_STAMINA[2]` = 5 per move (`LibAccount.sol:80–85`) |
+| Crafting | recipe's stamina cost × amount crafted (`LibRecipe.sol:132–133`, `beforeCraft` → `depleteStamina`) |
+| Casting an item on an enemy Kami | 10 (hardcoded) (`KamiCastItemSystem.sol:33`) |
 
 ```
 newStamina = currentStamina - cost
@@ -107,7 +113,7 @@ newStamina = currentStamina - cost
 
 Reverts with `"Account: insufficient stamina"` if cost exceeds current stamina.
 
-> Source: `LibAccount.sol:101–110`
+> Source: `LibAccount.sol:101–110`, `LibRecipe.sol:132–133`, `KamiCastItemSystem.sol:33`
 
 ## Account XP
 

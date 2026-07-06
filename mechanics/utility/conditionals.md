@@ -95,6 +95,9 @@ Conditions are attached to parent entities via `IDAnchor`:
 | Auction requirements | Gating auction purchases |
 | Skill requirements | Gating skill upgrades |
 | NPC shop listings | Gating item purchases |
-| Relationships | Gating NPC relationship advancement |
+
+Relationship advancement does **not** use LibConditional — it validates
+against its own whitelist/blacklist of prior relationship indices
+(`LibRelationship.sol:79–90`).
 
 Query conditions for a parent: `LibConditional.queryFor(components, parentID)`

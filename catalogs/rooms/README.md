@@ -10,6 +10,7 @@
 | `rooms.csv` | 70 rooms | Room locations, coordinates, exits, lore text |
 | `nodes.csv` | 64 nodes | Harvest/scavenge nodes per room with affinity and drops |
 | `scavenge-droptables.csv` | 50 tables | Weighted loot pools for scavenging (with resolved item names) |
+| `gates.csv` | 11 gates | Room access conditions (extracted from `deployment/world/state/rooms/gates.ts`) |
 
 ## rooms.csv Schema
 
@@ -34,7 +35,7 @@
 | Drops | string | Droptable name (references `scavenge-droptables.csv`) |
 | Affinity | enum | `Normal`, `Eerie`, `Insect`, `Scrap`, or multi (e.g., `Eerie, Scrap`) |
 | Level Limit | uint32 | Max kami level for harvesting at this node (empty = no limit) |
-| YieldIndex | uint32 | Base yield item index (1 = MUSU for all current nodes) |
+| YieldIndex | uint32 | Base yield item index: 1 = MUSU (53 nodes) or 2 = VIPP (11 nodes, e.g., Cave Crossroads 18, Scrap Trees 60, Treasure Hoard 88) |
 | Scav Cost | uint32 | Scavenge bar point cost (100–500) |
 
 ## scavenge-droptables.csv Schema
@@ -78,10 +79,10 @@ Drop probability: `P(item) = tier / sum(all tiers)`
 
 | Cost | Node Count | Typical Drops |
 |---|---|---|
-| 100 | 20 | Basic materials (sticks, stones, scrap) |
+| 100 | 18 | Basic materials (sticks, stones, scrap) |
 | 200 | 26 | Intermediate (cones, daffodils, resin, pansy) |
-| 300 | 11 | Advanced (mint, amber, ooze, coins) |
-| 500 | 7 | Premium (essences, screwdriver, rename dust) |
+| 300 | 12 | Advanced (mint, amber, ooze, coins) |
+| 500 | 8 | Premium (essences, screwdriver, rename dust) |
 
 ## Statistics
 
@@ -89,14 +90,46 @@ Drop probability: `P(item) = tier / sum(all tiers)`
 - **Rooms with nodes**: 64 (6 rooms have no harvest node)
 - **In Game**: 70 rooms / 64 nodes (rooms 19 Temple of the Wheel + 59 Black Pool now live)
 - **Rooms with special exits**: 14
-- **Unique droptables**: 50
+- **Unique droptables**: 50 defined, but only 49 referenced by nodes — the
+  `Bottle Scrap Burger` table is orphaned (referenced by no node; same in source)
 - **Missing exit targets**: Rooms 20, 24, 28 are referenced as exits but not defined in the CSV
+- **Name normalization**: room 85 is stored here as `Giant's Palm` (straight
+  apostrophe); the source/in-game name uses a curly apostrophe (`Giant’s Palm`)
 
 ## Rooms Without Nodes
 
 Rooms 4 (Vending Machine), 11 (Temple by the Waterfall), 13 (Convenience Store),
 54 (Plane Interior), 64 (Burning Room), 66 (Marketplace) have no harvest nodes.
 These are typically interiors or special-purpose locations.
+
+## Room Gates (gates.csv)
+
+Gates are **not deployed from a CSV** — they are hardcoded in
+`packages/contracts/deployment/world/state/rooms/gates.ts` (marked "placeholder
+until notion is up"). `gates.csv` here is extracted from that file: each row is
+one `createGate(roomIndex, sourceIndex, conditionIndex, conditionValue, type,
+logicType, for)` call, mapped to the columns Room Index / Source Room Index /
+Condition Index / Condition Value / Condition Type / Logic / For.
+
+- **Source Room Index** `0` = the gate applies from any entrance; a nonzero
+  value (room 88's gate, source 72) applies only when entering from that room.
+- **QUEST + BOOL_IS** (room 15) — the account must have completed the quest in
+  `Condition Index` (quest 35, "Steel Your Heart").
+- **COMPLETE_COMP + BOOL_IS** (9 rooms) — the entity in `Condition Value` must
+  be marked complete. These use `getGoalID(n)` = `keccak256("goal", n)`,
+  gating rooms behind community goal completion. Goal names are from
+  `deployment/world/state/goals.ts`.
+- **ITEM + CURR_MIN** (room 88) — the account must hold at least
+  `Condition Value` (1) of item `Condition Index` (100004, Aetheric Sextant).
+
+> ⚠️ UNCERTAIN: room 19's gate references goal 999, which is not defined in
+> `goals.ts` (the gates.ts comment says "was coop 8 before"). Whether goal 999
+> exists on-chain (created by other means) is not determinable from the
+> deployment scripts alone.
+
+A commented-out test gate for room 1 in `gates.ts` is not deployed and is
+excluded. See [mechanics/world/rooms.md](../../mechanics/world/rooms.md)
+("Gates (Room Access Conditions)") for the gate mechanic and on-chain checks.
 
 ## Cross-Reference Chain
 

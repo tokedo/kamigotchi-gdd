@@ -1,0 +1,12 @@
+Room Index,Room Name,Source Room Index,Condition Type,Logic,Condition Index,Condition Value,For,Notes
+15,Temple Cave,0,QUEST,BOOL_IS,35,0,ACCOUNT,"Account must have completed quest 35 (Steel Your Heart)"
+19,Temple of the Wheel,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(999),,"Gated on completion of goal 999, which is not defined in goals.ts (gates.ts comment: 'was coop 8 before')"
+31,Scrapyard Exit,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(1),,"Goal 1 'A hole in reality?' complete"
+50,Ancient Forest Entrance,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(3),,"Goal 3 'Deep-Forest Ritual' complete"
+53,Blooming Tree,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(4),,"Goal 4 'Shrine to Nature' complete"
+58,Mouth of Scrap,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(9),,"Goal 9 'Just a Little Snack' complete"
+68,Slippery Pit,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(5),,"Goal 5 'Breaking Through' complete"
+78,Toadstool Platforms,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(6),,"Goal 6 'Chopping It Up' complete"
+84,Reinforced Tunnel,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(6),,"Goal 6 'Chopping It Up' complete (same goal as room 78)"
+86,Guardian Skull,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(7),,"Goal 7 'Titanic Offering' complete"
+88,Treasure Hoard,72,ITEM,CURR_MIN,100004,1,ACCOUNT,"Entering from room 72 (Hatch to Nowhere) requires the account to hold at least 1 Aetheric Sextant (item 100004)"

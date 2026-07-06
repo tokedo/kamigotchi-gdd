@@ -67,16 +67,17 @@ Both buy and sell sides can use FIXED pricing. The price per unit is the
 Dynamic pricing that increases with demand and decays over time. Used for
 **buy side only**.
 
-Parameters stored on the buy pricing entity:
+Parameters are split between the **listing entity** and its **buy pricing
+sub-entity** — only `Period`/`Decay`/`Rate` live on the buy sub-entity:
 
-| Parameter | Component | Precision | Description |
-|---|---|---|---|
-| `targetPrice` | `Value` | 1e0 | Base price when supply matches demand |
-| `period` | `Period` | seconds | Time unit for decay/rate calculations |
-| `decay` | `Decay` | 1e6 (stored) → 1e18 (calc) | Price decay factor per period with no buys |
-| `rate` | `Rate` | 1e0 | Expected purchases per period for steady pricing |
-| `prevSold` | `Balance` | 1e0 | Total units sold so far |
-| `startTs` | `TimeStart` | 1e0 | Epoch when tracking began |
+| Parameter | Component | Stored on | Precision | Description |
+|---|---|---|---|---|
+| `targetPrice` | `Value` | listing entity | 1e0 | Base price when supply matches demand |
+| `period` | `Period` | buy sub-entity | seconds | Time unit for decay/rate calculations |
+| `decay` | `Decay` | buy sub-entity | 1e6 (stored) → 1e18 (calc) | Price decay factor per period with no buys |
+| `rate` | `Rate` | buy sub-entity | 1e0 | Expected purchases per period for steady pricing |
+| `prevSold` | `Balance` | listing entity | 1e0 | Total units sold so far |
+| `startTs` | `TimeStart` | listing entity | 1e0 | Epoch when tracking began |
 
 **Formula** (perpetual discrete VRGDA):
 
@@ -96,16 +97,29 @@ cost = spotPrice × (c^quantity - 1) / (c - 1)
 The result is in WAD (1e18) precision, then rounded up:
 `finalPrice = ceil(costWad / 1e18)`
 
-**Behavior**: Price rises when buying outpaces the `rate` per `period`. Price
-decays back toward `targetPrice` when buying slows. This creates natural
-supply/demand equilibrium.
+**Behavior**: Price rises when buying outpaces the `rate` per `period` and
+decays when buying lags. There is **no floor at `targetPrice`** — the spot
+price `targetPrice × decay^(timeDelta − prevSold/rate)` (`LibGDA.sol:38`)
+decays without bound while purchases lag, and equals `targetPrice` only when
+cumulative sales exactly track `rate` per period.
 
-> Source: `LibGDA.sol:28–50`, `LibListing.sol:113–126`
+> Source: `LibGDA.sol:28–50`, `LibListing.sol:113–126`,
+> `LibListingRegistry.sol:64–66, 83–89`
 
 ### SCALED (sell only)
 
-> **Currently unused.** The SCALED pricing type is fully implemented in contract
-> code but no NPC listings use it — all sell-side pricing is currently FIXED.
+> **Currently unused.** The SCALED pricing type is fully implemented in
+> contract code, but per the pinned deployment data **no listing has any
+> sell-side pricing at all** — the `Sell Price` column is empty for every row
+> of `deployment/world/data/listings/listings.csv`, and the deploy script only
+> creates a sell pricing sub-entity when that column is set
+> (`deployment/world/state/listings.ts:60–73`). With no sell pricing entity,
+> `calcSellPrice` reverts (`LibListing.sol:131–144`), so selling to NPCs is
+> effectively disabled under this data.
+>
+> ⚠️ UNCERTAIN: on-chain state created by earlier deployments is not visible
+> in the repo — a sell pricing entity set in a prior deploy could exist
+> on-chain without appearing in the pinned data files.
 
 Sell price is a fraction of the current buy price:
 

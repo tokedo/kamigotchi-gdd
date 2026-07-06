@@ -74,7 +74,8 @@ When called with a `string` type (instead of pre-computed IDs), the score
 library automatically reads the current epoch:
 
 ```solidity
-LibScore.incFor(components, holderID, index, "TOTAL_SPENT", amount)
+// e.g. ListingBuySystem.sol:50 — index is the currency item index
+LibScore.incFor(components, accID, currencyIndex, "TOTAL_SPENT", spent)
 // internally: epoch = getCurrentEpoch(), then generates IDs with epoch
 ```
 
@@ -89,12 +90,15 @@ Systems that don't use epochs (e.g., factions, goals) call the raw
 
 | Score Type | Used By | Description |
 |---|---|---|
-| `TOTAL_SPENT` | Trading system | MUSU spent in trades |
+| `TOTAL_SPENT` | NPC shops (`ListingBuySystem`) | Epoch-scoped spend at NPC shop listings, indexed per currency item |
 | Faction reputation | Faction system | Per-faction reputation points |
 | Goal contributions | Goal system | Per-goal contribution amounts |
 | Custom epoch scores | Leaderboard | Configurable per-epoch scoring |
 
-> Source: Cross-referenced from `LibTrade.sol`, `LibFaction.sol`, `LibGoal.sol`
+The only `TOTAL_SPENT` writer is `ListingBuySystem.sol:50` — `LibTrade` makes
+no `LibScore` calls (P2P trades are not scored).
+
+> Source: `ListingBuySystem.sol:50`, `LibFaction.sol`, `LibGoal.sol`
 
 ## Operations
 

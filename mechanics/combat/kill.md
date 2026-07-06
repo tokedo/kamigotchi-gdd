@@ -28,7 +28,7 @@ threshold > currentHealth
 Where `threshold` is derived from attacker Violence vs. victim Harmony, and
 `currentHealth` is the victim's HP after harvest strain has been applied.
 
-> Source: `LibKill.sol:74–82`
+> Source: `LibKill.sol:76–84`
 
 ## Animosity (Base Threshold)
 
@@ -83,10 +83,23 @@ Bonus integration:
 ```
 atkBonus = ATK_THRESHOLD_RATIO bonus on attacker
 defBonus = DEF_THRESHOLD_RATIO bonus on victim
-bonusShift = atkBonus - defBonus
 ```
 
-> Source: `LibKill.sol:110–137`
+The combined bonus `atkBonus − defBonus` is written **only** into the `up` and
+`special` slots of the bonus-shift struct — `base` and `down` are hardcoded 0:
+`Shifts{base: 0, up: atkBonus − defBonus, down: 0, special: atkBonus − defBonus}`.
+`calcEfficacyShift` then selects exactly **one** slot by matchup effectiveness,
+so the THRESHOLD_RATIO bonuses only take effect on some matchups:
+
+| Matchup | Efficacy shift applied |
+|---|---|
+| Advantaged | `+500 + (atkBonus − defBonus)` |
+| NORMAL vs NORMAL | `+200 + (atkBonus − defBonus)` |
+| Neutral | `0` — bonuses have **no effect** |
+| Disadvantaged | `−500` — bonuses have **no effect** |
+
+> Source: `LibKill.sol:110–137` (bonus shift struct at 119–124),
+> `LibAffinity.sol:49–58`
 
 ## Kill Threshold (Final)
 
@@ -137,7 +150,10 @@ efficacy = max(0, baseEfficacy + affinityShift)
 ```
 
 Where:
-- `baseEfficacy` = `KAMI_LIQ_RECOIL[0] / 10^KAMI_LIQ_RECOIL[1]` (from recoil config nudge/n_prec)
+- `baseEfficacy` = `KAMI_LIQ_RECOIL[0]` = **1000**, passed **raw** — no division
+  by `10^KAMI_LIQ_RECOIL[1]` occurs here (`LibKill.sol:210`). The `10^config[1]`
+  scaling appears only inside the final combined recoil divisor (see
+  [Recoil](#recoil-total-attacker-hp-loss))
 - `affinityShift` = looked up from `KAMI_LIQ_KARMA_EFFICACY` config based on matchup
 
 The `KAMI_LIQ_KARMA_EFFICACY` config uses the standard efficacy format `[prec, neut, +, -, n-n]`:
@@ -167,17 +183,26 @@ factors** with harvest strain:
 
 ```
 karma   = calcKarma(defender, attacker)
-nudge   = calcRecoilEfficacy(defender, attacker, config[0] / 10^config[1])
+nudge   = calcRecoilEfficacy(defender, attacker, config[0])    (raw, unscaled)
 boost   = max(0, config[6] + DEF_RECOIL_BOOST + ATK_RECOIL_BOOST)
-recoil  = (karma + nudge) × strain × boost / precision
+recoil  = (karma + nudge) × strain × boost / 10^(config[1] + config[3] + config[7])
 ```
 
 Where:
-- `strain` = attacker's harvest strain from their own harvest output
+- `strain` = `LibKami.calcStrain(killerID, spoils)` — the strain the **killer**
+  would incur harvesting the **spoils taken from this kill**
+  (`HarvestLiquidateSystem.sol:62`). Recoil scales with the loot taken, not
+  with the attacker's own harvest output
 - `karma` = Gaussian CDF multiplier (see [Karma](#karma-recoil-multiplier))
-- `nudge` = affinity-based efficacy (see [Recoil Efficacy](#recoil-efficacy))
+- `nudge` = affinity-based efficacy (see [Recoil Efficacy](#recoil-efficacy)),
+  seeded with raw `config[0]` = 1000
 - `boost` = `KAMI_LIQ_RECOIL[6]` + `DEF_RECOIL_BOOST` (defender, **currently unused** — no source grants it) + `ATK_RECOIL_BOOST` (attacker)
-- `precision` = `10^(config[1] + config[3] + config[7])`
+- The divisor is a **single combined precision** `10^(config[1] + config[3] +
+  config[7])` (`LibKill.sol:218–219`): it removes the nudge scale
+  `10^config[1]` (= 10^3, matching karma's hardcoded 1e3 precision), a spare
+  exponent `config[3]` (= 0), and the boost scale `10^config[7]` (= 10^3) in
+  one step. Deployed `KAMI_LIQ_RECOIL = [1000, 3, 0, 0, 0, 0, 1000, 3]` gives
+  divisor `10^6`
 - Boost is clamped to min 0
 - `calcKarma` is called internally (not passed as a parameter)
 
@@ -196,30 +221,57 @@ When a kill succeeds, the victim's harvest bounty is split:
 ```
 scaleFactor = 10^(config[3] - config[1])
 ratio = config[2] + (config[0] + power) × scaleFactor + DEF_SALVAGE_RATIO bonus
-salvage = bounty × ratio / precision
+precision = 10^config[3]
+salvage = ⌊bounty × ratio / precision⌋
 ```
 
 - `power` = victim's Power stat (higher Power = more salvage)
-- Capped at 100% of bounty
+- `config` = `KAMI_LIQ_SALVAGE` = `[0, 2, 0, 3, 0, 0, 0, 0]`
+  (`deployment/world/state/configs/configs.ts:149`), so
+  `ratio = 10 × power + DEF_SALVAGE_RATIO` and `precision = 1000`
+- The cap check is `if (ratio / precision > 1) return amt` (`LibKill.sol:236`)
+  — **integer division**, so it fires only at `ratio ≥ 2 × precision`
+  (= 2000, i.e. 200%). For `ratio` in `(1000, 1999]` salvage **exceeds** the
+  bounty and is not clamped
+
+> ⚠️ **SUSPECTED UPSTREAM BUG**: at the deployed config, a victim with Power
+> 101–199 (and no `DEF_SALVAGE_RATIO` bonus) yields `ratio` 1010–1990, so
+> `salvage > bounty` for any non-trivial bounty. The subtraction
+> `bounty - salvage` at `HarvestLiquidateSystem.sol:58` then underflows
+> (checked arithmetic) and the transaction **reverts** — victims in this Power
+> band are effectively unliquidatable. At Power ≥ 200 the clamp returns the
+> entire bounty as salvage (leaving 0 for spoils).
 
 The victim's account receives the salvage as MUSU, plus the victim Kami gets
 XP equal to the salvage amount.
 
-> Source: `LibKill.sol:51–56, 224–240`
+> Source: `LibKill.sol:51–56, 222–238`, `HarvestLiquidateSystem.sol:53–58`
 
 ### Spoils (to killer's harvest)
 
 ```
 scaleFactor = 10^(config[3] - config[1])
 ratio = config[2] + (config[0] + power) × scaleFactor + ATK_SPOILS_RATIO bonus
-spoils = (bounty - salvage) × ratio / precision
+precision = 10^config[3]
+spoils = ⌊(bounty - salvage) × ratio / precision⌋
 ```
 
 - `power` = attacker's Power stat
+- `config` = `KAMI_LIQ_SPOILS` = `[45, 2, 0, 3, 0, 0, 0, 0]`
+  (`deployment/world/state/configs/configs.ts:150`), so
+  `ratio = 450 + 10 × power + ATK_SPOILS_RATIO` and `precision = 1000`
 - Spoils are added to the killer's **harvest bounty** (not directly to inventory)
-- Capped at 100% of remaining bounty
+- The cap uses the same integer-division check (`LibKill.sol:254`) and fires
+  only at `ratio ≥ 2000`
 
-> Source: `LibKill.sol:59–62, 242–258`
+> ⚠️ **SUSPECTED UPSTREAM BUG**: at the deployed config, an attacker with
+> Power 56–154 (and no `ATK_SPOILS_RATIO` bonus) yields `ratio` 1010–1990 and
+> receives **101–199% of the remaining bounty**, uncapped — the killer's
+> harvest is credited with more MUSU than the victim lost (net inflation).
+> At Power ≥ 155 the clamp snaps spoils back to exactly 100% of the remaining
+> bounty.
+
+> Source: `LibKill.sol:59–62, 240–256`
 
 ### Killer Reward
 
@@ -227,7 +279,7 @@ The killer's account receives **1 Obol** (item index `OBOL_INDEX`) per kill.
 
 > Source: `LibKill.sol:65–68`
 
-## Kill Constraints (from tests)
+## Kill Constraints
 
 | Constraint | Error |
 |---|---|
@@ -237,9 +289,10 @@ The killer's account receives **1 Obol** (item index `OBOL_INDEX`) per kill.
 | Killer's account must be in same room as node | `"node too far"` |
 | Both Kamis must be on the same node | `"target too far"` |
 | Killer must have passed cooldown | `"kami on cooldown"` |
+| Victim's harvest must be ACTIVE | `"harvest inactive"` |
 | Victim HP must be below threshold | `"kami lacks violence (weak)"` |
 
-> Source: `Murder.t.sol`, `HiredHitman.t.sol`
+> Source: `HarvestLiquidateSystem.sol:28–50`, `Murder.t.sol`, `HiredHitman.t.sol`
 
 ## Hired Hitman (Quest Integration)
 

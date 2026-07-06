@@ -143,13 +143,16 @@ https://{BASE_URI}/{mediaURI}.gif
 
 1. **Create** Kami entities in `RESTING` state, owned by `GACHA_ID`
 2. **Reveal** traits using a deterministic seed:
-   `baseSeed = keccak256(blockhash(deployBlock))` combined with entity IDs
+   `baseSeed = keccak256(abi.encode(blockhash(block.number − 1)))`, fixed in
+   the constructor at contract deployment and combined with entity IDs. The
+   hash is taken from the block **before** deployment, since
+   `blockhash(block.number)` returns 0 for the current block
 3. **Mint** ERC-721 tokens to the Kami721 contract address (staked in-game)
 
 The batch minter uses a one-time `setTraits()` call to memoize all trait
 weights, stats, and offsets from the trait registry for gas efficiency.
 
-> Source: `_721BatchMinterSystem.sol:312–328, 330–333`
+> Source: `_721BatchMinterSystem.sol:298, 312–328, 330–333`
 
 ## Config
 

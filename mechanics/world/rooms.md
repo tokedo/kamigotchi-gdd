@@ -117,7 +117,9 @@ The current world has **70 rooms** across 4 z-planes, including:
 
 Notable rooms:
 - **Room 1** (Misty Riverside) — starting room for all new accounts
-- **Room 11** (Temple by the Waterfall) — location for first Kami naming
+- **Room 11** (Temple by the Waterfall) — required location for every Kami
+  naming/renaming; the **Kami** must be in room 11 and each naming consumes
+  1 Holy Dust (`KamiNameSystem.sol:16–17, 29–33`)
 - **Room 66** (Marketplace) — trade room (delivery fee waived)
 
 > Source: `data/rooms/rooms.csv`

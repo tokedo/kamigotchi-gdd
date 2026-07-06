@@ -16,6 +16,13 @@ Goals are one-time events — once completed, no further contributions are
 accepted. Contributions are tracked via `LibScore` for leaderboard
 compatibility.
 
+> ⚠️ UNCERTAIN: the goal catalog is not fully derivable from source. The
+> deployment seed (`deployment/world/state/goals.ts`) actively creates only
+> goals 7 ("Titanic Offering") and 13 ("Secret of the Ooze"); definitions for
+> goals 1–6 and 8–11 exist only as commented-out code. Other live goals were
+> seeded at runtime by admin calls, so the full set of deployed goal
+> instances cannot be reconstructed from this repo.
+
 ## Goal Entity Shape
 
 | Component | Description |
@@ -137,11 +144,19 @@ the contribution amount as a multiplier.
 
 ### Display-Only Rewards
 
-Tiers with cutoff=0 can also contain `DISPLAY_ONLY` allocations (type
-`"DISPLAY_ONLY_{name}"`). These are skipped during distribution and exist
-solely for client UI display.
+Tiers with cutoff=0 can also contain display allocations, created with type
+`"DISPLAY_ONLY_{name}"` (`_GoalRegistrySystem.sol:154`) and no `Value`
+component (`LibAllo.createEmpty`). They exist solely for client UI display —
+but they are **not** caught by the distribution skip guard:
+`skipDistribution` matches only the exact string `"DISPLAY_ONLY"`
+(`LibAllo.sol:285–287`), which `"DISPLAY_ONLY_{name}"` never equals. The allo
+instead falls through to `giveBasic` → `LibSetter.update` with amount 0 (the
+missing `Value` reads as 0), landing in the `LibData.inc(..., 0)` fallback —
+a no-op. Net effect is unchanged (nothing is distributed), but via a
+zero-amount fall-through rather than an explicit skip.
 
-> Source: `_GoalRegistrySystem.sol:142–157`
+> Source: `_GoalRegistrySystem.sol:142–157`, `LibAllo.sol:118–126, 202–213,
+> 229–239, 285–287`, `LibSetter.sol:64–65`
 
 ## Room Gating
 
@@ -173,7 +188,7 @@ Goal rewards support all standard `LibAllo` types:
 | Basic (ITEM, etc.) | Items, MUSU, XP via `LibSetter` |
 | `ITEM_DROPTABLE` | Random loot via commit-reveal |
 | `STAT` | Direct stat modifications |
-| `DISPLAY_ONLY` | Client-only display, no distribution |
+| `DISPLAY_ONLY_{name}` | Client-only display; distributes nothing (zero-amount fall-through) |
 
 Reward anchor: `keccak256("goal.reward", tierID)`
 

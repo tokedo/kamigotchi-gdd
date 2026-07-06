@@ -32,20 +32,20 @@
 
 | Type | Count | Description |
 |---|---|---|
-| CONSUMABLE | 21 | Potions, food, offensive items |
-| REAGENT | 12 | Extracted/processed materials (output 250–500 units) |
-| MATERIAL | 7 | Bulk construction materials (Timber, Ingot, Ashlar) |
-| SPECIAL | 3 | Quest item assembly (Aetheric Sextant, Dowsing Rod) |
+| CONSUMABLE | 18 | Potions, food, offensive items |
+| REAGENT | 13 | Extracted/processed materials (output 250–500 units; Pure Essence outputs 1) |
+| MATERIAL | 7 | Bulk construction materials (Timber, Ingot, Ashlar, Empty Cup) |
+| SPECIAL | 2 | Quest item assembly (Aetheric Sextant, Dowsing Rod) |
 | HIDDEN | 1 | Secret recipe (Wonder Egg from 5 Obols) |
 
 ## Tools
 
 | Tool | Item Index | Used By | Description |
 |---|---|---|---|
-| Spice Grinder | 23100 | 11 recipes | Extractions and grinding |
-| Portable Burner | 23101 | 19 recipes | Brewing and processing |
+| Spice Grinder | 23100 | 13 recipes | Extractions and grinding |
+| Portable Burner | 23101 | 20 recipes | Brewing and processing |
 | Screwdriver | 23102 | 3 recipes | Assembly and chiseling |
-| None | — | 4 recipes | No tool required |
+| None | — | 5 recipes | No tool required |
 
 ## Status Distribution
 

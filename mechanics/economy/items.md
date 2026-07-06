@@ -25,7 +25,7 @@ Each item type is a registry entity with:
 | `Name` | Display name |
 | `Description` | Item description |
 | `MediaURI` | Image/media reference |
-| `Rarity` | Rarity weight (for droptables) |
+| `Rarity` | Rarity value — written at registration (`LibItem.sol:97`) but not read by the item-droptable system (droptable weights live on the droptable/allo entities); its readers are trait/gacha-mint code (`LibTraitRegistry.sol`, `_721BatchMinterSystem.sol`) |
 | `TokenAddress` | *(optional)* Linked ERC-20 token address |
 | `Scale` | *(optional)* ERC-20 conversion scale |
 
@@ -74,16 +74,33 @@ Item Registry → Use Case (e.g., "USE", "BURN", "EQUIP") → Requirements + Eff
 
 ## Item Effects on Use
 
-When a consumable item is applied to a target:
+All three item-use systems apply effects through a single path:
+`LibItem.applyAllos(world, components, itemIndex, "USE", amt, targetID)`, which
+looks up the allos registered under the item's `"USE"` use case and passes them
+to `LibAllo.distribute()`:
 
-1. **Stat effects** — `LibItem.applyStats()` applies the item's stat deltas to the
-   target. The registry item's `base` → target's `shift` (permanent). The registry
-   item's `sync` → target's `sync` (e.g., healing).
-2. **XP effects** — if the item has an Experience component, that XP is added to the target
-3. **Move effects** — `applyMove()` can teleport the target to a specific room
-4. **Allocation effects** — `applyAllos()` distributes items/resources per the use case's allo rules
+- `KamiUseItemSystem` → `applyAllos(..., "USE", 1, kamiID)` (`KamiUseItemSystem.sol:42`)
+- `KamiCastItemSystem` → `applyAllos(..., "USE", 1, targetID)` (`KamiCastItemSystem.sol:38`)
+- `AccountUseItemSystem` → `applyAllos(..., "USE", amt, accID)` (`AccountUseItemSystem.sol:29`)
 
-> Source: `LibItem.sol:196–234`
+`LibAllo.distribute()` dispatches each allo by its `Type` — stat deltas,
+temporary bonuses, droptable commits, bonus clears, and basic grants (items,
+XP, etc.). See [item-usage.md](item-usage.md) for the per-type breakdown.
+
+**Stat allos**: the deployment writes an item's stat effect into the allo's
+`Stat` struct with stat totals (HEALTH/POWER/VIOLENCE/HARMONY/STAMINA) in
+`shift` and current-point effects (HP/SP, e.g. healing) in `sync`; `base` is
+never set (`deployment/world/state/items/allos.ts:97–115`). On application,
+`LibStat.add` maps `shift` → `shift`, `boost` → `boost`, `sync` → `sync` and
+**discards the delta's `base` field** (`LibStat.sol:344–347`); a positive
+`sync` delta is clamped so current points cannot exceed the stat's
+bonus-inclusive total (`LibStat.sol:87–93`).
+
+`LibItem` also defines `applyStats()` (`LibItem.sol:209`), `applyMove()`
+(`LibItem.sol:219`), and `droptableCommit()` (`LibItem.sol:225`) helpers, but
+no system calls them — all live item effects flow through the allo path above.
+
+> Source: `LibItem.sol:196–206`, `LibAllo.sol:188–215`
 
 ## Item Flags
 
@@ -96,7 +113,10 @@ Items can have flags that modify behavior:
 | `BYPASS_BONUS_RESET` | Using this item doesn't reset harvest bonuses |
 | Item type as flag | Stored for reverse querying (e.g., `"EQUIPMENT"`) |
 
-Items can also be **disabled** (via `LibDisabled`), preventing use.
+Items can also be **disabled** (via `LibDisabled`). The disabled flag blocks
+Kami-use (`KamiUseItemSystem.sol:23`), cast (`KamiCastItemSystem.sol:29`), and
+equip (`KamiEquipSystem.sol:28`) — but `AccountUseItemSystem` never calls
+`verifyEnabled`, so account-targeted use of a disabled item still succeeds.
 
 > Source: `LibItem.sol:241–289`
 

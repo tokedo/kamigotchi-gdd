@@ -7,7 +7,7 @@
 ## Overview
 
 Droptables are weighted random loot tables that resolve items. They are used by
-**lootbox items**, **scavenge rolls** (on harvest collect/stop), and **NPC drops**.
+**lootbox items**, **scavenge claims**, and the **Kami sacrifice ritual**.
 Resolution uses a **commit-reveal** pattern to prevent front-running.
 
 See `catalogs/` for droptable data (items, rooms, NPCs).
@@ -21,10 +21,13 @@ Each droptable is an entity with:
 | `Keys` | Array of item indices (possible drops) |
 | `Weights` | Array of rarity weights (selection probability) |
 
-Higher weight = more likely to be selected. Weights are processed through
-`LibRandom.processWeightedRarity()` before selection.
+Weights are stored raw (the CSV `Tiers` value) and converted at selection time
+by `LibRandom.calcRarityWeight`: `w → 0` if `w = 0` (never drops), else
+`w → 2^(w−1)`. Selection odds are therefore **exponential** in the stored
+weight — each +1 doubles an entry's relative odds (a weight-9 entry is 256× as
+likely as a weight-1 entry).
 
-> Source: `LibDroptable.sol:143–151`
+> Source: `LibDroptable.sol:143–151`, `LibRandom.sol:32–34`
 
 ## Commit-Reveal Pattern
 
@@ -78,32 +81,50 @@ stuck commits.
 
 For each roll, the system selects one item from the droptable:
 
-1. Weights are processed via `processWeightedRarityInPlace()` (converts raw rarity
-   weights into cumulative probability distribution)
-2. `selectMultipleFromWeighted(weights, seed, count)` performs `count` independent
-   weighted random selections
+1. Weights are converted in place via `processWeightedRarityInPlace()` — each
+   weight `w` becomes `0` if `w = 0`, else `2^(w−1)` (`LibRandom.sol:28–34`)
+2. `selectMultipleFromWeighted(weights, seed, count)` performs `count`
+   independent weighted random selections; each roll takes
+   `randN mod totalWeight` and walks the cumulative weight array to find the
+   selected index (`_positionFromWeighted`, `LibRandom.sol:238–255`)
 3. Returns an array of amounts per item index (how many of each item was selected)
 
-> Source: `LibDroptable.sol:87–100`
+> Source: `LibDroptable.sol:87–100`, `LibRandom.sol:28–34, 238–255`
 
 ## Usage Contexts
 
 ### Lootbox Items
-- Items with type `"LOOTBOX"` have an attached droptable
-- Opening a lootbox calls `LibItem.droptableCommit()` → creates commit
+- Lootbox items carry an `ITEM_DROPTABLE` allo on their `USE` use case; the
+  droptable's `Keys`/`Weights` are stored on the **allo entity** itself
+  (`LibAllo.createDT`, `LibAllo.sol:128–142`)
+- Using the item → `LibItem.applyAllos` → `LibAllo.distribute` → `giveDT`, which
+  calls `LibDroptable.commit(world, comps, alloID, rolls, accID)` with the
+  **allo ID** as the droptable source (`LibAllo.sol:209, 252–261`)
 - Player calls `DroptableRevealSystem` in a later transaction → items distributed
 
-### Scavenge (Harvest Collect/Stop)
-- When a Kami collects or stops harvesting, `LibNode.scavenge()` is triggered
-- The scavenge roll is amount-weighted (more harvest output = more rolls)
-- Uses the node's droptable
+### Scavenge (Harvest Collect/Stop → Claim)
+- Collecting or stopping a harvest only **increments the node's scav bar** by
+  the harvest output (`LibNode.sol:132` → `LibScavenge.incFor`) — no rolls
+  happen at that point
+- `ScavengeClaimSystem` claims rewards: `rolls = ⌊points / tierCost⌋`, and the
+  remainder `points mod tierCost` stays on the bar
+  (`LibScavenge.extractNumTiers`, `LibScavenge.sol:99–114`)
+- Rewards are distributed via `LibAllo.distribute` with the roll count as
+  multiplier (`LibScavenge.sol:116–129`); droptable rewards there go through
+  the same commit-reveal flow
 
-### NPC Drops
-- NPCs can have droptables that resolve when interacted with
+### Kami Sacrifice (NPC droptable data)
+- `data/npc/droptables.csv` contains exactly three tables — **Sacrifice
+  Normal**, **Sacrifice Uncommon Pity**, **Sacrifice Rare Pity** — the reward
+  tables for the Kami sacrifice ritual
+- `LibSacrifice` selects among them by pity counter (`LibSacrifice.sol:33–35,
+  229–236`) and stores the chosen table on the sacrifice commit
+  (`LibSacrifice.sol:72–79`)
+- There is no generic NPC-interaction droptable mechanic
 
 ## Data Files
 
 Droptable definitions are in CSV files:
 - `data/items/droptables.csv` — item/lootbox droptables
 - `data/rooms/droptables.csv` — room/node scavenge droptables
-- `data/npc/droptables.csv` — NPC droptables
+- `data/npc/droptables.csv` — Kami sacrifice reward tables (see above)

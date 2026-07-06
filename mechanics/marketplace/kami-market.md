@@ -5,7 +5,7 @@
 > `packages/contracts/src/systems/KamiMarketBuySystem.sol` (L1–92),
 > `packages/contracts/src/systems/KamiMarketOfferSystem.sol` (L1–70),
 > `packages/contracts/src/systems/KamiMarketAcceptOfferSystem.sol` (L1–172),
-> `packages/contracts/src/systems/KamiMarketCancelSystem.sol`,
+> `packages/contracts/src/systems/KamiMarketCancelSystem.sol` (L1–59),
 > `packages/contracts/src/tokens/KamiMarketVault.sol` (L1–49)
 
 ## Overview
@@ -131,20 +131,27 @@ No WETH is transferred — the offer relies on pre-approval of the
 `KamiMarketAcceptOfferSystem.execute(isBatch, offerID, kamiIndex, kamiIndices)`:
 
 For **specific offers**:
-1. Verify Kami index matches the offer's target
-2. If Kami is LISTED, cancel all its listings first
-3. **Force-unequip all items** back to the seller's inventory (`LibEquipment.unequipAll`)
-4. Reassign Kami ownership, set RESTING, apply cooldown
-5. Pull WETH from buyer via vault: `vault.transferWETH(buyer, seller, price - fee)`
-6. Transfer fee to fee recipient
+1. Verify seller owns the Kami and it is RESTING or LISTED
+2. Verify the Kami is **not soulbound** (`LibSoulbound.verify`)
+3. Verify Kami index matches the offer's target
+4. If Kami is LISTED, cancel all its listings first
+5. **Force-unequip all items** back to the seller's inventory (`LibEquipment.unequipAll`)
+6. Reassign Kami ownership, set RESTING, apply cooldown
+7. Pull WETH from buyer via vault: `vault.transferWETH(buyer, seller, price - fee)`
+8. Transfer fee to fee recipient
 
 For **collection offers** (single or batch):
 1. Verify quantity remaining is sufficient
-2. For each Kami: verify ownership, cancel listings if needed, **force-unequip
+2. For each Kami: verify ownership and that it is **not soulbound**
+   (`LibSoulbound.verify`), cancel listings if needed, **force-unequip
    all items to the seller**, reassign
 3. Decrement offer balance (auto-fill if balance reaches 0)
 4. Batched WETH transfers for efficiency: a single per-Kami fee is computed once
    and multiplied by the batch count (`feePerKami × batchCount`)
+
+The soulbound check (`KamiMarketAcceptOfferSystem.sol:66, 141`) blocks Kamis
+still under the [Newbie Vendor](newbie-vendor.md)'s 3-day soulbind from being
+sold into offers.
 
 All three fill paths (`fillOffer`, `fillCollectionOffer`, `fillListing`) call
 `unequipAll` before reassigning ownership — equipment never transfers with a
@@ -168,7 +175,11 @@ Any active order can be cancelled by its owner:
 Listings are also auto-cancelled when a Kami is transferred via offer acceptance
 or other mechanisms (`cancelListingsForKami`).
 
-> Source: `LibKamiMarket.sol:198–243`
+Additionally, `KamiMarketCancelSystem.executeAdmin(ids[])` lets an admin cancel
+**any** active order (batch, no owner check — state is restored on behalf of
+the order's owner).
+
+> Source: `LibKamiMarket.sol:204–253`, `KamiMarketCancelSystem.sol:31–38`
 
 ## Fee Calculation
 
@@ -181,7 +192,7 @@ Fee parameters come from `KAMI_MARKET_FEE_RATE` config array: `[precision, numer
 Fees are paid in the same currency as the trade (ETH for listings, WETH for
 offers) and sent to the configured `KAMI_MARKET_FEE_RECIPIENT` address.
 
-> Source: `LibKamiMarket.sol:307–310`
+> Source: `LibKamiMarket.sol:315–320`
 
 ## Purchase Cooldown
 
@@ -193,7 +204,7 @@ cooldown = KAMI_MARKET_PURCHASE_COOLDOWN (default: 3600 seconds / 1 hour)
 
 This prevents immediate re-listing or other actions on newly purchased Kamis.
 
-> Source: `LibKamiMarket.sol:257–262`
+> Source: `LibKamiMarket.sol:266–272`
 
 ## KamiMarketVault
 
@@ -224,4 +235,4 @@ into the TWAP oracle via `LibTWAP.poke(price)`. This price data is used by the
 | `KAMI_MARKET_ACCEPT` | Offers accepted |
 | `KAMI_MARKET_CANCEL` | Orders cancelled |
 
-> Source: `LibKamiMarket.sol:399–417`
+> Source: `LibKamiMarket.sol:409–427`

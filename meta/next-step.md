@@ -21,28 +21,35 @@ outputs:
 
 No further Layer 1 extraction work needed unless the source code changes.
 
-## What was completed in this session
+## What was completed in this session (2026-07-05)
 
-1. ~~**Assets catalog**~~ ✅ `catalogs/assets.md` — 700+ asset pointers, CDN patterns
-2. ~~**Cross-reference review**~~ ✅ 5 broken catalog paths fixed, all source citations verified
-3. ~~**Kami vs Account XP fix**~~ ✅ Corrected XP attribution in experience-leveling.md and accounts.md
-4. ~~**Quest catalog**~~ ✅ 155 quests + objectives + requirements + rewards + quest-lines.md + dialogues/
-5. ~~**System entry points**~~ ✅ Added to equipment.md, relationships.md, chat.md
-6. ~~**Catalog READMEs**~~ ✅ Added skills/README.md, factions/README.md
-7. ~~**Config gaps**~~ ✅ VIP_STAGE values, NEWBIE_VENDOR_CYCLE, token addresses, local/prod notes
+1. ~~**Full accuracy audit**~~ ✅ 12-agent audit of every mechanics file and
+   catalog against source at pin `91f6979` (≡ `main` for contracts). Findings:
+   `meta/audit-2026-07-05.md`.
+2. ~~**All ERROR/OMISSION fixes applied**~~ ✅ 49 files corrected (tax basis
+   points, exponential droptable weights, 0 HP ≠ death, dead-code item
+   pipeline, token-portal unit scale, quest-drop reset, XP table, trait
+   counts/affinities, README distribution tables, ~60 stale line citations).
+3. ~~**New coverage**~~ ✅ `mechanics/utility/data-tracking.md` (LibData),
+   `mechanics/utility/admin-operations.md`, `catalogs/rooms/gates.csv`
+   (11 live room gates), Onyx Respec section in skills.md.
+4. ~~**Upstream bug flags**~~ ✅ 4 suspected source bugs documented in
+   coverage.md open flags (equipment bonuses inert, liquidation
+   salvage/spoils bands, account respec revert, room 19 goal 999) — worth
+   reporting to the Kamigotchi team.
 
 ## All catalogs
 
 | Catalog | Directory | Contents |
 |---|---|---|
-| Rooms | `catalogs/rooms/` | 70 rooms + 64 nodes + 50 scavenge droptables |
-| Items | `catalogs/items/` | 177 items + 94 effects + 6 item droptables |
+| Rooms | `catalogs/rooms/` | 70 rooms + 64 nodes + 50 scavenge droptables + 11 room gates |
+| Items | `catalogs/items/` | 178 items + 94 effects + 6 item droptables |
 | NPCs | `catalogs/npcs/` | 2 NPCs + 19 shop listings |
 | Recipes | `catalogs/crafting/` | 41 crafting recipes |
 | Traits | `catalogs/traits/` | 135 traits (5 categories) |
 | Assets | `catalogs/assets.md` | 700+ asset path references + CDN patterns |
-| Quests | `catalogs/quests/` | 155 quests + objectives + requirements + rewards + quest chains + dialogues |
-| Skills | `catalogs/skills/` | 71 skills + 16 effects |
+| Quests | `catalogs/quests/` | 192 quests + objectives + requirements + rewards + quest chains + dialogues |
+| Skills | `catalogs/skills/` | 72 skills + 16 effects |
 | Factions | `catalogs/factions/` | 3 factions |
 
 ## Completed phases

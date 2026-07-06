@@ -1,6 +1,6 @@
 # Item Usage (Use, Cast, Burn, Transfer)
 
-> Source: `packages/contracts/src/systems/KamiUseItemSystem.sol` (L1–64),
+> Source: `packages/contracts/src/systems/KamiUseItemSystem.sol` (L1–57),
 > `packages/contracts/src/systems/KamiCastItemSystem.sol` (L1–51),
 > `packages/contracts/src/systems/AccountUseItemSystem.sol` (L1–41),
 > `packages/contracts/src/systems/ItemBurnSystem.sol` (L1–44),
@@ -16,7 +16,8 @@ targeting rules.
 
 ## Item Target Shapes
 
-Items define which target they can be used on via a `ForShape` component:
+Items define which target they can be used on via a `For` component
+(`ForComponent`, read through `LibFor`):
 
 | Shape | System | Description |
 |---|---|---|
@@ -24,7 +25,7 @@ Items define which target they can be used on via a `ForShape` component:
 | `"ENEMY_KAMI"` | `KamiCastItemSystem` | Cast on another player's Kami |
 | `"ACCOUNT"` | `AccountUseItemSystem` | Use on your account |
 
-> Source: `KamiUseItemSystem.sol:38`, `KamiCastItemSystem.sol:27`,
+> Source: `KamiUseItemSystem.sol:31`, `KamiCastItemSystem.sol:27`,
 > `AccountUseItemSystem.sol:23`
 
 ## Use on Own Kami
@@ -57,6 +58,16 @@ Items define which target they can be used on via a `ForShape` component:
 7. Apply item's allocations to the target Kami
 8. Emit `CAST` event
 
+Two behaviors worth noting:
+
+- **No enemy check** — the system only verifies the target is a Kami and is in
+  the caster's room (`KamiCastItemSystem.sol:23–24`); it never checks that the
+  target belongs to another player. `"ENEMY_KAMI"` is only the item's `For`
+  shape string — casting on your **own** Kami is a valid call.
+- **Target must have an active harvest** — the `CAST` event derives the node
+  index from the target's harvest via reverting getters (`LibItem.sol:490–492`),
+  so the whole cast reverts unless the target Kami is actively harvesting.
+
 > Source: `KamiCastItemSystem.sol:18–46`
 
 ## Use on Account
@@ -77,12 +88,19 @@ Unlike Kami-targeted items, account items can be used in batches (`amount > 1`).
 ## Item Effects (Allocations)
 
 When an item is used, `LibItem.applyAllos()` distributes all allocations
-attached to the item's `"USE"` action. These can include:
+attached to the item's `"USE"` use case via `LibAllo.distribute()`, which
+dispatches on each allo's `Type`:
 
-- Stat modifications (healing, buffing)
-- Temporary bonuses
-- Droptable rolls (commit for later reveal)
-- Other items
+| Allo type | Effect |
+|---|---|
+| `STAT` | Stat modification (healing, buffing) |
+| `BONUS` | Temporary bonuses |
+| `ITEM_DROPTABLE` | Droptable roll — creates a commit for later reveal |
+| `CLEAR_BONUS` | Clears all of the target's temporary bonuses via `LibBonus.clearAll` (`LibAllo.sol:212`) |
+| `DISPLAY_ONLY` | Skipped at distribution — display-only entry (`LibAllo.sol:202, 285–287`) |
+| *(any other)* | Basic grant via `LibSetter` (items, currencies, XP, etc.) |
+
+> Source: `LibAllo.sol:188–215`
 
 See [allocations.md](../utility/allocations.md) for the distribution framework.
 
@@ -102,6 +120,11 @@ turn-ins ("give item" quests).
 ## Transferring
 
 `ItemTransferSystem.execute(indices[], amounts[], targetAccountID)`:
+
+Unlike every other item system (which resolves the account from the **operator**
+address), `ItemTransferSystem` authenticates via
+`LibAccount.getByOwner(msg.sender)` — the transfer must be signed by the
+account's **owner** wallet (`ItemTransferSystem.sol:21`).
 
 1. Verify arrays match in length
 2. Verify all items are flagged as **transferable**
@@ -125,7 +148,7 @@ Currency: MUSU (item index 1).
 When items or rewards include a droptable allocation, a commit is created.
 The reveal system resolves these commits:
 
-1. Verify commits are of type `DROPTABLE_COMMIT`
+1. Verify commits are of type `ITEM_DROPTABLE_COMMIT` (`LibDroptable.sol:38, 137`)
 2. Filter out already-revealed commits
 3. Reveal loot using blockhash-based randomness
 

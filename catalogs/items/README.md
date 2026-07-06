@@ -11,6 +11,23 @@
 | `effects.csv` | 94 effects | Item effect definitions (what items do when used/equipped) |
 | `droptables.csv` | 6 tables | Weighted loot pools for lootbox items |
 
+### Source Files & Transformations
+
+- `items.csv` ← source `data/items/items.csv` (column order rearranged; `Image`
+  column dropped).
+- `effects.csv` ← source `data/items/allos.csv`. The GDD carries **94 of the
+  112 source rows**: the 18 excluded rows are empty placeholders (a `Name` key
+  only — no Type, Descriptor, or Value), are referenced by no item, and never
+  reach the chain (allos are deployed only when an item's `Effects` column
+  references them).
+- Item requirements come from source `data/items/requirements.csv` (see
+  "Item Requirements" below).
+- **Name/description normalization**: the GDD strips decorative curly quotes
+  (`“ ”`) from the display names of items 11002, 11211–11214, 11305, 21204,
+  and 100006, and normalizes curly apostrophes/punctuation in some
+  descriptions. In-game names include the original characters (e.g.,
+  `“Melkarth’s Heroic Awakening” Spell Card`).
+
 ## items.csv Schema
 
 | Column | Type | Description |
@@ -22,9 +39,21 @@
 | For | enum | Target entity: `Kami`, `Account`, `Enemy_Kami`, `Passport_slot`, `Kami_Pet_Slot`, or empty |
 | Flags | string | Comma-separated flags (e.g., `NOT_TRADABLE`, `BYPASS_BONUS_RESET`) |
 | Effects | string | Comma-separated effect keys (references `effects.csv`) |
-| Requirements | string | Comma-separated requirement keys |
+| Requirements | string | Comma-separated requirement keys (see Item Requirements below) |
 | Status | enum | `In Game`, `To Deploy`, `To Update` |
 | Description | string | In-game flavor text |
+
+## Item Requirements
+
+Requirement keys in `items.csv:Requirements` resolve via source
+`data/items/requirements.csv`, which currently defines a single requirement:
+
+| Key | Type | Preposition | Index | Meaning |
+|---|---|---|---|---|
+| `VIP_ROOM` | ROOM | AT | 64 | Usable only while the account is in room 64 (Burning Room) |
+
+Only **VIPP (item 2)** carries this key — it can be used/burned only in the
+Burning Room (`catalogs/rooms/rooms.csv` room 64).
 
 ## Item Types
 

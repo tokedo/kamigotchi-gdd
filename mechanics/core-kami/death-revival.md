@@ -1,17 +1,21 @@
 # Death & Revival
 
 > Source: `packages/contracts/src/libraries/LibKami.sol` (L76–79),
-> `packages/contracts/src/systems/KamiOnyxReviveSystem.sol` (L1–49)
+> `packages/contracts/src/systems/KamiOnyxReviveSystem.sol` (L1–49),
+> `packages/contracts/src/systems/HarvestLiquidateSystem.sol` (L84),
+> `packages/contracts/src/libraries/LibSacrifice.sol` (L110),
+> `packages/contracts/src/systems/KamiUseItemSystem.sol` (L19–52)
 
 ## Overview
 
-A Kami dies when its health reaches 0 (from harvest strain or combat). Dead Kamis
-cannot perform any actions until revived. Revival costs Onyx Shards and restores
-partial health.
+A Kami dies only when `LibKami.kill()` is executed — by being **liquidated** or
+**sacrificed**. Reaching 0 HP does **not** by itself kill a Kami. Dead Kamis
+cannot perform Kami actions until revived. Revival costs Onyx Shards (or a
+revive item) and restores partial health.
 
 ## Death
 
-When a Kami's health reaches 0, `LibKami.kill()` is called:
+Death is the `kill()` state transition:
 
 1. **State** → set to `"DEAD"`
 2. **Health sync** → set to `0`
@@ -26,10 +30,18 @@ function kill(components, id):
 
 ### What triggers death
 
-Death can occur from:
-- **Harvest strain** — HP drains to 0 while harvesting (see [health-healing.md](health-healing.md))
-- **Murder/PvP** — another player kills the Kami (see combat mechanics)
-- **Sacrifice** — voluntary permanent death for rewards (see sacrifice mechanics)
+`LibKami.kill()` has exactly **two call sites** — these are the only ways a Kami
+dies:
+- **Liquidation** — another player's Kami liquidates it while harvesting
+  (`HarvestLiquidateSystem.sol:84`; see combat mechanics)
+- **Sacrifice** — voluntary permanent death; the NFT is also sent to the burn
+  address (`LibSacrifice.sol:110`; see sacrifice mechanics)
+
+**Reaching 0 HP is not death.** A harvesting Kami whose HP drains to 0 stays in
+`HARVESTING` state. It fails `verifyHealthy` checks, so its owner cannot stop or
+collect the harvest (`HarvestStopSystem.sol:38`, `HarvestCollectSystem.sol:36`)
+— it remains stuck at 0 HP and liquidatable until another player liquidates it
+(see [health-healing.md](health-healing.md)).
 
 ### What dead Kamis cannot do
 
@@ -38,16 +50,21 @@ which means they cannot:
 - Level up
 - Harvest
 - Equip/unequip items
-- Use items
 - Be sent to another account
 - Enter the marketplace
-- Accept quests
+
+Items **can** be used on a dead Kami — `KamiUseItemSystem` performs no state or
+health check; only each item's own `USE` requirements apply (revive items
+require `STATE == DEAD`, food/potions require `RESTING` or `HARVESTING`)
+(`KamiUseItemSystem.sol:26–32`). Quests are account-scoped and are not blocked
+by any Kami's state.
 
 > Source: `LibKami.sol:264–270, 284–294`
 
 ## Revival
 
-Revival is performed via `KamiOnyxReviveSystem`.
+Revival has two paths: the **Onyx revive** (`KamiOnyxReviveSystem`) and **revive
+items** used via `KamiUseItemSystem` (see [Revive Items](#revive-items-kamiuseitemsystem)).
 
 ### Cost
 
@@ -94,3 +111,38 @@ Revival spending is logged in three counters:
 - Global revive spend: `TOKEN_SPEND_REVIVE[0, ONYX_INDEX]`
 
 > Source: `KamiOnyxReviveSystem.sol:39–41`
+
+### Revive Items (KamiUseItemSystem)
+
+Two items carry the `USE` requirement `STATE == DEAD` (item type `Revive` maps
+to this requirement at deployment — `requirements.ts:77`) and revive a dead
+Kami when used on it. Their effects set state back to `RESTING` and heal a flat
+amount (allos `STATE-RESTING` + `HP+n`):
+
+| Item | Index | Effect | USE requirement |
+|---|---|---|---|
+| Red Ribbon Gummy | 11001 | State → `RESTING`, +10 HP | `STATE == DEAD` |
+| "Melkarth's Heroic Awakening" Spell Card | 11002 | State → `RESTING`, +50 HP | `STATE == DEAD` |
+
+Usage goes through the normal `KamiUseItemSystem` flow: the owner's account must
+be in the Kami's room and the Kami must be off cooldown; there is no state or
+health gate in the system itself (`KamiUseItemSystem.sol:26–32, 40–42`).
+
+Two further items carry the same revival-flavored effects (`STATE-RESTING` +
+heal) but **cannot** be used on a dead Kami — their type-derived `USE`
+requirements exclude the `DEAD` state:
+
+| Item | Index | Effect | USE requirement |
+|---|---|---|---|
+| Djed Pillar | 11003 | State → `RESTING`, +5 HP | `STATE == RESTING` (type `Consumable`) |
+| Pale Potion | 11004 | State → `RESTING`, +75 HP | `KAMI_CAN_EAT` = `RESTING` or `HARVESTING` (type `Potion`) |
+
+> ⚠️ UNCERTAIN: the flavor text of Djed Pillar and Pale Potion describes
+> reviving a liquidated Kami, but their deployed requirements make that
+> impossible — as registered, they only function as heals on living Kamis.
+> Likely a data-entry mismatch in `items.csv` (Type column vs. intent).
+
+> Source: `deployment/world/data/items/items.csv:68–71`,
+> `deployment/world/state/items/requirements.ts:75–79`,
+> `deployment/world/data/items/allos.csv:59` (STATE-RESTING),
+> `LibGetter.sol:94–100` (STATE / KAMI_CAN_EAT checks)

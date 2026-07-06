@@ -51,7 +51,8 @@ Instance ID: `keccak256("relationship", accID, npcIndex, relIndex)`
 1. Resolve account from operator address
 2. **NPC existence check** — NPC must exist
 3. **Room proximity** — account must be in the **same room** as the NPC
-   (`LibNPC.sharesRoomWith`)
+   (`LibNPC.sharesRoomWith`). An NPC with `roomIndex == 0` is treated as
+   global — the check passes from anywhere (`LibNPC.sol:42–50`)
 4. **Registry check** — the relationship flag (npcIndex + relIndex) must exist
 5. **Duplicate check** — account must not already have this flag
 6. **Blacklist check** — account must not hold any blacklisted relationships

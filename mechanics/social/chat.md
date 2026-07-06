@@ -9,9 +9,10 @@
 
 ### Overview
 
-The chat system allows players to send messages within the game world. Messages
-are emitted as on-chain events scoped to the player's current room. The system
-supports configurable access requirements.
+The chat system allows players to send messages within the game world. Each
+message is emitted as a single global on-chain event that carries the player's
+current room index as a payload field. The system supports configurable access
+requirements.
 
 ### Message Flow
 
@@ -24,9 +25,13 @@ supports configurable access requirements.
 5. Log `MESSAGES` counter (incremented by 1)
 6. Emit message event via `LibEmitter.emitMessage(world, roomIndex, accID, message)`
 
-Messages are room-scoped — only players in the same room receive the event.
+The `Message(roomIndex, accountID, message)` event is emitted globally —
+`roomIndex` is a payload field, not a delivery restriction
+(`LibEmitter.sol:19–27`, `Emitter.sol:30–36`). Any room scoping of chat is
+client-side filtering on that field, not on-chain.
 
-> Source: `ChatSystem.sol:17–33`
+> Source: `ChatSystem.sol:17–33`, `libraries/utils/LibEmitter.sol:19–27`,
+> `solecs/Emitter.sol:30–36`
 
 ### Chat Requirements
 

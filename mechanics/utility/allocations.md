@@ -43,8 +43,10 @@ Allocation ID: `keccak256("reward.instance", anchorID, type, index)`
 `LibAllo.distribute(world, components, alloIDs, multiplier, targetID)`:
 
 For each allocation:
-1. Skip `DISPLAY_ONLY` entries
-2. Based on type:
+1. Skip `DISPLAY_ONLY` entries (`LibAllo.sol:202`)
+2. Skip entries whose allocation ID is 0 — `if (alloIDs[i] == 0) continue;`
+   (`LibAllo.sol:203`)
+3. Based on type:
    - **ITEM_DROPTABLE**: Create a commit for later reveal; returns commit ID
    - **STAT**: Modify target's stat by the packed value × multiplier
    - **BONUS**: Assign temporary bonus to target via `LibBonus.assignTemporary`
@@ -54,6 +56,15 @@ For each allocation:
 The multiplier parameter allows scaling rewards (e.g., proportional community
 goal rewards multiply base values by contribution amount).
 
+> ⚠️  UNCERTAIN: the zero-ID guard at `LibAllo.sol:203` appears intended to
+> make unmatched allocation references silently no-op, but it sits *after*
+> the type lookup at `:202`, and `TypeComponent.get` reverts for an entity
+> with no `Type` value (`abi.decode` of empty bytes,
+> `solecs/components/StringBareComponent.sol:27–29`). A zero ID would
+> therefore revert at `:202` before reaching the skip. In practice reward ID
+> arrays come from reverse-mapping queries (`LibAllo.sol:313–325`), which
+> only return existing entities.
+
 > Source: `LibAllo.sol:188–225`
 
 ## Creation Helpers
@@ -61,10 +72,15 @@ goal rewards multiply base values by contribution amount).
 | Function | Description |
 |---|---|
 | `createBasic(...)` | Item/score/simple value reward |
-| `createBonus(...)` | Temporary bonus reward (must have duration + end type) |
+| `createBonus(...)` | Temporary bonus reward (requires non-empty end type; duration unvalidated) |
 | `createDT(...)` | Droptable reward with keys, weights, and roll count |
 | `createStat(...)` | Stat modification reward (base/shift/boost/sync) |
 | `createEmpty(...)` | Display-only reward |
+
+Bonus allocations only validate that the end type is non-empty
+(`require(!endType.eq(""), "Allo: bonus must be temporary")`,
+`LibAllo.sol:105`); the `duration` value passes through to
+`LibBonus.regCreate` unvalidated (`LibAllo.sol:106–114`).
 
 > Source: `LibAllo.sol:75–161`
 

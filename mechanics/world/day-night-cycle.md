@@ -28,6 +28,14 @@ The cycle repeats every 36 hours (129,600 seconds), offset from Unix epoch.
 
 ## Usage
 
-The phase system can be used by other mechanics to gate actions or modify
-behavior based on time of day (e.g., different scavenging yields, NPC
-availability, or enemy behavior during MOONSIDE).
+The phase system is used in two ways:
+
+- **`PHASE` condition type** — any conditional (room gates, quest
+  requirements/objectives, node requirements) can check
+  `LibPhase.get(block.timestamp) == index`, gating actions to a specific
+  phase (`libraries/utils/LibGetter.sol:90–91`).
+- **Per-phase data logging** — liquidations and harvests are logged under
+  phase-suffixed keys that quest objectives can target:
+  - `LIQ_WHEN_{PHASE}` — liquidations per phase (`LibKill.sol:296`)
+  - `HARVEST_TIME_{PHASE}` — harvest time per phase (`LibHarvest.sol:380–381`)
+  - `HARVEST_WHEN_{PHASE}` — harvest amounts per phase (`LibHarvest.sol:406`)

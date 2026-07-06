@@ -9,8 +9,9 @@
 Scavenging is a **secondary reward system** tied to harvest nodes. As Kamis
 harvest, they accumulate **scavenge points** proportional to their harvest
 output. When enough points accumulate to fill a tier, the player can claim
-rewards (droptable rolls, items, bonuses, stats). The scavenge bar resets upon
-claiming.
+rewards (droptable rolls, items, bonuses, stats). Claiming resets the bar to
+`points % tierCost` — partial progress toward the next tier is preserved
+(`LibScavenge.sol:111–112`).
 
 ## Scavenge Bar (Registry)
 
@@ -70,21 +71,25 @@ the next tier is preserved).
 ## Reward Distribution
 
 Rewards are stored as **allocation entities** (LibAllo) anchored to the
-scavenge bar. Each tier claim distributes all configured rewards, multiplied
-by the tier count.
+scavenge bar. A claim distributes all configured rewards in a single pass,
+with the tier count passed as a multiplier — but only `ITEM_DROPTABLE`,
+`STAT`, and basic-type rewards scale with it. `BONUS` allos are assigned
+exactly once (`giveBonus` ignores the multiplier, `LibAllo.sol:241–248`)
+and `CLEAR_BONUS` executes once (`LibAllo.sol:212`), regardless of how many
+tiers are claimed.
 
 Reward anchor: `keccak256("scavenge.reward", registryID)`
 
 ### Reward Types
 
-| Allo Type | Description |
-|---|---|
-| `ITEM_DROPTABLE` | Creates a droptable commit (random loot via commit-reveal) |
-| `STAT` | Applies stat modifications to the account/Kami |
-| `BONUS` | Assigns temporary bonuses |
-| `CLEAR_BONUS` | Clears all bonuses from holder |
-| Basic types | Gives items, XP, reputation, etc. via `LibSetter` |
-| `DISPLAY_ONLY` | No distribution — for UI display only |
+| Allo Type | Description | Scales with tier count? |
+|---|---|---|
+| `ITEM_DROPTABLE` | Creates a droptable commit (random loot via commit-reveal) | Yes |
+| `STAT` | Applies stat modifications to the account/Kami | Yes |
+| `BONUS` | Assigns temporary bonuses | No — assigned once |
+| `CLEAR_BONUS` | Clears all bonuses from holder | No — executes once |
+| Basic types | Gives items, XP, reputation, etc. via `LibSetter` | Yes |
+| `DISPLAY_ONLY` | No distribution — for UI display only | — |
 
 The distribution function returns commit IDs for any droptable rewards
 (which must be separately revealed via `DroptableRevealSystem`).

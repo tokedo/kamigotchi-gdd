@@ -88,6 +88,8 @@ Tracks which game mechanics have been extracted from source code into the GDD.
 | Commit-reveal pattern | ✅ | `LibCommit.sol` | [commit-reveal.md](../mechanics/utility/commit-reveal.md) |
 | Flag system | ✅ | `LibFlag.sol` | [flags.md](../mechanics/utility/flags.md) |
 | NPC system | ✅ | `LibNPC.sol` | [npcs.md](../mechanics/utility/npcs.md) |
+| Data tracking counters | ✅ | `LibData.sol` | [data-tracking.md](../mechanics/utility/data-tracking.md) |
+| Admin operations | ✅ | `AuthRoles.sol`, `_DistributeItemSystem.sol`, `_AdminSetFlagSystem.sol`, `_HarvestAdminSystem.sol`, `_SnapshotT2System.sol` | [admin-operations.md](../mechanics/utility/admin-operations.md) |
 
 ## Sync Notes & Open Flags
 
@@ -112,6 +114,25 @@ Mechanics touched and re-extracted:
 - **Catalogs** — quest CSVs re-copied verbatim (192 quests; Act IV MSQ105-109 +
   Ring-of-Spirits SQ100-118 lines now live); items/effects/recipes/rooms updated.
 
+### 2026-07-05 — accuracy audit at pin `91f69796`
+
+Full 12-agent audit of every mechanics file and catalog against source
+(`main` HEAD `79b2cf36` differs from the pin only by one client-only commit).
+Findings logged in [audit-2026-07-05.md](audit-2026-07-05.md); all
+ERROR/OMISSION findings were fixed in the same pass. Highlights:
+
+- ~35 ERROR-level corrections (tax basis points, exponential droptable
+  weights, 0 HP ≠ death, dead-code item-use pipeline, token-portal unit
+  scale, quest-drop reset, XP table floor, trait counts, invented face
+  affinities). Note: the 2026-06-15 sync note above claimed Energy Drink
+  uses `UPON_COOLDOWN_SET` — the deployed catalog actually uses
+  `UPON_HARVEST_ACTION`; no deployed bonus uses `UPON_COOLDOWN_SET`.
+- New docs: [data-tracking.md](../mechanics/utility/data-tracking.md),
+  [admin-operations.md](../mechanics/utility/admin-operations.md),
+  [gates.csv](../catalogs/rooms/gates.csv) (11 live room gates).
+- Zero dangling source references; quest/skill/faction/dialogue CSVs verified
+  byte-identical to source.
+
 ### Open flags
 
 - ⚠️ **`XP+10000` undefined allo** — Cultivation III Spell Card (11213)
@@ -122,3 +143,31 @@ Mechanics touched and re-extracted:
   for the new SQ028-045 / SQ100-118 / SQ802-803 lines were reconstructed from
   the `Requirements` column (best-effort edges); the source-of-truth CSVs are
   fully synced, but a deeper narrative pass over the new lines is worthwhile.
+- ⚠️ **Suspected upstream bug: equipment bonuses inert** — deployed catalog
+  registers equipment bonus allos under the `USE` case with bare
+  `UPON_UNEQUIP` terminator, while equip reads the `EQUIP` anchor and clears
+  `UPON_UNEQUIP_{SLOT}` — catalog equipment bonuses neither attach nor clear.
+  See [equipment.md](../mechanics/economy/equipment.md),
+  [bonus-system.md](../mechanics/combat/bonus-system.md).
+- ⚠️ **Suspected upstream bug: liquidation salvage/spoils bands** — integer
+  division defeats the 100% clamp: victim Power 101–199 makes
+  `bounty − salvage` underflow (liquidation reverts — victim unliquidatable);
+  attacker Power 56–154 takes 101–199% spoils uncapped. See
+  [kill.md](../mechanics/combat/kill.md).
+- ⚠️ **Suspected upstream bug: account respec always reverts** —
+  `SkillRespecSystem` has its RESTING check in the account branch (accounts
+  carry no StateComponent); Kami respec conversely skips the RESTING gate.
+  See [skills.md](../mechanics/progression/skills.md).
+- ⚠️ **Room 19 gate references undefined goal 999** — `gates.ts` gates Temple
+  of the Wheel on `getGoalID(999)`, which no goal defines. See
+  [gates.csv](../catalogs/rooms/gates.csv) / rooms README.
+- ⚠️ **Revival flavor vs requirements** — Djed Pillar (11003) and Pale Potion
+  (11004) carry revival flavor text but require RESTING / KAMI_CAN_EAT, so
+  they cannot be used on dead Kamis; only 11001/11002 require `STATE == DEAD`.
+  See [death-revival.md](../mechanics/core-kami/death-revival.md).
+- ⚠️ **Goal catalog not fully derivable from source** — `goals.ts` deploys
+  only goals 7 and 13; goals 1–6/8–11 are commented out and were seeded at
+  runtime by admin. See [goals.md](../mechanics/progression/goals.md).
+- ⚠️ **Token portal enabled-state unverifiable** — `isEnabled` is mutable
+  runtime state (defaults `false`); no repo artifact pins the live value. See
+  [token-portal.md](../mechanics/marketplace/token-portal.md).

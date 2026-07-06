@@ -2,13 +2,16 @@
 
 > Source: `packages/contracts/src/libraries/LibKami.sol` (L52–170),
 > `packages/contracts/src/libraries/utils/LibCooldown.sol` (L1–109),
-> `packages/contracts/deployment/world/state/configs/configs.ts` (L105–118)
+> `packages/contracts/deployment/world/state/configs/configs.ts` (L121, L124, L136)
 
 ## Overview
 
 Health is a **depletable stat** tracked in the `sync` field of the Health
 `Stat` struct. It decreases from harvest strain and increases from resting
-(metabolism). When health reaches 0, the Kami dies.
+(metabolism). Reaching 0 HP does **not** kill the Kami — a harvesting Kami at
+0 HP stays `HARVESTING`, fails `verifyHealthy` checks, and becomes liquidatable.
+Death only occurs via liquidation or sacrifice (see
+[death-revival.md](death-revival.md)).
 
 Health is **not updated in real-time** — it is computed lazily via `sync()` calls
 whenever the Kami performs an action.
@@ -21,10 +24,17 @@ A Kami is always in exactly one state:
 |---|---|---|
 | `RESTING` | 1 | Default state. HP passively regenerates. |
 | `HARVESTING` | 2 | Actively farming. HP drains from strain. |
-| `DEAD` | 3 | HP reached 0. Cannot act until revived. |
+| `DEAD` | 3 | Killed via liquidation or sacrifice. Cannot act until revived. |
 | `721_EXTERNAL` | 4 | ERC-721 unstaked (outside game world). |
+| `LISTED` | — | Listed on the Kami marketplace. Staked and treated as in-world. |
 
 > Source: `LibKami.sol:37–43`
+
+`LISTED` is not part of the `KamiState` enum but is a real `StateComponent`
+value: it is set by `KamiMarketListSystem` (`KamiMarketListSystem.sol:35`),
+checked throughout `LibKamiMarket.sol`, and counts as in-world in
+`LibKami.isInWorld` — only `721_EXTERNAL` is "not in world"
+(`LibKami.sol:214–218`).
 
 ## Sync Mechanism
 
@@ -75,7 +85,7 @@ Metabolism(HP/s) = 1000 × (Harmony + 20) × 600 × (1000 + bonusBoost) / 3600
 
 The `REST_METABOLISM_BOOST` bonus can modify the boost multiplier.
 
-> Source: `LibKami.sol:134–145`, `configs.ts:114`
+> Source: `LibKami.sol:134–145`, `configs.ts:121`
 
 ### Recovery Calculation
 
@@ -111,7 +121,7 @@ HP recovered in 1 hour = 18 HP → capped at max HP (total Health stat)
 While harvesting, Kamis take HP damage proportional to resources gathered:
 
 ```
-strain = ceil(harvestedAmount × core × boost / (harmony + denomBase))
+strain = ceil(harvestedAmount × core × boost / (10^(c_prec + b_prec) × (harmony + denomBase)))
 ```
 
 Config `KAMI_HARV_STRAIN` = `[denomBase, d_prec, core, c_prec, shift, s_prec, boost, b_prec]`
@@ -129,7 +139,7 @@ strain = ceil(amt × 6500 × (1000 + strainBoost) / (10^6 × (Harmony + 20)))
 
 The `STND_STRAIN_BOOST` bonus modifies the boost value.
 
-> Source: `LibKami.sol:155–170`, `configs.ts:129`
+> Source: `LibKami.sol:155–170`, `configs.ts:136`
 
 ## Cooldown System
 
@@ -147,7 +157,7 @@ cooldown_end = block.timestamp + cooldown_duration
 
 A Kami is "on cooldown" when `block.timestamp < TimeNext`.
 
-> Source: `LibCooldown.sol:25–31, 82–108`, `configs.ts:117`
+> Source: `LibCooldown.sol:25–31, 82–108`, `configs.ts:124`
 
 ## Drain & Heal Operations
 

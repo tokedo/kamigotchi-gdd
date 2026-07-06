@@ -45,17 +45,28 @@ All trait files share these columns:
 | BPs | uint32 | Blueprint cost (used in trait marketplace) |
 
 Additional columns per type:
-- **Bodies/Faces/Hands**: `Affinity` (Normal/Eerie/Insect/Scrap), `Slots` (extra equipment slots)
+- **Bodies/Faces/Hands**: `Affinity` (Normal/Eerie/Insect/Scrap, empty = no affinity), `Slots` (extra equipment slots)
 - **Faces**: `Gated` (Yes/No — access-restricted)
 - **Backgrounds**: `Hex` (color code for solid backgrounds)
 - **Colors**: `Hex` (color code)
+
+### Transformations from Source
+
+- **Backgrounds 21–27 (Butterfly, Maze, Nature 1–3, Textbook, Graveyard):
+  `Rarity` is filled as `Legendary` here; the source CSV leaves it blank.** This
+  is an inference from `Tier` 4 — the Tier→Rarity mapping (9=Common, 8=Uncommon,
+  7=Rare, 6=Epic, 4=Legendary) is consistent everywhere Rarity is populated, and
+  only Tier is pushed on-chain (Rarity is a display/spreadsheet column).
+- **Faces 31–35 (Wassie, Jiangshi Hat, Sunglasses, Nerd, Third Eye)** have an
+  empty `Affinity` in the source, preserved as empty here — these faces grant
+  no affinity.
 
 ## Rarity Distribution
 
 | Rarity | Tier | Bodies | Faces | Hands | Backgrounds | Colors | Total |
 |---|---|---|---|---|---|---|---|
-| Common | 9 | 10 | 12 | 8 | 12 | 6 | 48 |
-| Uncommon | 8 | 4 | 5 | 4 | 0 | 4 | 17 |
+| Common | 9 | 8 | 12 | 8 | 11 | 6 | 45 |
+| Uncommon | 8 | 5 | 5 | 5 | 0 | 4 | 19 |
 | Rare | 7 | 8 | 7 | 6 | 4 | 0 | 25 |
 | Epic | 6 | 5 | 10 | 4 | 6 | 4 | 29 |
 | Legendary | 4 | 4 | 2 | 4 | 7 | 0 | 17 |
@@ -64,11 +75,11 @@ Additional columns per type:
 
 | Affinity | Bodies | Faces | Hands | Total |
 |---|---|---|---|---|
-| Normal | 10 | 21 | 10 | 41 |
-| Eerie | 6 | 5 | 5 | 16 |
-| Insect | 7 | 4 | 6 | 17 |
+| Normal | 9 | 16 | 9 | 34 |
+| Eerie | 7 | 6 | 6 | 19 |
+| Insect | 7 | 5 | 6 | 18 |
 | Scrap | 7 | 4 | 6 | 17 |
-| (none) | 0 | 2 | 0 | 2 |
+| (none) | 0 | 5 | 0 | 5 |
 
 ## Notable Traits
 
@@ -93,4 +104,4 @@ Additional columns per type:
 - **Power**: Hagoromo body (9), Candles hand (7), Graveyard BG (7)
 - **Violence**: Butterfly body (7), Mantis hand (7), Butterfly BG (7)
 - **Harmony**: Tank body (6), Van de Graaf hand (6), Sensor face (6)
-- **Slots**: Octahedron body (2), Lenny 1 face (1), Cube body (1)
+- **Slots**: Octahedron body (2), Cube body (1), Lenny 1 face (1), Lenny 2 face (1), Nerd face (1)

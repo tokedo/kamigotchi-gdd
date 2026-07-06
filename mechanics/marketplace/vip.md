@@ -150,4 +150,4 @@ This allows both O(1) lookup by address and paginated enumeration.
 | `VIP_STAGE` | `[1745481600, 1209600, 0, 0, 0, 0, 0, 0]` | Genesis: 2025-04-24 08:00 UTC, epoch: 1,209,600s (2 weeks) |
 | `VIP_SCORE_ADDRESS` | (deployment address) | Address of the deployed VipScore contract |
 
-> Source: `configs.ts:176–180`
+> Source: `configs.ts:189–193`

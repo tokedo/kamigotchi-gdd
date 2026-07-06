@@ -57,7 +57,10 @@ for i in 0..amount:
 `KamiGachaRevealSystem.reveal(commitIDs)`:
 
 1. Verify all commits are of type `GACHA_COMMIT`
-2. Sort commits by entity ID (chronological ordering)
+2. Sort commit IDs numerically (`LibSort.insertionSort`) — since commit IDs are
+   keccak hashes, this is arbitrary numeric ordering, **not** chronological
+   (the source comment claims chronological ordering, but the code sorts raw
+   hash values)
 3. Extract seeds from blockhashes: `seed = keccak256(blockhash(revealBlock), entityID)`
 4. Select random Kamis from pool using seeds (no-replacement sampling)
 5. Transfer selected Kamis from pool to committers' accounts
@@ -66,18 +69,28 @@ for i in 0..amount:
 The reveal is **owner-agnostic** — anyone can trigger it, and Kamis are sent to
 the original committer (stored in `IdHolder`).
 
-> Source: `KamiGachaRevealSystem.sol:21–31`, `LibGacha.sol:87–98`
+**Reveal window:** commits store `revealBlock = block.number` (the commit
+block), but reveal is impossible in the commit block itself —
+`blockhash(block.number)` returns 0 for the current block, which makes
+`LibCommit.hashSeed` revert. Since `blockhash` is also only available for the
+most recent 256 blocks, the effective reveal window is
+**[commit block + 1, commit block + 256]**.
 
-### Force Reveal (Admin)
+> Source: `KamiGachaRevealSystem.sol:21–31`, `LibGacha.sol:75–81, 87–98`,
+> `LibCommit.sol:134–138`
+
+### Force Reveal (Community Manager)
 
 If a player misses the **256-block window** (after which `blockhash()` returns
-0), an admin can call `forceReveal()` which:
+0), a community manager can call `forceReveal()`. The function is gated by
+`onlyCommManager` (requires the caller to hold the `ROLE_COMMUNITY_MANAGER`
+flag). It:
 
 1. Verifies the blockhash is no longer available
 2. Resets commit blocks to `block.number - 1` (generating new seeds)
 3. Proceeds with normal reveal flow
 
-> Source: `KamiGachaRevealSystem.sol:34–51`
+> Source: `KamiGachaRevealSystem.sol:34–51`, `AuthRoles.sol:12–14`
 
 ## Minting
 
@@ -110,33 +123,42 @@ receives random Kamis from the pool (not necessarily the ones just created).
 8. Log reroll
 
 On reveal, the player receives the same number of random Kamis. Each received
-Kami's reroll counter is incremented by 1 (tracking how many times it has been
-rerolled).
+Kami's counter is set to the value carried on the commit plus 1 (see Reroll
+Counter below).
 
 > Source: `KamiGachaRerollSystem.sol:21–54`, `LibGacha.sol:41–69`
 
 ## Reroll Counter
 
-Each Kami tracks how many times it has been rerolled via the `RerollComponent`.
-This counter:
+Each Kami's `RerollComponent` counts **withdrawals from the gacha pool**, not
+rerolls. The counter:
 - Is cleared when a Kami enters the pool (`depositPets` removes it)
-- Is transferred from the old Kami to the commit during reroll
-- Is incremented (+1) when a Kami is withdrawn from the pool
+- Is transferred from the old Kami to the commit during reroll (mint commits
+  carry no value, read as 0)
+- Is set to the carried value + 1 on **every** withdrawal from the pool
+  (`LibGacha.withdrawPets`)
 
-> Source: `LibGacha.sol:41–69`
+Because the increment applies to every withdrawal, a freshly minted,
+never-rerolled Kami leaves the pool with `Reroll = 1`.
+
+> Source: `LibGacha.sol:41–69` (increment at 57–62)
 
 ## Random Selection
 
 `LibGacha.selectPets()` draws Kamis from the pool:
 
 1. Extract seeds from commit blockhashes
-2. Use `LibRandom.getRandomBatchNoReplacement(seeds, poolSize)` to get unique
-   indices into the pool
-3. Extract Kamis at those indices from the pool (swap-with-last removal pattern)
+2. Use `LibRandom.getRandomBatchNoReplacement(seeds, poolSize)` to compute
+   indices into a shrinking pool: `index[i] = seed[i] mod (poolSize − i)`. The
+   numeric indices themselves **can** repeat across draws
+3. Extract Kamis at those indices, removing each selected Kami from the pool
+   (swap-with-last removal pattern) before the next draw
 
-This ensures no duplicate draws within a single reveal batch.
+No duplicate draws occur within a single reveal batch — not because the indices
+are unique, but because each selected Kami is removed from the pool between
+draws, so a repeated index lands on a different Kami.
 
-> Source: `LibGacha.sol:87–118`
+> Source: `LibGacha.sol:87–118` (pool removal at 110–116), `LibRandom.sol:78–91`
 
 ## Buying Gacha Tickets
 
@@ -173,12 +195,24 @@ This ensures no duplicate draws within a single reveal batch.
 | `MINT_START_WL` | 1746086400 (2025-05-01 08:00 UTC) | Whitelist mint start time |
 | `MINT_PRICE_WL` | 50 (0.05 ETH) | Whitelist ticket price |
 | `MINT_MAX_WL` | 1 | Max WL tickets per account |
-| `MINT_START_PUBLIC` | 0 (disabled in prod config) | Public mint start time |
+| `MINT_START_PUBLIC` | 1746086400 (2025-05-01 08:00 UTC) | Public mint start time (production) |
 | `MINT_PRICE_PUBLIC` | 100 (0.1 ETH) | Public ticket price |
 | `MINT_MAX_PUBLIC` | 222 | Max public tickets per account |
-| `GACHA_REROLL_PRICE` | (config) | Reroll cost (checked via `LibConfig`) |
 
-> Source: `configs.ts:90–102`, `GachaBuyTicketSystem.sol:17–36`
+The base `initMint` sets `MINT_START_PUBLIC = 0`. Because the gate is
+`block.timestamp < MINT_START_PUBLIC`, a value of 0 means **always open**, not
+disabled. Production deploys additionally run `initProdConfigs`, which sets
+both `MINT_START_WL` and `MINT_START_PUBLIC` to 1746086400 — public mint opens
+at the same time as the whitelist mint.
+
+`GACHA_REROLL_PRICE` is a dead config: its only reader,
+`LibGacha.getBaseRerollCost` (`LibGacha.sol:134–136`), has no callers, and the
+key is never set by any init script. The only reroll cost is 1 Reroll Token
+(item 11) per Kami (`KamiGachaRerollSystem.sol:37`).
+
+> Source: `configs.ts:96–110` (initMint), `configs.ts:53–56` (initProdConfigs),
+> `deployment/world/state/index.ts:73–75, 97–99`,
+> `GachaBuyTicketSystem.sol:17–36, 116–118`
 
 ## Logging
 

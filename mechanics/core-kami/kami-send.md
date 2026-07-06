@@ -13,7 +13,10 @@ bypasses the marketplace.
 `KamiSendSystem.execute(kamiIndices[], toAddress)`:
 
 1. Verify sender has an account (via operator address)
-2. Resolve target account from `toAddress`
+2. Resolve target account via `LibAccount.getByOperator(toAddress)`
+   (`KamiSendSystem.sol:44`) — `toAddress` must be the recipient's **operator**
+   address. Passing an owner wallet or any unregistered address reverts
+   (`"Account: Operator not found"`, `LibAccount.sol:260`)
 3. Verify sender is not sending to themselves
 4. For each Kami:
    a. Verify Kami is owned by sender and in `RESTING` or `LISTED` state
@@ -40,4 +43,4 @@ marketplace purchases). This prevents immediate re-listing or other actions.
 cooldown = KAMI_MARKET_PURCHASE_COOLDOWN config (default: 3600s / 1 hour)
 ```
 
-> Source: `KamiSendSystem.sol:47–49, 66`
+> Source: `KamiSendSystem.sol:48–50, 70`

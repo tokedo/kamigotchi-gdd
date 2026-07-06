@@ -6,19 +6,27 @@
 
 ## Overview
 
-Equipment items are a special item type (`"EQUIPMENT"`) that can be equipped to
-Kamis or accounts, granting stat bonuses while worn. Each equipment item occupies
-a named **slot**, and equipping/unequipping automatically manages bonuses.
+Equipment items are a special item type (`"EQUIPMENT"`) that are equipped to
+**Kamis**, granting stat bonuses while worn. Each equipment item occupies a
+named **slot**, and equipping/unequipping automatically manages bonuses.
+
+`KamiEquipSystem` is the only caller of `LibEquipment.equip`
+(`KamiEquipSystem.sol:32`) — no account-equip system exists, so only Kami
+equipping is reachable in the current system set.
 
 ## Slot System
 
 Each equipment item defines a **slot** via its `For` component. The slot string
-encodes both the target type and slot name:
+prefix names an intended target type:
 
-| Slot Pattern | Target | Example |
+| Slot Pattern | Prefix Convention | Example |
 |---|---|---|
-| `Kami_Pet_Slot` | Kami | Pet slot equipment |
-| `Account_Badge_Slot` | Account | Badge slot equipment |
+| `Kami_Pet_Slot` | Kami-targeted | Pet slot equipment |
+| `Account_Badge_Slot` | Account-targeted | Badge slot equipment |
+
+The `Kami_`/`Account_` prefix is an **unenforced naming convention**:
+`LibEquipment.equip` never validates the slot prefix against the holder type
+(`LibEquipment.sol:91–124`), and the only equip entry point targets Kamis.
 
 Only **one item** can occupy a given slot at a time. Equipping a new item into an
 occupied slot automatically unequips the existing one first.
@@ -41,7 +49,7 @@ capacity = DEFAULT_CAPACITY + EQUIP_CAPACITY_SHIFT bonus
 When replacing an item in an existing slot, capacity is not consumed (swap).
 Capacity is only checked when adding equipment to a **new** slot.
 
-> Source: `LibEquipment.sol:51–53, 215–220`
+> Source: `LibEquipment.sol:51–52, 202–207`
 
 ## System Entry Points
 
@@ -86,7 +94,7 @@ Note: unequip takes a **slot name** (string), not an item index.
 
 Kamis must be in `RESTING` state to equip.
 
-> Source: `LibEquipment.sol:91–124, 171–173`
+> Source: `LibEquipment.sol:91–124, 158–160`
 
 ## Unequip Process
 
@@ -101,7 +109,7 @@ Single-slot unequip and bulk `unequipAll` share the internal `_unequipByID`
 helper (reads the item index + slot, clears bonuses, removes the instance,
 returns the item).
 
-> Source: `LibEquipment.sol:132–155, 240–253`
+> Source: `LibEquipment.sol:132–142, 244–255`
 
 ## Force-Unequip on Ownership Change
 
@@ -120,10 +128,10 @@ the **previous owner / seller**.
 | Sacrifice | `LibSacrifice` | Burning a Kami in the sacrifice ritual |
 | Gacha reroll | `KamiGachaRerollSystem` | Depositing Kamis into the gacha pool |
 
-> Source: `LibEquipment.sol:224–256`, `KamiSendSystem.sol:62`,
-> `KamiMarketListSystem.sol:34`, `LibKamiMarket.sol:128–188`,
-> `Kami721UnstakeSystem.sol:46`, `LibSacrifice.sol:84`,
-> `KamiGachaRerollSystem.sol:28–31`
+> Source: `LibEquipment.sol:232–255`, `KamiSendSystem.sol:63`,
+> `KamiMarketListSystem.sol:34`, `LibKamiMarket.sol:129, 158, 187`,
+> `Kami721UnstakeSystem.sol:47`, `LibSacrifice.sol:85`,
+> `KamiGachaRerollSystem.sol:30`
 
 ## Equipment Instance Shape
 
@@ -136,19 +144,21 @@ the **previous owner / seller**.
 
 Entity ID: `keccak256("equipment.instance", holderID, slot)` — one per holder per slot.
 
-> Source: `LibEquipment.sol:253–256`
+> Source: `LibEquipment.sol:59–72, 271–273`
 
 ## Bonus Lifecycle
 
-Equipment bonuses use the naming convention `UPON_UNEQUIP_{SLOT}` as their end
-type (`END_TYPE_PREFIX = "UPON_UNEQUIP_"`; corrected from the earlier
-`ON_UNEQUIP_`, which mismatched the `UPON_UNEQUIP` terminators in the allo
-catalog and left bonuses uncleared). This means:
-- On equip: bonuses are assigned as temporary bonuses to the holder
-- On unequip: all bonuses tagged with that slot's end type are cleared
+Equipment bonuses use the end type `UPON_UNEQUIP_{SLOT}`
+(`END_TYPE_PREFIX = "UPON_UNEQUIP_"`, `LibEquipment.sol:48`). This means:
+- On equip: the item's `EQUIP` use-case bonus allo is assigned as temporary
+  bonuses to the holder (`LibEquipment.sol:122–123`)
+- On unequip: all bonuses tagged with that slot's end type
+  (`"UPON_UNEQUIP_" + slot`, `LibEquipment.sol:276–278`) are cleared
+  (`LibEquipment.sol:250–252`)
 - Replacing equipment in the same slot properly clears old and applies new bonuses
 
-The bonus allocation ID is derived deterministically:
+The bonus allocation ID is derived deterministically
+(`LibEquipment.getEquipBonusAlloID`, `LibEquipment.sol:216–225`):
 ```
 refAnchor = keccak256("item.usecase", itemIndex)
 refID = LibReference.genID("EQUIP", refAnchor)
@@ -156,4 +166,20 @@ alloAnchor = keccak256("item.allo", refID)
 alloID = LibAllo.genID(alloAnchor, "BONUS", 1)
 ```
 
-> Source: `LibEquipment.sol:122–123, 147–148, 229–238`
+> Source: `LibEquipment.sol:48, 122–123, 216–225, 250–252, 276–278`
+
+> ⚠️ **SUSPECTED UPSTREAM DATA BUG**: the deployed item catalog registers
+> equipment bonuses under the **`USE`** use case with the bare terminator
+> `UPON_UNEQUIP` — `deployment/world/state/items/allos.ts:64` calls
+> `api.bonus(itemIndex, 'USE', descriptor, terminator, 0, value)` with the
+> terminator taken verbatim from `data/items/allos.csv`, whose equipment rows
+> all carry `UPON_UNEQUIP` with no slot suffix. Equip, however, reads the
+> **`EQUIP`** use-case anchor (`LibEquipment.getEquipBonusAlloID`,
+> `LibEquipment.sol:216–225`) and unequip clears the slot-suffixed end type
+> `UPON_UNEQUIP_{SLOT}` (`LibEquipment.sol:48, 277`). Per the source data,
+> catalog equipment bonuses are registered where equip never looks: equipping
+> attaches no bonuses (`LibBonus.assignTemporary` silently no-ops when the
+> anchor holds no bonus registrations, `LibBonus.sol:182–183`), and the bare
+> terminator would never match the unequip clear anyway. The test suite passes
+> because it registers `EQUIP` use-case bonuses with slot-suffixed terminators
+> directly (`test/systems/Equipment.t.sol:66–95`).

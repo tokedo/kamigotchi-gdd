@@ -1,12 +1,14 @@
 # Harvesting
 
-> Source: `packages/contracts/src/libraries/LibHarvest.sol` (L1–415),
+> Source: `packages/contracts/src/libraries/LibHarvest.sol` (L1–439),
 > `packages/contracts/src/systems/HarvestStartSystem.sol`,
 > `packages/contracts/src/systems/HarvestStopSystem.sol`,
 > `packages/contracts/src/systems/HarvestCollectSystem.sol`,
 > `packages/contracts/src/systems/HarvestLiquidateSystem.sol`,
+> `packages/contracts/src/libraries/LibKill.sol`,
+> `packages/contracts/src/libraries/LibTax.sol`,
 > `packages/contracts/src/libraries/utils/LibAffinity.sol`,
-> `packages/contracts/deployment/world/state/configs/configs.ts` (L120–143)
+> `packages/contracts/deployment/world/state/configs/configs.ts` (L127–137)
 
 ## Overview
 
@@ -14,6 +16,11 @@ Harvesting is the primary resource-generation loop in Kamigotchi. A Kami is
 assigned to a **node** (a resource spot within a room) and passively generates
 **Musu** (the base resource) over time. Harvesting drains HP via **strain**,
 and other players can **liquidate** (PvP raid) active harvests.
+
+Strictly, the harvest pays out the node's configured yield item
+(`LibNode.getItem`, applied in `LibHarvest.claim` — `LibHarvest.sol:97–99`),
+set per node via the `YieldIndex` column in deployment data: 53 nodes yield
+Musu (item 1) and 11 yield item 2 — see `catalogs/rooms/nodes.csv`.
 
 ## Harvest Lifecycle
 
@@ -39,7 +46,8 @@ START → [accruing bounty, taking strain] → COLLECT (partial) or STOP (full)
 2. Assign node bonuses to the Kami
 3. Sync again (apply bonuses)
 4. Create or reuse harvest entity, link to node
-5. Set up tax (if `taxAmt > 0`, the `taxerID` receives that % of output)
+5. Set up tax (if `taxAmt > 0`, the `taxerID` receives `taxAmt` **basis
+   points** of output, capped at 2000 bp = 20% — see [Tax System](#tax-system))
 6. Set Kami state → `HARVESTING`
 7. Start cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
 
@@ -55,12 +63,13 @@ Withdraws accrued bounty **without stopping** the harvest.
 1. Sync Kami health
 2. Claim accrued balance (split by tax)
 3. Transfer items to account (and tax recipients)
-4. Grant **XP equal to collected amount** to the Kami
-5. Trigger scavenge chance (node-based loot roll)
+4. Grant **XP equal to the post-tax output** to the Kami
+5. Add the post-tax output to the account's scavenge bar for the node — no
+   droptable roll here (see `mechanics/world/scavenging.md`)
 6. Reset cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
 7. Reset harvest-action bonuses
 
-> Source: `HarvestCollectSystem.sol:84–112`
+> Source: `HarvestCollectSystem.sol:84–113`
 
 ### Stop (`HarvestStopSystem`)
 
@@ -73,13 +82,14 @@ Collects all accrued bounty **and ends** the harvest.
 2. Claim full accrued balance (split by tax)
 3. Stop harvest (set `INACTIVE`, zero balance)
 4. Set Kami state → `RESTING`
-5. Grant XP equal to collected amount
-6. Trigger scavenge chance
+5. Grant XP equal to the post-tax output
+6. Add the post-tax output to the account's scavenge bar for the node (no
+   droptable roll here)
 7. Reset all harvest-stop bonuses
 8. Reset cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
 9. Log harvest time
 
-> Source: `HarvestStopSystem.sol:88–123`
+> Source: `HarvestStopSystem.sol:88–124`
 
 ### Liquidate (`HarvestLiquidateSystem`)
 
@@ -108,7 +118,7 @@ Config `KAMI_HARV_BOUNTY` = `[0, 9, 0, 0, 0, 0, 1000, 3]`
 > converts them to actual Musu. Always compute the full bounty formula for
 > real-world harvest rates.
 
-> Source: `LibHarvest.sol:156–171`
+> Source: `LibHarvest.sol:156–175`
 
 ### Starve Cutoff (Bounty Cap by HP)
 
@@ -141,8 +151,8 @@ If current HP ≤ 0, `MaxMusu` = 0. If `core × boost` = 0, no cap is applied.
 This is the exact inverse of strain (rounded the opposite way): collecting Musu
 inflicts strain damage, and the cap guarantees that damage tops out at current HP.
 
-> Source: `LibHarvest.sol:170–194` (`calcMaxMusu`), `LibKami.sol:155–170`
-> (`calcStrain`), `configs.ts:136`
+> Source: `LibHarvest.sol:172–174` (cap), `LibHarvest.sol:179–195`
+> (`calcMaxMusu`), `LibKami.sol:155–170` (`calcStrain`), `configs.ts:136`
 
 #### Strain (HP cost of harvesting)
 
@@ -165,22 +175,22 @@ A Kami with Power=10, Violence=10, neutral affinity, no bonuses, harvesting
 for 1 hour (3600s), 60 minutes of intensity:
 
 ```
-Fertility = 1 × 10 × 1500 × 1000 / 3600 = 4,167        (intermediate value)
+Fertility = 1 × 10 × 1500 × 1000 / 3600 = 4,166        (intermediate value, integer division)
 Intensity = 1,000,000 × (10×5 + 60) × 10 / (480 × 3600) = 636   (intermediate)
 
-Rate      = 4,167 + 636 = 4,803
+Rate      = 4,166 + 636 = 4,802
 Duration  = 3,600 seconds
 Boost     = 1,000 (no bonuses)
 Precision = 10^(6 + 0 + 3) = 10^9
 
-Bounty = 4,803 × 3,600 × 1,000 / 1,000,000,000
-       ≈ 17 Musu in 1 hour
+Bounty = 4,802 × 3,600 × 1,000 / 1,000,000,000
+       = 17 Musu in 1 hour (integer division)
 ```
 
 For comparison — a Power=20 Kami with perfect affinity match (efficacy 2000):
 ```
-Fertility = 1 × 20 × 1500 × 2000 / 3600 = 16,667
-Bounty = 16,667 × 3,600 × 1,000 / 1,000,000,000 ≈ 60 Musu/hr (before Intensity)
+Fertility = 1 × 20 × 1500 × 2000 / 3600 = 16,666
+Bounty = 16,666 × 3,600 × 1,000 / 1,000,000,000 = 59 Musu/hr (integer division; before Intensity)
 ```
 
 ### Fertility (Power-Based Rate)
@@ -201,7 +211,7 @@ Precision = 10^(6 - (3 + 3)) = 10^0 = 1
 
 Effective: `Fertility = Power × 1500 × Efficacy / 3600`
 
-> Source: `LibHarvest.sol:236–248`, `configs.ts:126`
+> Source: `LibHarvest.sol:260–272`, `configs.ts:133`
 
 ### Intensity (Violence-Based Rate)
 
@@ -223,9 +233,11 @@ boost = 10 + HARV_INTENSITY_BOOST bonus
 Intensity **grows linearly** with time spent harvesting (minutes elapsed),
 incentivizing longer harvest sessions but increasing strain risk.
 
-Intensity resets when: the Kami performs certain actions (e.g., equip changes).
+Intensity resets when the harvest starts (`LibHarvest.sol:111`) and when an
+item is used on the Kami (`KamiUseItemSystem.sol:45` → `LibKami.resetIntensity`,
+`LibKami.sol:125–129`).
 
-> Source: `LibHarvest.sol:252–266`, `configs.ts:127`
+> Source: `LibHarvest.sol:276–290`, `configs.ts:134`
 
 ## Affinity & Efficacy System
 
@@ -242,7 +254,7 @@ Four affinities exist: `EERIE`, `SCRAP`, `INSECT`, `NORMAL`
 |---|---|---|
 | Same as node | — | **Strong** (+bonus) |
 | Different (non-NORMAL) | Different (non-NORMAL) | **Weak** (−penalty) |
-| `NORMAL` | Any | **Neutral** (half of equipment/skill bonus shift, not config shift) |
+| `NORMAL` | Any | **Neutral** (half of `HARV_FERTILITY_BOOST` bonus, no config shift) |
 | Any | `NORMAL` | **Neutral** |
 
 > Source: `LibAffinity.sol:82–90`
@@ -272,12 +284,23 @@ Efficacy = baseBoost + bodyShift + handShift
 A perfectly matched Kami gets `1000 + 650 + 350 = 2000` (2x harvest).
 A poorly matched Kami gets `1000 - 250 - 100 = 650` (0.65x harvest).
 
-> Source: `LibHarvest.sol:175–233`, `LibAffinity.sol:34–58`, `configs.ts:122–123`
+The `HARV_FERTILITY_BOOST` bonus enters the efficacy calc only as the
+**up-shift**: it is added in full on a **Strong** matchup, at half value for a
+`NORMAL` trait, and not at all on Weak or Neutral results
+(`LibHarvest.sol:206–211, 252–256`, `LibAffinity.sol:49–58`).
+
+Total efficacy is clamped at a minimum of 0 (`LibHarvest.sol:240`).
+
+> Source: `LibHarvest.sol:199–257`, `LibAffinity.sol:34–58`, `configs.ts:129–130`
 
 ## Tax System
 
 When starting a harvest, a **taxer** can be specified (e.g., a guild leader or
-referrer). The tax is a percentage of the final collected output.
+referrer). The tax rate is denominated in **basis points** (`PRECISION` = 1e4):
+each recipient receives `original × rate / 10⁴` of the collected output
+(`LibTax.sol:14, 92`). The rate is capped at 2000 basis points (20%) —
+`LibTax.create` reverts with `"LibTax: cannot be more than 20%"` above that
+(`LibTax.sol:36`).
 
 On collection:
 1. Tax bill is calculated via `LibTax.getBillFor(balance, harvestID)`
@@ -286,7 +309,7 @@ On collection:
 
 Taxes are removed and re-set each time a harvest starts.
 
-> Source: `LibHarvest.sol:83–101`
+> Source: `LibHarvest.sol:83–101`, `LibTax.sol:14, 36, 85–95`
 
 ## Liquidation (PvP)
 
@@ -295,24 +318,43 @@ One harvesting Kami can raid another's active harvest if they share the same nod
 ### Requirements
 
 1. Both Kamis must be `HARVESTING` on the **same node**
-2. Killer must pass `LibKill.isLiquidatableBy()` — violence threshold check
-3. Killer must be healthy and off cooldown
+2. The victim's harvest must be `ACTIVE` (`HarvestLiquidateSystem.sol:33`)
+3. The killer's account must be in the node's room (`LibRoom.sharesRoom`,
+   `HarvestLiquidateSystem.sol:43`)
+4. Killer must pass `LibKill.isLiquidatableBy()` — violence threshold check
+5. Killer must be healthy and off cooldown
 
 ### Process
 
 1. Sync both Kamis' health
-2. **Salvage** — victim retains a portion: `salvage = calcSalvage(victimID, bounty)`
-3. **Spoils** — killer steals a portion: `spoils = calcSpoils(killerID, bounty - salvage)`
-4. **Recoil** — killer takes HP damage: `recoil = calcRecoil(killerID, strain, karma)`
-5. Killer's cooldown resets (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink), and `UPON_LIQUIDATION` bonuses reset
-6. **Victim dies** — state → `DEAD`, HP → 0, harvest stops, all bonuses reset
+2. **Salvage** — victim retains a portion: `salvage = calcSalvage(victimID, bounty)`.
+   It is paid as MUSU to the victim's account inventory, and the victim Kami
+   gains XP equal to the salvage (`LibKill.sendSalvage`, `LibKill.sol:51–56`)
+3. **Spoils** — killer steals a portion: `spoils = calcSpoils(killerID, bounty - salvage)`.
+   Spoils are credited to the **killer's own harvest balance**
+   (`LibKill.sendSpoils` → `LibHarvest.incBounty`, `LibKill.sol:59–62`), not to
+   inventory — they must still be collected and then pass through the killer's
+   own tax/XP path like any other bounty
+4. **Recoil** — killer takes HP damage:
+   `strain = LibKami.calcStrain(killerID, spoils)` — the killer's would-be
+   strain on the stolen spoils — then
+   `recoil = LibKill.calcRecoil(victimID, killerID, strain)`
+   (`HarvestLiquidateSystem.sol:62–63`); karma is computed inside `calcRecoil`
+   via `calcKarma` (`LibKill.sol:202–220`; `calcKarma` at `LibKill.sol:165–179`)
+5. **Killer reward** — the killer's account receives 1 Obol
+   (`LibKill.rewardKiller`, `LibKill.sol:65–68`, called at
+   `HarvestLiquidateSystem.sol:78`)
+6. Killer's cooldown resets (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink), and `UPON_LIQUIDATION` bonuses reset
+7. **Victim dies** — state → `DEAD`, HP → 0, harvest stops, all bonuses reset
+8. **Score** — the killer's account `LIQUIDATE` score increments by 1
+   (`HarvestLiquidateSystem.sol:90`)
 
 The victim's **unsalvaged, unspoiled bounty is destroyed** (not transferred).
 
-> Source: `HarvestLiquidateSystem.sol:21–91`
+> Source: `HarvestLiquidateSystem.sol:24–94`, `LibKill.sol:51–68`
 
-> The detailed liquidation formulas (salvage, spoils, karma, recoil) are in
-> `LibKill.sol` and will be documented in the Combat/PvP mechanic files.
+> The detailed liquidation formulas (salvage, spoils, karma, recoil) are
+> documented in `mechanics/combat/kill.md`.
 
 ## Harvest Entity Shape
 
@@ -331,14 +373,22 @@ Each harvest is an ECS entity with:
 
 Entity ID: `keccak256("harvest", kamiID)` — one harvest per Kami.
 
-> Source: `LibHarvest.sol:70–79, 108–113, 412–414`
+> Source: `LibHarvest.sol:70–79, 108–113, 436–438`
 
 ## Side Effects on Collection
 
 When bounty is collected (via Collect or Stop):
 
-1. **XP** — Kami gains XP equal to the amount collected
-2. **Scavenge** — triggers a loot roll on the node's droptable (amount-weighted)
+1. **XP** — Kami gains XP equal to the **post-tax output** (`LibHarvest.claim`
+   returns the after-tax remainder, `LibHarvest.sol:83–101`;
+   `LibExperience.inc` at `HarvestCollectSystem.sol:87` /
+   `HarvestStopSystem.sol:97`)
+2. **Scavenge** — the post-tax output is added to the account's scavenge-bar
+   points for the node (`LibNode.scavenge` → `LibScavenge.incFor`,
+   `LibNode.sol:125–133`, `LibScavenge.sol:87–96`). No droptable roll happens
+   here — rewards are rolled in a separate `ScavengeClaimSystem` transaction,
+   which extracts whole tiers and carries the remainder over
+   (`LibScavenge.sol:99–114`). See `mechanics/world/scavenging.md`
 3. **Score** — account leaderboard score is incremented
 
-> Source: `HarvestStopSystem.sol:97–103`, `HarvestCollectSystem.sol:95–101`
+> Source: `HarvestStopSystem.sol:97–110`, `HarvestCollectSystem.sol:87–100`
