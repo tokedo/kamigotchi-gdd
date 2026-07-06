@@ -65,10 +65,19 @@ efficacy = base + affinityShift
 ```
 
 Where:
-- `base` = `KAMI_LIQ_THRESHOLD[2]`
-- `affinityShift` = effectiveness of attacker's **hand affinity** vs victim's
-  **body affinity** (see [harvesting.md](../economy/harvesting.md) affinity
-  table), modified by ATK/DEF bonus shifts
+- `base` = `KAMI_LIQ_THRESHOLD[2]` = **1000** (i.e. 1.0x)
+- `affinityShift` = **attack-triangle** effectiveness of attacker's **hand
+  affinity** vs victim's **body affinity** (EERIE→SCRAP→INSECT→EERIE; see
+  [affinity.md](../utility/affinity.md)), from config `KAMI_LIQ_EFFICACY` =
+  `[3, 0, 500, 500, 200]` (format `[prec, neut, +, -, n-n]`; the `-` value is
+  negated in code):
+  - Advantage: `+500` → 1.5x threshold
+  - Disadvantage: `−500` → 0.5x threshold
+  - NORMAL vs NORMAL: `+200` → 1.2x
+  - Neutral: `0` → 1.0x
+
+  This is a **single check** (unlike harvest efficacy's separate body+hand
+  checks), modified by ATK/DEF bonus shifts
 
 Bonus integration:
 ```
@@ -136,10 +145,15 @@ The `KAMI_LIQ_KARMA_EFFICACY` config uses the standard efficacy format `[prec, n
 | Matchup | Shift |
 |---|---|
 | Advantaged (e.g., defender EERIE hand vs attacker SCRAP body) | `+1000` (increases recoil) |
-| Disadvantaged (e.g., defender EERIE hand vs attacker INSECT body) | `+1000` (symmetric) |
+| Disadvantaged (e.g., defender EERIE hand vs attacker INSECT body) | `−1000` (decreases recoil; efficacy floors at 0) |
 | Neutral (different types, no triangle edge) | `0` |
 | Same non-NORMAL | `0` |
 | NORMAL vs NORMAL | `+400` (special case) |
+
+> **Correction note**: the `-` slot of efficacy configs is stored positive but
+> **negated** in `LibAffinity.getShifts` (`down: -1 * config[3]`). An earlier
+> version of this table wrongly listed the disadvantaged case as `+1000
+> (symmetric)`.
 
 No bonuses are applied to recoil efficacy yet (hardcoded zeroes in contract).
 Result is floored at 0.

@@ -85,6 +85,13 @@ tree before skills at that tier become available:
 
 > Source: `configs.ts:173`, `LibSkill.sol:226–228`
 
+> **Index mapping caution**: this table is 0-indexed by config slot, while
+> `catalogs/skills/skills.csv` numbers tiers **1–6**. CSV tier N gates at
+> `KAMI_TREE_REQ[N-1]`, i.e. tiers 1–6 require **0 / 5 / 15 / 25 / 40 / 55**
+> tree points. Only 6 tiers have skills; slots 75/95 are unused headroom.
+> The CSV's own `Tree req` column is stale for tiers 4–6 (says 20/30/40) —
+> trust this config, not that column.
+
 Tree points are tracked via bonuses with type `SKILL_TREE_{TreeName}` (e.g.,
 `SKILL_TREE_Predator`). Each skill upgrade increments the tree bonus by the
 skill's cost, so tree points = total skill points spent in that tree.

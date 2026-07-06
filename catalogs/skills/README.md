@@ -1,13 +1,22 @@
 # Skill Catalog Data
 
-71 skills organized into 4 skill trees with 6 tiers each, plus 16 effect types.
+72 skills (18 per tree: 3 per tier × 6 tiers) organized into 4 skill trees,
+plus 16 effect types.
 
 > Source: `packages/contracts/deployment/world/data/skills/`
 
 ## Files
 
-- `skills.csv` — 71 skill definitions
+- `skills.csv` — 72 skill definitions
 - `effects.csv` — 16 effect type definitions
+
+> ⚠️ **Stale column warning**: the `Tree req` column in `skills.csv` carries
+> outdated display values for tiers 4–6 (`20/30/40`) — this matches the game
+> repo's own CSV, but on-chain enforcement reads the `KAMI_TREE_REQ` config
+> `[0, 5, 15, 25, 40, 55, ...]` (configs.ts, checked in `LibSkill.sol`).
+> The real gates are **25/40/55** for tiers 4/5/6 (player-verified: the tier-6
+> ultimate needs 55 tree points → level 56 for a mono-tree build). Use the
+> table below, not the CSV column.
 
 ## Column Reference
 
@@ -49,7 +58,7 @@
 | Predator | 18 | Combat offense — violence, attack threshold, spoils, cooldown |
 | Enlightened | 18 | Sustain — resting recovery, strain reduction, cooldown |
 | Guardian | 18 | Defense — harmony, health, defense threshold, salvage, strain reduction |
-| Harvester | 17 | Economy — harvest power, fertility, bounty, intensity |
+| Harvester | 18 | Economy — harvest power, fertility, bounty, intensity |
 
 ## Tier Unlock Requirements
 
