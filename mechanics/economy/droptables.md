@@ -1,8 +1,8 @@
 # Droptables & Loot
 
-> Source: `packages/contracts/src/libraries/LibDroptable.sol` (L1–220),
-> `packages/contracts/src/libraries/LibCommit.sol` (L1–168),
-> `packages/contracts/src/systems/DroptableRevealSystem.sol` (L1–50)
+> Source: `packages/contracts/src/libraries/LibDroptable.sol` (L1–305),
+> `packages/contracts/src/libraries/LibCommit.sol` (L1–172),
+> `packages/contracts/src/systems/DroptableRevealSystem.sol` (L1–47)
 
 ## Overview
 
@@ -27,7 +27,7 @@ by `LibRandom.calcRarityWeight`: `w → 0` if `w = 0` (never drops), else
 weight — each +1 doubles an entry's relative odds (a weight-9 entry is 256× as
 likely as a weight-1 entry).
 
-> Source: `LibDroptable.sol:143–151`, `LibRandom.sol:32–34`
+> Source: `LibDroptable.sol:139–141`, `LibRandom.sol:32–34`
 
 ## Commit-Reveal Pattern
 
@@ -47,22 +47,77 @@ Creates a commit entity storing:
 - `IdSource` — which droptable to resolve
 - `Value` — number of rolls (count)
 
-> Source: `LibDroptable.sol:31–41`, `LibCommit.sol:29–40`
+> Source: `LibDroptable.sol:40–50`, `LibCommit.sol:29–40`
 
 ### Step 2: Reveal (next block or later)
 
 `DroptableRevealSystem.execute(commitIDs[])`:
 
-1. **Verify commits** — all IDs must be `ITEM_DROPTABLE_COMMIT` type
-2. **Filter invalid** — skip already-revealed or missing commits (replace with 0)
-3. **For each commit**:
-   a. Extract the stored block number and generate seed: `seed = keccak256(blockhash(blockNum), commitID)`
+1. **Reject empties** — revert `"ItemReveal: no reveals"` on an empty array
+2. **Sort & deduplicate** — `LibArray.sortAndVerifyNoRepeats` sorts in place
+   and reverts if the same ID appears twice. This must run **before** the
+   filter step, which zeroes drained entries that would otherwise look like
+   duplicate zeros
+3. **Filter invalid** — already-drained or missing commits are replaced with 0
+4. **Verify commits** — every non-zero ID must be `ITEM_DROPTABLE_COMMIT` type.
+   The check is **non-destructive** (it reads the `Type` rather than extracting
+   it) so a partially-revealed commit can be checked again on its next
+   transaction
+5. **For each commit, while roll budget remains**:
+   a. Read (do not clear) the stored block number and derive the seed
    b. Load droptable weights, process rarities
-   c. Run weighted random selection `count` times
+   c. Run weighted random selection for this transaction's share of the rolls
    d. Distribute selected items to the holder's inventory
    e. Emit reveal event
+   f. Delete the commit if fully drained, else write back the remainder
 
-> Source: `DroptableRevealSystem.sol:22–33`, `LibDroptable.sol:48–115`
+> Source: `DroptableRevealSystem.sol:19–27`, `LibDroptable.sol:61–71, 202–209`
+
+### Chunked Reveal (Large Commits)
+
+Reveal cost scales with a commit's roll count, so a large scavenge claim can
+mint a single commit too big to reveal inside the block gas limit — stranding
+it forever. Reveal is therefore **bounded per transaction**:
+
+| Constant | Value | Meaning |
+|---|---|---|
+| `MAX_ROLLS_PER_REVEAL` | `5000` | Maximum rolls a single reveal transaction may process |
+
+A transaction starts with a budget of `MAX_ROLLS_PER_REVEAL` and walks the
+commit array:
+
+- A commit smaller than the remaining budget is revealed whole and deleted
+- A commit larger than the remaining budget consumes what is left; its `Value`
+  is decremented by the amount processed and it stays alive for a later
+  transaction
+- Once the budget hits zero the loop breaks, so commits past that point simply
+  wait their turn
+
+**Outcomes do not depend on how the rolls are split.** Each roll is keyed by
+its **absolute position within the commit**, counting down from the number of
+rolls remaining at commit time:
+
+```
+rollSeed(k) = keccak256(seed, remaining − 1 − k)      for k = 0 … chunk−1
+```
+
+Since a single-pass reveal covers positions `count−1 … 0` — the same index set
+as the unchunked selection helper — the full result is fixed by
+`(blockhash, commitID, count)` at commit time and is byte-identical however it
+is chunked. A per-chunk nonce would have let a co-bundled commit shift a chunk
+boundary and reroll the distribution.
+
+Because every chunk re-reads the **same** reveal blockhash (via
+`LibCommit.seedDirect`, which reads without clearing), a drain that stalls past
+the 256-block window leaves the remainder unrevealable through the normal path.
+`forceReveal` / `resetBlocks` rescues the tail.
+
+A fully-drained commit is deleted by `_consume`, which removes its `IdSource`,
+`IdHolder`, `Value`, `BlockReveal` and `Type` components.
+
+> Source: `LibDroptable.sol:26–30` (constant), `:61–71` (budget loop),
+> `:74–89` (`_revealSingle`), `:132–157` (`_select`), `:159–165` (`_consume`),
+> `LibCommit.sol:98–102` (`seedDirect`)
 
 ### Seed Generation
 
@@ -75,7 +130,7 @@ happens too late, the blockhash returns 0 and the transaction reverts. An admin
 `forceReveal` function can reset the block to `block.number - 1` to rescue
 stuck commits.
 
-> Source: `LibCommit.sol:134–138`, `DroptableRevealSystem.sol:35–45`
+> Source: `LibCommit.sol:98–102, 134–138`, `DroptableRevealSystem.sol:32–42`
 
 ## Weighted Selection
 
@@ -83,13 +138,18 @@ For each roll, the system selects one item from the droptable:
 
 1. Weights are converted in place via `processWeightedRarityInPlace()` — each
    weight `w` becomes `0` if `w = 0`, else `2^(w−1)` (`LibRandom.sol:28–34`)
-2. `selectMultipleFromWeighted(weights, seed, count)` performs `count`
-   independent weighted random selections; each roll takes
-   `randN mod totalWeight` and walks the cumulative weight array to find the
-   selected index (`_positionFromWeighted`, `LibRandom.sol:238–255`)
-3. Returns an array of amounts per item index (how many of each item was selected)
+2. Each roll takes `rollSeed mod totalWeight` and walks the cumulative weight
+   array to find the selected index (`_positionFromWeighted`,
+   `LibRandom.sol:238–255`)
+3. Returns an array of amounts per item index (how many of each item was
+   selected)
 
-> Source: `LibDroptable.sol:87–100`, `LibRandom.sol:28–34, 238–255`
+`LibDroptable._select` mirrors the shared `selectMultipleFromWeighted` helper
+but offsets each roll by its absolute position in the commit, so the outcome
+is chunk-invariant — see
+[Chunked Reveal](#chunked-reveal-large-commits).
+
+> Source: `LibDroptable.sol:132–157`, `LibRandom.sol:28–34, 211–228, 238–255`
 
 ## Usage Contexts
 

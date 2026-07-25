@@ -68,7 +68,14 @@ Systems log lifetime counters on most player actions. Representative keys:
 | `QUEST_COMPLETE`, `QUEST_REPEATABLE_COMPLETE` | Account | `LibQuest.sol:377–382` |
 | `TRADE_CREATE` / `_EXECUTE` / `_COMPLETE` / `_CANCEL`, `TRADE_TAX` | Account | `LibTrade.sol:146, 184, 367–405` |
 | `ITEM_COUNT` | Global 0 (item index) | `LibInventory.sol:197` |
+| `POOL_SWAP_TOTAL`, `POOL_LIQUIDITY_ADD` / `_REMOVE` | Account | `LibPool.sol:273, 294` |
+| `POOL_VOLUME` | Global 0 (item index) | `LibPool.sol:274–275` |
 | `TOTAL_NUM_ACCOUNTS` | Global 0 | `LibAccount.sol:286–287` |
+
+> ⚠️ `POOL_SWAP_TOTAL` is farmable: a solo round-trip swap through an item pool
+> increments it at the cost of only the swap fee. The source explicitly warns
+> against keying any quest objective or reward off it (`LibPool.sol:271–272`).
+> See [item-pools.md](../marketplace/item-pools.md#logging--events).
 
 ## Relationship to LibScore
 

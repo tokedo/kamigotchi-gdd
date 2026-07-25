@@ -94,7 +94,32 @@ transformed to `2^(w−1)` (weight 0 stays 0) via
 stored value. See
 [droptables.md](../economy/droptables.md#weighted-selection).
 
-> Source: `LibSacrifice.sol:32–34, 272–280`
+### Reward Pools & Odds
+
+All three tables draw from the **36 Pet-Slot equipment items**, indices
+30001–30036: 12 themed sets of 3 tiers each. Within a set the tiers run in
+index order, so `index mod 3` identifies the tier — `1` → Common, `2` →
+Uncommon, `0` → Rare (e.g. 30001 Mask of Avarice / 30002 Veil of Avarice /
+30003 Visage of Avarice). Every item of a given tier carries the same stored
+weight, so each table is uniform *within* a tier.
+
+| Table | Tiers included | Stored weights | Effective weight per item |
+|---|---|---|---|
+| Sacrifice Normal | Common, Uncommon, Rare | 9 / 7 / 4 | 256 / 64 / 8 |
+| Sacrifice Uncommon Pity | Uncommon, Rare | 7 / 4 | 64 / 8 |
+| Sacrifice Rare Pity | Rare only | 4 | 8 |
+
+Resulting tier odds for the single roll each sacrifice grants:
+
+| Table | Common | Uncommon | Rare |
+|---|---|---|---|
+| Sacrifice Normal | 78.05% (6.50% per item) | 19.51% (1.63% per item) | 2.44% (0.203% per item) |
+| Sacrifice Uncommon Pity | — | 88.89% (7.41% per item) | 11.11% (0.926% per item) |
+| Sacrifice Rare Pity | — | — | 100% (8.33% per item) |
+
+> Source: `LibSacrifice.sol:32–34, 272–280`,
+> `deployment/world/data/npc/droptables.csv`; tier mapping from
+> `catalogs/items/items.csv` (30001–30036)
 
 ## Burn Mechanics
 

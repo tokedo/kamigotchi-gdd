@@ -4,7 +4,7 @@
 > `packages/contracts/deployment/world/data/listings/listings.csv`,
 > `packages/contracts/deployment/world/data/listings/pricing.csv`,
 > `packages/contracts/deployment/world/data/listings/requirements.csv`
-> Commit: `91f69796` (npc/listings data unchanged since `0af5d9f0`)
+> Commit: `8302734d`
 
 `listings.csv` here merges the source listing sheet with two lookup sheets:
 the `Buy Price Model` keys resolve via `data/listings/pricing.csv` (GDA tier
@@ -18,7 +18,7 @@ Decay 0.5, Rate = supply), and the `Requirements` keys resolve via
 | File | Entries | Description |
 |---|---|---|
 | `npcs.csv` | 2 NPCs | NPC registry with room locations |
-| `listings.csv` | 19 listings | Shop inventories with prices and GDA pricing models |
+| `listings.csv` | 18 listings | Shop inventories with prices and GDA pricing models |
 
 ## npcs.csv Schema
 
@@ -48,7 +48,7 @@ Decay 0.5, Rate = supply), and the `Requirements` keys resolve via
 
 | NPC | Location | Listings | Specialty |
 |---|---|---|---|
-| **Mina** | Convenience Store (Room 13) | 12 | General goods: materials, food, ice cream, tools |
+| **Mina** | Convenience Store (Room 13) | 11 | General goods: materials, food, ice cream, tools |
 | **Vending Machine** | Cave Crossroads (Room 18) | 7 | Food and ice cream (cave supply) |
 
 ## Pricing Models
@@ -57,12 +57,17 @@ Decay 0.5, Rate = supply), and the `Requirements` keys resolve via
 
 Most items use dynamic pricing: `GDA {supply} {period} {decay}%`
 
-- **Supply**: Total units available per period (e.g., 300, 1500)
+- **Supply**: Total units available per period (e.g., 150, 250)
 - **Period**: Reset interval (`Daily` = 24h, `Bidaily` = 48h)
 - **Decay**: Price decay rate per period (always 50%)
 
-As items are bought, price increases. Price decays back to base over time.
-See [mechanics/marketplace/auctions.md](../../mechanics/marketplace/auctions.md) for GDA math.
+As items are bought, price increases. Price decays back to base over time,
+but **not without bound** — the decay is clamped at three periods behind
+schedule, giving a price floor of `Base Price × 0.5³` = 12.5% of base. See
+[mechanics/economy/npc-shops.md](../../mechanics/economy/npc-shops.md#price-floor-deficit-clamp)
+for the floor and settlement rules, and
+[mechanics/marketplace/auctions.md](../../mechanics/marketplace/auctions.md)
+for the underlying GDA math (auctions are **not** floored).
 
 ### FIXED
 
@@ -71,12 +76,12 @@ or dynamic pricing.
 
 ### Onyx Shard Pricing
 
-> **Currently unused.** Mina has two Onyx Shard listings registered on-chain
-> (Wooden Stick at 0.05 Onyx, Stone at 1 Onyx), but **no pricing strategy is
-> assigned** — these listings have no buy or sell side, so `calcBuyPrice()`
-> reverts. Players cannot purchase these items from Mina. The deployment script
-> contains a commented-out `initLocalListings()` that was used for local ERC-20
-> testing of these listings.
+> **Currently unused.** Mina carries one Shelved Onyx Shard listing (Stone at
+> 1 Onyx) with **no pricing strategy assigned** — it has no buy or sell side,
+> so `calcBuyPrice()` reverts and players cannot purchase it. The Wooden Stick
+> Onyx listing is no longer present in the source data at all. The deployment
+> script contains a commented-out `initLocalListings()` that was used for local
+> ERC-20 testing of these listings.
 
 All active shop items are priced in MUSU.
 

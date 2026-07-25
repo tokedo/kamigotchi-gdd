@@ -95,20 +95,19 @@ Values are signed — bonuses can be negative (debuffs).
 | `UPON_DEATH` | Kami dies | Death-triggered effects |
 | `UPON_KILL_OR_KILLED` | Kill or get killed | Combat-round effects |
 | `UPON_LIQUIDATION` | Liquidate another Kami | Post-kill effects |
-| `UPON_COOLDOWN_SET` | Cooldown is (re)set — harvest start/stop/collect, liquidation | *(no deployed bonus uses this)* |
+| `UPON_COOLDOWN_SET` | Cooldown is (re)set — harvest start/stop/collect, liquidation | Energy Drink's cooldown shift |
 | `UPON_UNEQUIP_{SLOT}` | Unequip from slot | Equipment stat bonuses |
 | `TIMED` | Duration expires | Timed consumable buffs |
 
 > Every cooldown-reset path calls `resetUponCooldownSet`: harvest start
 > (`HarvestStartSystem.sol:54`), collect (`HarvestCollectSystem.sol:89`), stop
 > (`HarvestStopSystem.sol:99`), and liquidation
-> (`HarvestLiquidateSystem.sol:81`). However, **no bonus in the deployed
-> catalog registers `UPON_COOLDOWN_SET` as its terminator**, so the hook
-> currently clears nothing. **Energy Drink**'s `STND_COOLDOWN_SHIFT` −30 buff
-> is registered with terminator `UPON_HARVEST_ACTION`
-> (`deployment/world/data/items/allos.csv:11`; item 11409 at `items.csv:111`
-> carries the `BYPASS_BONUS_RESET` flag, so feeding it does not itself clear
-> `UPON_HARVEST_ACTION` bonuses — `KamiUseItemSystem.sol:35–37`).
+> (`HarvestLiquidateSystem.sol:81`). **Energy Drink**'s `STND_COOLDOWN_SHIFT`
+> −30 buff is the one deployed bonus that uses this terminator
+> (`deployment/world/data/items/allos.csv:11`), so it lasts until the Kami's
+> next cooldown is set rather than until its next harvest action. Item 11409
+> also carries the `BYPASS_BONUS_RESET` flag, so feeding it does not clear
+> other temporary bonuses (`KamiUseItemSystem.sol:35–37`).
 
 > ⚠️ **SUSPECTED UPSTREAM DATA BUG**: the deployment pipeline registers *all*
 > item bonus allos — including equipment bonuses — under the `USE` use case

@@ -299,10 +299,11 @@ MSQ109  Remain Unburdened of Attachments  (Giver: DIMIDIATUS)
 
 ---
 
-## Mina Quest Line (MIN001-MIN016)
+## Mina Quest Line (MIN001-MIN016, MIN100-MIN101)
 
-16 quests. All given by MINA. These run parallel to the main story and feed
-into it at critical gates.
+18 quests. All given by MINA. MIN001-MIN016 (`Type=MAIN`) run parallel to the
+main story and feed into it at critical gates; MIN100-MIN101 (`Type=SIDE`) are
+a separate late pair introducing the crossroads fountain.
 
 ```
 MSQ007
@@ -351,6 +352,20 @@ MIN015  A Matter of Import
 MIN016  Misogi  (requires MSQ031 — bidirectional dependency)
   |
   |--- (feeds into MSQ032 as prerequisite)
+```
+
+### Fountain Pair (MIN100-MIN101, Type=SIDE)
+
+Introduces the item pool interface at the crossroads fountain in room 31
+(Scrapyard Exit). See
+[mechanics/marketplace/item-pools.md](../../mechanics/marketplace/item-pools.md).
+
+```
+MIN007
+  |
+MIN100  A Short Pilgrimage  (objective: Move to the Scrapyard Exit; no reward)
+  |
+MIN101  The Fountain of All That Flows  (no objective; rewards 10x Stone + 10x Wooden Stick)
 ```
 
 ### Critical Cross-Storyline Gates
@@ -468,7 +483,6 @@ SQ045  Resonant Flow  (Complete MSQ094, In Room: Black Pool, Giver: MINA)
 
 Unlocks after Act IV (MSQ109). Centered on the **Ring of Spirits** key item
 (22802), which lets the bearer speak with lost souls scattered across the world.
-SQ113-SQ118 are **To Deploy**.
 
 ```
 (Complete MSQ109) --- SQ100  Get On the Other Side  (Giver: MENU)
@@ -485,7 +499,6 @@ SQ109  Get the Story Straight I  (In Room: Lost Skeleton)
         |--- SQ111  Get the Story Straight III
 SQ112  See the Glass as Half Full  (In Room: Guardian Skull)
 
-To Deploy:
 SQ113  Airing it Out  (Complete SQ108)  ──→  SQ114  Conditioned Environment
 SQ115  Dry Conversation  (Complete SQ014)
 SQ116  Lost and Found  (Complete SQ111)  ──→  SQ117  Trash Pickers  ──→  SQ118  Janitorial Supplies

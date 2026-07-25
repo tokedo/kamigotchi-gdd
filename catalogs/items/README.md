@@ -1,14 +1,14 @@
 # Items Catalog
 
 > Source: `packages/contracts/deployment/world/data/items/`
-> Commit: `91f69796`
+> Commit: `8302734d`
 
 ## Files
 
 | File | Entries | Description |
 |---|---|---|
 | `items.csv` | 178 items | Complete item catalog with stats, effects, and descriptions |
-| `effects.csv` | 94 effects | Item effect definitions (what items do when used/equipped) |
+| `effects.csv` | 93 effects | Item effect definitions (what items do when used/equipped) |
 | `droptables.csv` | 6 tables | Weighted loot pools for lootbox items |
 
 ### Source Files & Transformations
@@ -46,14 +46,26 @@
 ## Item Requirements
 
 Requirement keys in `items.csv:Requirements` resolve via source
-`data/items/requirements.csv`, which currently defines a single requirement:
+`data/items/requirements.csv`, which defines two requirements:
 
-| Key | Type | Preposition | Index | Meaning |
-|---|---|---|---|---|
-| `VIP_ROOM` | ROOM | AT | 64 | Usable only while the account is in room 64 (Burning Room) |
+| Key | Type | Preposition | Index | Value | Meaning |
+|---|---|---|---|---|---|
+| `VIP_ROOM` | `ROOM` | `AT` | 64 | — | Usable only while the account is in room 64 (Burning Room) |
+| `MOCHI_LIMIT` | `MOCHI_USED` | `MAX` | 0 | 2 | Usable only while the target's `MOCHI_USED` counter is at most 2 |
 
-Only **VIPP (item 2)** carries this key — it can be used/burned only in the
+**VIPP (item 2)** carries `VIP_ROOM` — it can be used/burned only in the
 Burning Room (`catalogs/rooms/rooms.csv` room 64).
+
+The four **Mochi** items (11110 Gaokerena, 11120 Sunset Apple, 11130 Kami,
+11140 Mana) carry `MOCHI_LIMIT`, capping permanent stat mochis at 2 per
+target.
+
+> ⚠️ UNCERTAIN: `MOCHI_USED` is not one of `LibGetter.getBal`'s named types, so
+> it resolves to a generic `LibData` counter
+> (`LibGetter.sol:67–68`). No system in `packages/contracts/src/` writes that
+> key, so the counter reads `0` and the `MAX 2` check always passes — the cap
+> does not bind under this source. Verify live on-chain behavior before
+> publishing it as an enforced limit.
 
 ## Item Types
 

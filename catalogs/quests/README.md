@@ -11,28 +11,28 @@ See `mechanics/progression/quests.md` for how the quest system works
 
 ## Summary
 
-**192 quests total** across 4 categories:
+**194 quests total** across 5 categories:
 
 | Category | Key Prefix | Index Range | Count | Primary Giver |
 |----------|-----------|-------------|-------|---------------|
 | Main Story | MSQ | 1-109 | 109 | MENU (65), MINA (41), DIMIDIATUS (3) |
-| Mina Line | MIN | 2001-2016 | 16 | MINA (16) |
+| Mina Line | MIN | 2001-2016, 2100-2101 | 18 | MINA (18) |
 | Side Quests | SQ | 3001-3998 | 60 | MENU (27), MINA (18), ROB (9), ZEVANA (5), DIMIDIATUS (1) |
 | Event/Misc | SQ999/SQ997 | 10002-10003 | 2 | MENU / unset |
 | Test | test-* | 1000000-1000004 | 5 | unset |
 
-> Note: Both MSQ and MIN quests have Type=MAIN in the data. The MIN quests
-> form a distinct parallel storyline given exclusively by Mina, focused on
-> crafting education and the Elders faction. They are separated here for
-> clarity. Combined MAIN type count: 128. Combined SIDE type count: 58.
-> Remaining 6 have no type set (event + test quests).
+> Note: MSQ quests and MIN001-MIN016 have Type=MAIN in the data; MIN100-MIN101
+> are Type=SIDE. The MIN quests form a distinct parallel storyline given
+> exclusively by Mina, focused on crafting education and the Elders faction.
+> They are separated here for clarity. Combined MAIN type count: 128. Combined
+> SIDE type count: 60 (58 SQ + MIN100-MIN101). Remaining 6 have no type set
+> (event + test quests).
 
 ### By Status
 
 | Status | Count |
 |--------|-------|
-| In Game | 181 |
-| To Deploy | 6 |
+| In Game | 189 |
 | Test | 5 |
 
 ### By Giver
@@ -40,7 +40,7 @@ See `mechanics/progression/quests.md` for how the quest system works
 | Giver | Count |
 |-------|-------|
 | MENU | 93 |
-| MINA | 75 |
+| MINA | 77 |
 | ROB | 9 |
 | ZEVANA | 5 |
 | DIMIDIATUS | 4 |
@@ -59,10 +59,10 @@ See `mechanics/progression/quests.md` for how the quest system works
 
 | File | Rows | Description |
 |------|------|-------------|
-| `quests.csv` | 192 quests | Full quest definitions: key, index, status, title, type, giver, dialogues, requirements, objectives, rewards |
-| `objectives.csv` | 201 objectives | Objective definitions: description, operator, delta type, tracking type, index, value |
-| `requirements.csv` | 200 requirements | Prerequisite definitions: quest completions, item ownership, room presence, time windows |
-| `rewards.csv` | 66 rewards | Reward definitions: items, reputation, flags |
+| `quests.csv` | 194 quests | Full quest definitions: key, index, status, title, type, giver, dialogues, requirements, objectives, rewards |
+| `objectives.csv` | 202 objectives | Objective definitions: description, operator, delta type, tracking type, index, value |
+| `requirements.csv` | 201 requirements | Prerequisite definitions: quest completions, item ownership, room presence, time windows |
+| `rewards.csv` | 68 rewards | Reward definitions: items, reputation, flags |
 | `quest-lines.md` | — | Quest chain map showing all prerequisite links, storyline branches, and convergence points |
 | `dialogues/` | — | NPC dialogue data (see below) |
 

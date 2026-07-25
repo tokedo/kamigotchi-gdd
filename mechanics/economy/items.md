@@ -173,14 +173,27 @@ Entity ID: `keccak256("inventory.instance", holderID, itemIndex)`
 - Allows ERC-20 items (unlike raw `incFor`)
 - Transfer fee constant: **15** (defined but usage context is system-specific)
 
-> Source: `LibInventory.sol:123–276`
+### Transfer without logging (`transferForNoLog`)
+- Same balance movement, but **skips acquisition logging** — neither the
+  per-account `ITEM_TOTAL` nor the global `ITEM_COUNT` is touched
+- For internal protocol moves where the receive is not a player acquisition.
+  Crediting `ITEM_TOTAL` would corrupt earned-item leaderboards (MUSU earned is
+  read from `ITEM_TOTAL[MUSU]`), and `ITEM_COUNT` churn would be wrong anyway
+  since a transfer moves supply rather than minting or burning it
+- Used by [item pools](../marketplace/item-pools.md) for every pool ↔ account
+  reserve move
+
+> Source: `LibInventory.sol:123–316` (`transferForNoLog` at `:252–274`)
 
 ## Transfer Restrictions
 
 Items flagged `NOT_TRADABLE` cannot be transferred between accounts.
-Checked via `verifyTransferable()`.
+Checked via `verifyTransferable()`, which reverts
+`"Transfer includes untradeable item"`. The same check gates
+[item pool](../marketplace/item-pools.md) creation, swaps and liquidity adds,
+so an untradable item can never be pooled.
 
-> Source: `LibInventory.sol:295–299`
+> Source: `LibInventory.sol:319–323`
 
 ## Balance Queries
 

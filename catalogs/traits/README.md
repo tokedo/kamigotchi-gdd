@@ -1,7 +1,7 @@
 # Kami Traits Catalog
 
 > Source: `packages/contracts/deployment/world/data/traits/`
-> Commit: `d9b50091`
+> Commit: `8302734d`
 
 ## Files
 

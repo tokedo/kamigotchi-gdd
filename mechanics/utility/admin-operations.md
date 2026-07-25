@@ -25,18 +25,28 @@ Roles are ordinary flags granted/removed by the contract owner via
 in `deployment/world/data/auth/roles.csv`: the deployer hot wallet and
 `izanami` hold both Admin and Community Manager in production.
 
+**Roles are not grantable through the generic flag system.** Because
+`onlyAdmin` is a plain flag lookup at `genID(uint160(addr), "ROLE_*")` and an
+account entity ID *is* `uint160(owner)`, a bare flag write would let any admin
+mint a functional role — bypassing the owner gate, and with no `IDType` anchor,
+invisible to the anchored roles audit. `_AdminSetFlagSystem` therefore rejects
+any `flagType` beginning with `ROLE_`, reverting `"roles: use auth registry"`.
+Roles can only be set through `_AuthManageRoleSystem.setFull`.
+
+> Source: `_AdminSetFlagSystem.sol:25–33`
+
 ## State-Mutating Admin Systems
 
 | System / entrypoint | Gate | Effect |
 |---|---|---|
 | `_DistributeItemSystem` | `onlyAdmin` | Targeted item airdrop: `(accounts[], itemIndex, amounts[])` → per-account inventory grant; source comment: "compensation, apologies, targeted rewards" (`_DistributeItemSystem.sol:14–39`) |
-| `_AdminSetFlagSystem` | `onlyAdmin` | Sets or clears an arbitrary flag on account entities (each target must be an account, `:24`); used for giveaways, airdrops, whitelists (`_AdminSetFlagSystem.sol:14–36`) |
+| `_AdminSetFlagSystem` | `onlyAdmin` | Sets or clears a flag on account entities (each target must be an account); `ROLE_`-prefixed flag types are rejected outright; used for giveaways, airdrops, whitelists (`_AdminSetFlagSystem.sol:16–38`) |
 | `_HarvestAdminSystem.stop` / `stopBatched` | `onlyAdmin` | Force-stops a harvest by Kami index: verifies `HARVESTING` state, syncs, stops the harvest, sets the Kami `RESTING`, resets cooldown and harvest bonuses, emits `HARVEST_STOP`; `stopBatched` loops over indices (`_HarvestAdminSystem.sol:21–56`) |
 | `_SnapshotT2System.dropKillRewards` | `onlyAdmin` | Batch OBOL distribution to owner addresses (`_SnapshotT2System.sol:19–29`); passport distribution and whitelist helpers exist only as commented-out code (`_SnapshotT2System.sol:31–47, 57–69`) |
 | `KamiMarketCancelSystem.executeAdmin` | `onlyAdmin` | Cancels any active Kami market order (listing, offer, or collection offer) on behalf of its owner (`KamiMarketCancelSystem.sol:31–38`) |
 | `TradeCancelSystem.executeAdmin` | `onlyAdmin` | Batch-cancels `PENDING` trades; emits the cancel event with acting account 0 (`TradeCancelSystem.sol:37–45`) |
 | `TradeCompleteSystem.executeAdmin` | `onlyAdmin` | Batch-completes `EXECUTED` trades on behalf of each maker (`TradeCompleteSystem.sol:37–48`) |
-| `DroptableRevealSystem.forceReveal`, `KamiGachaRevealSystem.forceReveal` | `onlyCommManager` | Recovers commits whose 256-block reveal window lapsed — see [commit-reveal.md](commit-reveal.md) (`DroptableRevealSystem.sol:35`, `KamiGachaRevealSystem.sol:33–36`) |
+| `DroptableRevealSystem.forceReveal`, `KamiGachaRevealSystem.forceReveal` | `onlyCommManager` | Recovers commits whose 256-block reveal window lapsed — see [commit-reveal.md](commit-reveal.md) (`DroptableRevealSystem.sol:32`, `KamiGachaRevealSystem.sol:31–33`) |
 
 Registry and config systems (`_*RegistrySystem`, `_ConfigSetSystem`) are also
 `onlyAdmin`, but they define game content and parameters rather than mutating

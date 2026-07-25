@@ -199,19 +199,21 @@ Reward anchor: `keccak256("registry.quest.reward", questIndex)`
 
 ## Quest Data Summary
 
-The catalog contains **192 quests** — 181 In Game, 6 To Deploy, 5 Test:
+The catalog contains **194 quests** — 189 In Game, 5 Test:
 
 | Type | Indices | Keys | Givers | Description |
 |---|---|---|---|---|
 | MAIN | 1–109 | MSQ001–MSQ109 | MENU (65), MINA (41), DIMIDIATUS (3) | Main story chain |
 | MAIN | 2001–2016 | MIN001–MIN016 | MINA | Mina's quest line |
+| SIDE | 2100–2101 | MIN100–MIN101 | MINA | Fountain / item-pool intro pair |
 | MAIN | 3100–3102 | SQ100–SQ102 | MENU, MINA | Side-numbered but typed MAIN |
-| SIDE | 3001–3022, 3028–3045, 3104–3118, 3802–3803, 3998, 10003 | SQ001–SQ118, SQ802–SQ803, SQ998, SQ997 | MENU (27), MINA (16), ROB (9), ZEVANA (5), DIMIDIATUS (1) | Side quests (58 total; 3113–3118 are Status=To Deploy) |
+| SIDE | 3001–3022, 3028–3045, 3104–3118, 3802–3803, 3998, 10003 | SQ001–SQ118, SQ802–SQ803, SQ998, SQ997 | MENU (27), MINA (16), ROB (9), ZEVANA (5), DIMIDIATUS (1) | Side quests (58 SQ-keyed; 60 counting MIN100–MIN101) |
 | (no type) | 10002, 1000000–1000004 | SQ999, test-0…test-4 | — | SQ999 ("Claim Your Free Gift!") is live; test-0…test-4 are Status=Test |
 
-There is **no `FACTION` quest type** — Mina's MIN quests are `Type=MAIN` with
-`Giver=MINA`. Indices 10002 (SQ999) and 10003 (SQ997) are live quests, not
-test entries. The only `Daily=Yes` quest is test-0.
+There is **no `FACTION` quest type** — Mina's MIN001–MIN016 are `Type=MAIN`
+with `Giver=MINA`, while MIN100–MIN101 are `Type=SIDE` with the same giver.
+Indices 10002 (SQ999) and 10003 (SQ997) are live quests, not test entries. The
+only `Daily=Yes` quest is test-0.
 
 Most main quests are sequential — each requires completion of the previous one.
 

@@ -15,6 +15,12 @@ The portal uses a **receipt system** for withdrawals — items are immediately
 removed from the player's inventory, but the ERC-20 transfer is delayed behind
 a configurable timelock. Admins can pause or cancel pending withdrawals.
 
+The portal is the **only** way a bridged token enters the item space. Once
+deposited, ONYX (item 100) is an ordinary fungible item and can be traded,
+spent, or supplied as pool liquidity like any other — see
+[Item Pools](item-pools.md). Pools never mint, so ONYX held in a pool reserve
+remains backed one-for-one by tokens in portal custody.
+
 ## Enabled / Disabled Toggle
 
 The whole portal is gated by a single `isEnabled` boolean (stored in the

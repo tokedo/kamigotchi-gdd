@@ -60,7 +60,15 @@ The result is in WAD (×1e18) and rounded up:
 cost = ceil(LibGDA.calc(params) / 1e18)
 ```
 
-> Source: `LibAuction.sol:44–58`
+**Auction decay is unbounded.** `LibAuction` calls `LibGDA.calc` directly with
+no deficit clamp, so a dormant auction's price decays toward zero without
+limit and there is no per-unit minimum. This is deliberate — the clamp and the
+price floor live in `LibListing`, which shares the same GDA library, so NPC
+shop listings are floored while auctions are not. See
+[NPC shops → Price Floor](../economy/npc-shops.md#price-floor-deficit-clamp).
+
+> Source: `LibAuction.sol:44–58`, `LibListing.sol:33, 142–152` (clamp applied
+> in `LibListing`, not `LibGDA`)
 
 ## Buying from an Auction
 

@@ -1,13 +1,13 @@
 # Rooms Catalog
 
 > Source: `packages/contracts/deployment/world/data/rooms/`
-> Commit: `d9b50091`
+> Commit: `8302734d`
 
 ## Files
 
 | File | Entries | Description |
 |---|---|---|
-| `rooms.csv` | 70 rooms | Room locations, coordinates, exits, lore text |
+| `rooms.csv` | 71 rooms | Room locations, coordinates, exits, lore text |
 | `nodes.csv` | 64 nodes | Harvest/scavenge nodes per room with affinity and drops |
 | `scavenge-droptables.csv` | 50 tables | Weighted loot pools for scavenging (with resolved item names) |
 | `gates.csv` | 11 gates | Room access conditions (extracted from `deployment/world/state/rooms/gates.ts`) |
@@ -86,9 +86,10 @@ Drop probability: `P(item) = tier / sum(all tiers)`
 
 ## Statistics
 
-- **Total rooms**: 70
-- **Rooms with nodes**: 64 (6 rooms have no harvest node)
-- **In Game**: 70 rooms / 64 nodes (rooms 19 Temple of the Wheel + 59 Black Pool now live)
+- **Total rooms**: 71, of which 70 are player-reachable — room `0` (`deadzone`)
+  is a debug placeholder whose own description states it cannot be entered
+- **Rooms with nodes**: 64 (7 rooms have no harvest node, counting the deadzone)
+- **In Game**: 71 rooms / 64 nodes
 - **Rooms with special exits**: 14
 - **Unique droptables**: 50 defined, but only 49 referenced by nodes — the
   `Bottle Scrap Burger` table is orphaned (referenced by no node; same in source)

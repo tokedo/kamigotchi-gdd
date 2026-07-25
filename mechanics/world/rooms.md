@@ -109,7 +109,8 @@ Used by: NPC shops (player must be in NPC's room), harvesting liquidation
 
 ## World Data
 
-The current world has **70 rooms** across 4 z-planes, including:
+The current world has **70 player-reachable rooms** across 4 z-planes (plus a
+debug placeholder at index 0, `deadzone`, which cannot be entered), including:
 - Overworld areas: Misty Riverside, Torii Gate, Scrapyard, Forest paths
 - Interiors: Convenience Store, Plane Interior, Burning Room
 - Caves: Temple Cave, Cave Crossroads, Fungus Garden, Sacrarium
@@ -121,5 +122,8 @@ Notable rooms:
   naming/renaming; the **Kami** must be in room 11 and each naming consumes
   1 Holy Dust (`KamiNameSystem.sol:16–17, 29–33`)
 - **Room 66** (Marketplace) — trade room (delivery fee waived)
+- **Room 31** (Scrapyard Exit) — the crossroads fountain here opens the item
+  pool / liquidity interface (see
+  [item-pools.md](../marketplace/item-pools.md))
 
 > Source: `data/rooms/rooms.csv`

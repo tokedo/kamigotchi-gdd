@@ -1,9 +1,9 @@
 # Gacha System (Mint / Reroll / Reveal)
 
-> Source: `packages/contracts/src/libraries/LibGacha.sol` (L1–184),
+> Source: `packages/contracts/src/libraries/LibGacha.sol` (L1–172),
 > `packages/contracts/src/systems/KamiGachaMintSystem.sol` (L1–46),
 > `packages/contracts/src/systems/KamiGachaRerollSystem.sol` (L1–61),
-> `packages/contracts/src/systems/KamiGachaRevealSystem.sol` (L1–57),
+> `packages/contracts/src/systems/KamiGachaRevealSystem.sol` (L1–55),
 > `packages/contracts/src/systems/GachaBuyTicketSystem.sol` (L1–143)
 
 ## Overview
@@ -25,7 +25,7 @@ Entity ID: `keccak256("gacha.id")`
 The pool contains all Kamis whose `IDOwnsKami` component points to `GACHA_ID`.
 Pool size is queried dynamically via `ownerComp.size(abi.encode(GACHA_ID))`.
 
-> Source: `LibGacha.sol:21, 138–141`
+> Source: `LibGacha.sol:20, 126–129`
 
 ## Commit-Reveal Pattern
 
@@ -56,15 +56,22 @@ for i in 0..amount:
 
 `KamiGachaRevealSystem.reveal(commitIDs)`:
 
-1. Verify all commits are of type `GACHA_COMMIT`
-2. Sort commit IDs numerically (`LibSort.insertionSort`) — since commit IDs are
-   keccak hashes, this is arbitrary numeric ordering, **not** chronological
-   (the source comment claims chronological ordering, but the code sorts raw
-   hash values)
-3. Extract seeds from blockhashes: `seed = keccak256(blockhash(revealBlock), entityID)`
-4. Select random Kamis from pool using seeds (no-replacement sampling)
-5. Transfer selected Kamis from pool to committers' accounts
-6. Increment reroll counter on each withdrawn Kami
+1. Reject an empty array (`"need commits to reveal"`)
+2. **Sort and reject duplicates** — `LibArray.sortAndVerifyNoRepeats` sorts the
+   IDs in place and reverts `"LibArray: detected duplicate in array"` if the
+   same commit appears twice. Since commit IDs are keccak hashes, the resulting
+   order is arbitrary numeric ordering, **not** chronological (the source
+   comment claims chronological ordering, but the values sorted are raw hashes)
+3. Verify all commits are of type `GACHA_COMMIT` (reverts
+   `"LibGacha: invalid commit ID"`)
+4. Extract seeds from blockhashes: `seed = keccak256(blockhash(revealBlock), entityID)`
+5. Select random Kamis from pool using seeds (no-replacement sampling)
+6. Transfer selected Kamis from pool to committers' accounts
+7. Increment reroll counter on each withdrawn Kami
+
+Sorting and duplicate rejection happen in one step
+(`LibArray.sortAndVerifyNoRepeats`) — see
+[Commit-Reveal → Duplicate-ID Rejection](../utility/commit-reveal.md#duplicate-id-rejection).
 
 The reveal is **owner-agnostic** — anyone can trigger it, and Kamis are sent to
 the original committer (stored in `IdHolder`).
@@ -76,7 +83,7 @@ block), but reveal is impossible in the commit block itself —
 most recent 256 blocks, the effective reveal window is
 **[commit block + 1, commit block + 256]**.
 
-> Source: `KamiGachaRevealSystem.sol:21–31`, `LibGacha.sol:75–81, 87–98`,
+> Source: `KamiGachaRevealSystem.sol:18–28`, `LibGacha.sol:75–86, 112–117`,
 > `LibCommit.sol:134–138`
 
 ### Force Reveal (Community Manager)
@@ -90,7 +97,7 @@ flag). It:
 2. Resets commit blocks to `block.number - 1` (generating new seeds)
 3. Proceeds with normal reveal flow
 
-> Source: `KamiGachaRevealSystem.sol:34–51`, `AuthRoles.sol:12–14`
+> Source: `KamiGachaRevealSystem.sol:30–49`, `AuthRoles.sol:12–14`
 
 ## Minting
 
@@ -111,22 +118,25 @@ receives random Kamis from the pool (not necessarily the ones just created).
 
 `KamiGachaRerollSystem.reroll(kamiIDs)`:
 
-1. Verify all Kamis are owned by caller and in `RESTING` state
-2. **Force-unequip all items** from each Kami back to the player's inventory
+1. **Sort and reject duplicates** in `kamiIDs` — the same
+   `LibArray.sortAndVerifyNoRepeats` guard used by reveal, so the same Kami
+   cannot be submitted twice in one call
+2. Verify all Kamis are owned by caller and in `RESTING` state
+3. **Force-unequip all items** from each Kami back to the player's inventory
    (`LibEquipment.unequipAll`) — equipment is recovered before the Kami leaves
    the player's ownership
-3. Extract previous reroll counts from the Kamis
-4. Deduct `kamiIDs.length` Reroll Tokens (item 11) from inventory
-5. **Deposit** the player's Kamis into the gacha pool (ownership → `GACHA_ID`)
-6. Create commits (same amount as Kamis deposited)
-7. Store previous reroll counts on the commit entities
-8. Log reroll
+4. Extract previous reroll counts from the Kamis
+5. Deduct `kamiIDs.length` Reroll Tokens (item 11) from inventory
+6. **Deposit** the player's Kamis into the gacha pool (ownership → `GACHA_ID`)
+7. Create commits (same amount as Kamis deposited)
+8. Store previous reroll counts on the commit entities
+9. Log reroll
 
 On reveal, the player receives the same number of random Kamis. Each received
 Kami's counter is set to the value carried on the commit plus 1 (see Reroll
 Counter below).
 
-> Source: `KamiGachaRerollSystem.sol:21–54`, `LibGacha.sol:41–69`
+> Source: `KamiGachaRerollSystem.sol:20–58`, `LibGacha.sol:41–73`
 
 ## Reroll Counter
 
@@ -141,7 +151,7 @@ rerolls. The counter:
 Because the increment applies to every withdrawal, a freshly minted,
 never-rerolled Kami leaves the pool with `Reroll = 1`.
 
-> Source: `LibGacha.sol:41–69` (increment at 57–62)
+> Source: `LibGacha.sol:41–73` (increment at 61–66)
 
 ## Random Selection
 
@@ -158,7 +168,7 @@ No duplicate draws occur within a single reveal batch — not because the indice
 are unique, but because each selected Kami is removed from the pool between
 draws, so a repeated index lands on a different Kami.
 
-> Source: `LibGacha.sol:87–118` (pool removal at 110–116), `LibRandom.sol:78–91`
+> Source: `LibGacha.sol:75–106` (pool removal at 98–104), `LibRandom.sol:78–91`
 
 ## Buying Gacha Tickets
 
@@ -206,7 +216,7 @@ both `MINT_START_WL` and `MINT_START_PUBLIC` to 1746086400 — public mint opens
 at the same time as the whitelist mint.
 
 `GACHA_REROLL_PRICE` is a dead config: its only reader,
-`LibGacha.getBaseRerollCost` (`LibGacha.sol:134–136`), has no callers, and the
+`LibGacha.getBaseRerollCost` (`LibGacha.sol:122–124`), has no callers, and the
 key is never set by any init script. The only reroll cost is 1 Reroll Token
 (item 11) per Kami (`KamiGachaRerollSystem.sol:37`).
 
@@ -225,4 +235,4 @@ key is never set by any init script. The only reroll cost is 1 Reroll Token
 | `MINT_NUM_TOTAL` | Per account + global | Total tickets purchased |
 | `MINT` | Event | Emitted on ticket purchase (accID, amount, cost) |
 
-> Source: `LibGacha.sol:169–175`, `GachaBuyTicketSystem.sol:90–100`
+> Source: `LibGacha.sol:157–163`, `GachaBuyTicketSystem.sol:90–100`
