@@ -45,7 +45,28 @@ Where:
 - `attackerViolence` = attacker's total Violence stat
 - `victimHarmony` = victim's total Harmony stat
 - `ratio` = `KAMI_LIQ_ANIMOSITY[2]` (core animosity range)
-- `precision` = `10^(18 + config[3] - 6)`
+- `precision` = `10^(18 + config[3] - 6)` (the `6` is the `ANIMOSITY_PREC`
+  constant, `LibKill.sol:26`)
+
+Deployed config (standard 8-slot layout
+`[nudge, n_prec, ratio, r_prec, shift, s_prec, boost, b_prec]`, but only the
+first four slots are set):
+
+```
+KAMI_LIQ_ANIMOSITY = [0, 0, 400, 3]
+```
+
+so `ratio = 400` and `precision = 10^(18 + 3 − 6) = 10^15`.
+
+`Gaussian.cdf` returns a WAD value in `[0, 1e18]`, so animosity spans
+`[0, 400 × 1e18 / 1e15] = [0, 400,000]` at 1e6 precision — i.e. the base
+threshold saturates at **0.40 (40%) of the victim's max HP**, reached only as
+attacker Violence overwhelms victim Harmony. Efficacy and the threshold shifts
+(below) then scale that base.
+
+> Source: `LibKill.sol:26, 91–107`,
+> `deployment/world/state/configs/configs.ts:142–146` (`initLiquidation`,
+> array at 145)
 
 Result is in 1e6 precision (proportion of total health).
 
@@ -132,7 +153,23 @@ Where:
 - `defenderViolence` = victim's total Violence stat
 - `attackerHarmony` = attacker's total Harmony stat
 - `ratio` = `KAMI_LIQ_KARMA[2]` (core karma range)
-- `precision` = `10^(18 + config[3] - 3)` (result in 1e3 precision)
+- `precision` = `10^(18 + config[3] - 3)` (result in 1e3 precision; the `3` is
+  the `KARMA_PREC` constant, `LibKill.sol:27`, marked "don't change this")
+
+Deployed config:
+
+```
+KAMI_LIQ_KARMA = [0, 0, 2000, 3, 0, 0, 0, 0]
+```
+
+so `ratio = 2000` and `precision = 10^(18 + 3 − 3) = 10^18`. With `Gaussian.cdf`
+in `[0, 1e18]`, karma spans `[0, 2000]` at 1e3 precision — a multiplier of
+**0 to 2.0×**. Only slots 2 and 3 are non-zero; the nudge, shift and boost
+slots are unused by `calcKarma`, which reads `config[2]` and `config[3]` only.
+
+> Source: `LibKill.sol:27, 165–179`,
+> `deployment/world/state/configs/configs.ts:142–156` (`initLiquidation`,
+> array at 154)
 
 **Interpretation**: A high-violence victim inflicts more karma on the attacker,
 making it riskier to kill strong opponents.
@@ -234,13 +271,28 @@ salvage = ⌊bounty × ratio / precision⌋
   (= 2000, i.e. 200%). For `ratio` in `(1000, 1999]` salvage **exceeds** the
   bounty and is not clamped
 
-> ⚠️ **SUSPECTED UPSTREAM BUG**: at the deployed config, a victim with Power
-> 101–199 (and no `DEF_SALVAGE_RATIO` bonus) yields `ratio` 1010–1990, so
-> `salvage > bounty` for any non-trivial bounty. The subtraction
-> `bounty - salvage` at `HarvestLiquidateSystem.sol:58` then underflows
-> (checked arithmetic) and the transaction **reverts** — victims in this Power
-> band are effectively unliquidatable. At Power ≥ 200 the clamp returns the
-> entire bounty as salvage (leaving 0 for spoils).
+> ⚠️ **CONFIRMED UPSTREAM BUG (code-level, at the pin)**: at the deployed
+> config a victim with Power **101–199** (and no `DEF_SALVAGE_RATIO` bonus)
+> yields `ratio` 1010–1990. The clamp at `LibKill.sol:236` does not fire
+> (`1010/1000 = 1`, not `> 1`), so `salvage = ⌊bounty × ratio / 1000⌋`, which
+> **exceeds** the bounty. The subtraction `bounty - salvage` at
+> `HarvestLiquidateSystem.sol:58` then underflows under Solidity ≥0.8 checked
+> arithmetic (`LibKill.sol:2`, `HarvestLiquidateSystem.sol:2`) and the whole
+> liquidation **reverts** — victims in this Power band are unliquidatable.
+>
+> Exact condition, since `salvage > bounty` requires the floor to clear an
+> extra unit: `bounty × (ratio − 1000) ≥ 1000`, i.e.
+> `bounty ≥ ⌈1000 / (10·power − 1000)⌉` — 100 MUSU at Power 101, 10 at Power
+> 110, 2 from Power 150 up. Below that bounty the call still succeeds with
+> `salvage = bounty` and zero spoils.
+>
+> Boundary values: at Power **100** (`ratio` exactly 1000) salvage equals the
+> bounty exactly — no underflow, spoils computed on 0. At Power **≥ 200**
+> (`ratio ≥ 2000`) the clamp fires and returns the entire bounty as salvage,
+> again leaving 0 for spoils. So the reverting band is bounded on both sides.
+>
+> The band is far above deployed Kami Power in practice (base Power is 10,
+> `configs.ts:115`), so it is a latent defect rather than an observed one.
 
 The victim's account receives the salvage as MUSU, plus the victim Kami gets
 XP equal to the salvage amount.
@@ -264,12 +316,36 @@ spoils = ⌊(bounty - salvage) × ratio / precision⌋
 - The cap uses the same integer-division check (`LibKill.sol:254`) and fires
   only at `ratio ≥ 2000`
 
-> ⚠️ **SUSPECTED UPSTREAM BUG**: at the deployed config, an attacker with
-> Power 56–154 (and no `ATK_SPOILS_RATIO` bonus) yields `ratio` 1010–1990 and
-> receives **101–199% of the remaining bounty**, uncapped — the killer's
-> harvest is credited with more MUSU than the victim lost (net inflation).
-> At Power ≥ 155 the clamp snaps spoils back to exactly 100% of the remaining
-> bounty.
+> ⚠️ **CONFIRMED UPSTREAM BUG (code-level, at the pin)**: at the deployed
+> config an attacker with Power **56–154** (and no `ATK_SPOILS_RATIO` bonus)
+> yields `ratio` 1010–1990. The clamp at `LibKill.sol:254` uses the same
+> integer division and does not fire, so
+> `spoils = ⌊(bounty − salvage) × ratio / 1000⌋` — **101–199% of the remaining
+> bounty**, uncapped. `sendSpoils` credits that straight onto the killer's
+> harvest balance (`LibKill.sol:59–62`, `LibHarvest.incBounty`), so the killer
+> gains more MUSU than the victim lost: net issuance, not a transfer.
+>
+> Unlike the salvage band this does **not** revert — nothing subtracts the
+> spoils from a smaller quantity. Exact condition for a strict overpay:
+> `(bounty − salvage) ≥ ⌈1000 / (450 + 10·power − 1000)⌉` — 100 MUSU at Power
+> 56, 20 at Power 60, 3 at Power 100.
+>
+> Boundaries: at Power **55** `ratio` is exactly 1000 (spoils = 100% of the
+> remainder, no overpay). At Power **≥ 155** (`ratio ≥ 2000`) the clamp fires
+> and snaps spoils back to exactly 100% of the remainder. As with salvage, the
+> band sits well above deployed Kami Power.
+
+> ⚠️ UNCERTAIN: both functions fold the bonus in as
+> `ratio = config[2] + powerTuning + ratioBonus.toUint256()`
+> (`LibKill.sol:233, 251`), casting a **signed** bonus total to unsigned. A net
+> negative `DEF_SALVAGE_RATIO` / `ATK_SPOILS_RATIO` would therefore fail the
+> cast rather than reduce the ratio, reverting every liquidation involving that
+> Kami. No deployed source grants a negative value for either type
+> (`deployment/world/data/items/allos.csv`,
+> `deployment/world/data/skills/skills.csv` — all `DSR`/`ASR` values are
+> positive), so the path is unreachable at the pin. The cast's exact revert
+> behaviour lives in `solady`'s `SafeCastLib`, an npm dependency not vendored
+> in the source repo, so it is asserted from the call site only.
 
 > Source: `LibKill.sol:59–62, 240–256`
 

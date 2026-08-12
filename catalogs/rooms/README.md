@@ -38,6 +38,25 @@
 | YieldIndex | uint32 | Base yield item index: 1 = MUSU (53 nodes) or 2 = VIPP (11 nodes, e.g., Cave Crossroads 18, Scrap Trees 60, Treasure Hoard 88) |
 | Scav Cost | uint32 | Scavenge bar point cost (100–500) |
 
+The source CSV carries one further column, **`💥 Node Effects`**, which is
+dropped here: it is **empty on all 64 source rows** and is never read by the
+node initialiser (`deployment/world/state/rooms/nodes.ts:6–19, 44–47`).
+
+### No per-node bonus catalog
+
+> ⚠️ **Node bonuses are runtime world state, not source data.** Nodes can grant
+> temporary `UPON_HARVEST_STOP` bonuses to Kamis harvesting on them
+> (`LibNode.sol:72–88`), but **which node grants what is not present in the
+> source repo at the pin**, so no catalog file can be extracted. The empty
+> `💥 Node Effects` column is the only trace in the data sheets, and the admin
+> helper that would write them (`api.node.bonus.add`,
+> `deployment/world/api/nodes.ts:35–42`) has zero callers. The values are set
+> by admin calls to `_NodeRegistrySystem.addBonus`
+> (`_NodeRegistrySystem.sol:48–54`) made outside the deployment pipeline and
+> are only readable on chain, under the anchor
+> `keccak256("node.bonus", nodeIndex)`. See
+> [mechanics/world/nodes.md](../../mechanics/world/nodes.md#which-nodes-grant-what--runtime-world-state).
+
 ## scavenge-droptables.csv Schema
 
 | Column | Type | Description |

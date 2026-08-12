@@ -144,19 +144,69 @@ target.
 
 ### Terminators (Effect Expiry)
 
+The `Terminator` column is the **sole** source of an effect's lifetime: it is
+passed straight through to the bonus registry as the end-anchor type
+(`deployment/world/state/items/allos.ts:58–65` → `LibAllo.createBonus`,
+`LibAllo.sol:93–115`). Effect **key names carry no semantics** — see the `_KK`
+note below.
+
 | Terminator | When Effect is Removed |
 |---|---|
-| `UPON_HARVEST_ACTION` | After the next harvest action completes |
-| `UPON_UNEQUIP` | When the equipment is unequipped |
-| `UPON_DEATH` | When the Kami is liquidated (killed) |
-| `UPON_LIQUIDATION` | After performing a liquidation attack |
-| `UPON_KILL_OR_KILLED` | After killing or being killed in combat |
+| `UPON_HARVEST_ACTION` | After the next harvest action completes (collect / feed / stop) |
+| `UPON_COOLDOWN_SET` | On the next cooldown (re)set — harvest start/stop/collect, liquidation |
+| `UPON_UNEQUIP` | Intended: on unequip. **Inert as deployed** — the runtime clears `UPON_UNEQUIP_{SLOT}`, and these allos are registered under the `USE` case ([bonus-system.md](../../mechanics/combat/bonus-system.md#end-types-temporary-bonus-lifecycle)) |
+| `UPON_DEATH` | Only when the holder is liquidated (a kill by the holder does not clear it) |
+| `UPON_LIQUIDATION` | Only when the holder successfully liquidates another Kami (being killed does not clear it) |
+| `UPON_KILL_OR_KILLED` | On **either** — the holder killing or being killed |
 | (empty) | Permanent / instant effect |
 
-### Equipment vs Consumable Effects
+Full lifecycle rules, including which resetter runs on which side of a
+liquidation, are in
+[mechanics/combat/bonus-system.md](../../mechanics/combat/bonus-system.md#combat-buff-reset--exact-semantics).
 
-Effects prefixed with `E_` are **equipment bonuses** (persist while equipped, removed `UPON_UNEQUIP`).
-Effects without `E_` prefix are **consumable bonuses** (one-shot, removed after their trigger event).
+### Effect Key Naming Conventions
+
+Effect keys are free-form strings matched by exact name between
+`items.csv:Effects` and `effects.csv:Name`. Nothing in the contracts parses
+them; prefixes and suffixes are a human convention in the sheet only.
+
+| Convention | Meaning (by convention) | Authoritative field |
+|---|---|---|
+| `E_` prefix | Equipment bonus, meant to persist while equipped | `Terminator` = `UPON_UNEQUIP` |
+| no prefix | Consumable bonus, one-shot | `Terminator` |
+| `_KK` suffix | "kill or killed" — a kill-scoped variant of an otherwise identically-named effect | `Terminator` |
+
+Three keys carry `_KK`:
+
+| Key | Bonus type | Value | Terminator | Item |
+|---|---|---|---|---|
+| `ATR+10%_KK` | `ATK_THRESHOLD_RATIO` | +100 | `UPON_KILL_OR_KILLED` | Flash Talisman (11412) |
+| `DTR-10%_KK` | `DEF_THRESHOLD_RATIO` | −100 | `UPON_KILL_OR_KILLED` | Flash Talisman (11412) |
+| `ATS-30%_KK` | `ATK_THRESHOLD_SHIFT` | −300 | `UPON_DEATH` | Curse Tablet (19301) |
+
+The suffix exists to disambiguate `ATR+10%_KK` from the plain `ATR+10%` key —
+same bonus type and value, different terminator (`UPON_LIQUIDATION`, used by
+the Inverted Teardrop Jewel, 11224).
+
+> ⚠️ **The `_KK` suffix has drifted.** `ATS-30%_KK` now terminates on
+> `UPON_DEATH`, not `UPON_KILL_OR_KILLED`, so the name no longer describes the
+> lifetime. Always read the `Terminator` column, never the key name.
+
+Neither the prefix nor the suffix affects scope or stacking. A `_KK` bonus
+applies to whichever entity the item is used or cast on, and — like every
+temporary bonus — one instance exists per (source item, bonus type, holder) at
+level 1, so a second dose of the same item adds nothing. See
+[bonus-system.md → Stacking Rules](../../mechanics/combat/bonus-system.md#stacking-rules).
+
+### `BYPASS_BONUS_RESET` (items.csv Flags)
+
+An item flag, not an effect. When **absent**, using the item on your own Kami
+first clears that Kami's `UPON_HARVEST_ACTION` bonuses; when **present**, the
+item can be fed mid-harvest without destroying an active buff
+(`KamiUseItemSystem.sol:34–37`, `LibItem.sol:239–243`). It is read only on the
+own-Kami `USE` path, so it is inert on `Enemy_Kami` casts and account items.
+17 items carry it. Full semantics:
+[bonus-system.md](../../mechanics/combat/bonus-system.md#bypass_bonus_reset-item-flag).
 
 ## droptables.csv Schema
 

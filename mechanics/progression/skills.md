@@ -84,14 +84,35 @@ tree before skills at that tier become available:
 | 6 | 75 | `KAMI_TREE_REQ[6]` |
 | 7 | 95 | `KAMI_TREE_REQ[7]` |
 
-> Source: `configs.ts:186`, `LibSkill.sol:226–228`
+> Source: `configs.ts:185–187` (`initSkills`, array at 186),
+> `LibSkill.sol:226–228`
 
-> **Index mapping caution**: this table is 0-indexed by config slot, while
-> `catalogs/skills/skills.csv` numbers tiers **1–6**. CSV tier N gates at
-> `KAMI_TREE_REQ[N-1]`, i.e. tiers 1–6 require **0 / 5 / 15 / 25 / 40 / 55**
-> tree points. Only 6 tiers have skills; slots 75/95 are unused headroom.
-> The CSV's own `Tree req` column is stale for tiers 4–6 (says 20/30/40) —
-> trust this config, not that column.
+> **Index mapping**: this table is 0-indexed by config slot, while
+> `catalogs/skills/skills.csv` numbers tiers **1–6**. The deployment script
+> subtracts one before writing the tier onto the skill registry entry
+> (`api.registry.skill.create(..., tier - 1, ...)`,
+> `deployment/world/state/skills.ts:72, 84`), and that stored value is read
+> back as the config index by `LibSkill.getTreeTierPoints`
+> (`LibSkill.sol:226–228`) via `LibSkillRegistry.getTree`
+> (`LibSkillRegistry.sol:155–166`, tier = `Level` component). So CSV tier N
+> gates at `KAMI_TREE_REQ[N−1]`:
+>
+> | CSV tier | Config slot | Tree points required |
+> |---|---|---|
+> | 1 | `[0]` | 0 (gate short-circuits: `tier == 0` auto-passes, `LibSkill.sol:175`) |
+> | 2 | `[1]` | 5 |
+> | 3 | `[2]` | 15 |
+> | 4 | `[3]` | **25** |
+> | 5 | `[4]` | **40** |
+> | 6 | `[5]` | **55** |
+>
+> Only 6 tiers have skills; slots `[6]` = 75 and `[7]` = 95 are unused
+> headroom. `catalogs/skills/skills.csv` carries these enforced values in its
+> `Tree req` column; the source CSV's own column still shows the pre-retune
+> 20/30/40 for tiers 4–6 and is never read by the deployment script, which
+> takes only `Tier` (`skills.ts:72`). See
+> [catalogs/skills/README.md](../../catalogs/skills/README.md) for the
+> divergence note.
 
 Tree points are tracked via bonuses with type `SKILL_TREE_{TreeName}` (e.g.,
 `SKILL_TREE_Predator`). Each skill upgrade increments the tree bonus by the

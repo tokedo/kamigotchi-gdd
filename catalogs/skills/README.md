@@ -10,13 +10,25 @@ plus 16 effect types.
 - `skills.csv` — 72 skill definitions
 - `effects.csv` — 16 effect type definitions
 
-> ⚠️ **Stale column warning**: the `Tree req` column in `skills.csv` carries
-> outdated display values for tiers 4–6 (`20/30/40`) — this matches the game
-> repo's own CSV, but on-chain enforcement reads the `KAMI_TREE_REQ` config
-> `[0, 5, 15, 25, 40, 55, ...]` (configs.ts, checked in `LibSkill.sol`).
-> The real gates are **25/40/55** for tiers 4/5/6 (player-verified: the tier-6
-> ultimate needs 55 tree points → level 56 for a mono-tree build). Use the
-> table below, not the CSV column.
+> **Deliberate divergence from source — `Tree req` column.** This is the one
+> column in `skills.csv` that is **not** a verbatim copy of the source CSV.
+> The source file still carries the pre-retune display values `20/30/40` for
+> tiers 4–6; the values enforced on chain are `25/40/55`, from the
+> `KAMI_TREE_REQ` config `[0, 5, 15, 25, 40, 55, 75, 95]`
+> (`deployment/world/state/configs/configs.ts:185–187`), read by
+> `LibSkill.getTreeTierPoints` (`LibSkill.sol:226–228`) and checked in
+> `LibSkill.meetsTreePrerequisites` (`LibSkill.sol:165–180`).
+>
+> The column is safe to correct because **the deployment script never reads
+> it** — `initSkill` takes only `Index`, `Name`, `Description`, `Tree`,
+> `Cost`, `Max` and `Tier` (`deployment/world/state/skills.ts:62–86`), passing
+> `tier - 1` (line 84) as the config index. `Tree req` is display data in the
+> source sheet and nothing else. This catalog therefore carries the enforced
+> values so that catalog and mechanic agree; every other column remains
+> byte-identical to source.
+>
+> Tier 6 needing 55 tree points means a mono-tree build reaches its ultimate
+> at 56 skill points invested in that tree.
 
 ## Column Reference
 
@@ -28,7 +40,7 @@ plus 16 effect types.
 | Name | Display name |
 | Tree | Skill tree: Predator, Enlightened, Guardian, Harvester |
 | Tier | Tier level (1-6) |
-| Tree req | Tree points to unlock this tier **as shipped in the source CSV** (0, 5, 15, 20, 30, 40) — stale for tiers 4–6; see warning above and use the Tier Unlock table instead |
+| Tree req | Tree points to unlock this tier, **as enforced on chain** (0, 5, 15, 25, 40, 55) — corrected against `KAMI_TREE_REQ`; the source CSV's own column shows 20/30/40 for tiers 4–6 and is unread by deployment (see note above) |
 | Max | Maximum ranks purchasable |
 | Cost | Skill points per rank |
 | Effect | Effect key (e.g., SVS, HFB) — see effects.csv |

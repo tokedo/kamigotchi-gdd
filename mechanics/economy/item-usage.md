@@ -36,7 +36,10 @@ Items define which target they can be used on via a `For` component
 2. Verify Kami cooldown has expired
 3. Verify item is for shape `"KAMI"` and enabled
 4. Verify item USE requirements against the Kami
-5. Reset harvest-action bonuses (unless item bypasses this)
+5. Reset harvest-action bonuses **unless** the item carries the
+   `BYPASS_BONUS_RESET` flag (`KamiUseItemSystem.sol:34–37`) — this is the only
+   place in the codebase that flag is read; see
+   [bonus-system.md → `BYPASS_BONUS_RESET`](../combat/bonus-system.md#bypass_bonus_reset-item-flag)
 6. Sync Kami state (apply pending health regen, etc.)
 7. Deduct 1 item from inventory
 8. Apply item's allocations to the Kami
@@ -67,6 +70,10 @@ Two behaviors worth noting:
 - **Target must have an active harvest** — the `CAST` event derives the node
   index from the target's harvest via reverting getters (`LibItem.sol:490–492`),
   so the whole cast reverts unless the target Kami is actively harvesting.
+- **No bonus reset** — unlike the own-Kami path, `KamiCastItemSystem` never
+  calls a `LibBonus` resetter, so casting neither clears the target's
+  harvest-action buffs nor consults `BYPASS_BONUS_RESET`. The flag on Cthonic
+  Blight (19201), the one `Enemy_Kami` item that carries it, is therefore inert.
 
 > Source: `KamiCastItemSystem.sol:18–46`
 

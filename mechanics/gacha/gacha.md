@@ -27,6 +27,67 @@ Pool size is queried dynamically via `ownerComp.size(abi.encode(GACHA_ID))`.
 
 > Source: `LibGacha.sol:20, 126–129`
 
+### Initial Seed
+
+The pool is **pre-seeded at world deployment** by batch-minting Kamis straight
+into `GACHA_ID`. The production branch of the world init seeds
+**2,222 Kamis**:
+
+```
+await initGachaPool(api, 2222);
+```
+
+`initGachaPool` drives `_721BatchMinterSystem.batchMint` in batches of 40
+(gas-capped at 60M per call), each minted Kami getting `IDOwnsKami = GACHA_ID`
+alongside its ERC-721 token.
+
+| Environment | Seed count |
+|---|---|
+| `production` | 2,222 |
+| default (unnamed env) | 2,222 |
+| `local` | 88 |
+| `testing` | none — the call is commented out ("deployment unreliable. gacha autocreates upon mint") |
+
+> Source: `deployment/world/state/index.ts:64–80` (local 66, testing 71–72,
+> production 76, default 78), `deployment/world/state/gacha.ts:3–12`,
+> `_721BatchMinterSystem.sol:312–328, 382–387`
+
+### Seed Size vs. Supply Cap
+
+The pool is **size-invariant** under normal play: [minting](#minting) adds one
+Kami to the pool and the [reveal](#reveal-step-2) draws one out;
+[rerolling](#rerolling) deposits one and draws one out. So the seeded 2,222
+Kamis stay resident in the pool, and every gacha mint permanently increases
+total Kami supply by one.
+
+`Kami721.MAX_SUPPLY` is **22,222**, enforced on both mint entrypoints
+(`Kami721.sol:44, 88–97`). Both creation paths mint a 721 —
+`LibKamiCreate.create` calls `nft.mint` (`LibKamiCreate.sol:84–85`) and derives
+the next index from `totalSupply() + 1` (`LibKamiCreate.sol:154–156`); the
+batch minter calls `mintBatch` on the same counter
+(`_721BatchMinterSystem.sol:315, 382–387`). The seed therefore consumes 2,222
+of the 22,222 token IDs before any player mints, leaving:
+
+```
+22,222 (MAX_SUPPLY) − 2,222 (pool seed) = 20,000
+```
+
+**20,000 gacha mints over the world's lifetime.** Since each revealed mint
+commit withdraws exactly one Kami to a player and rerolls are supply-neutral,
+20,000 is also the ceiling on player-held Kamis — with the pool's 2,222
+residents permanently out of circulation. Beyond that the
+`Kami721: max supply reached` require fires and `KamiGachaMintSystem` reverts.
+
+> ⚠️ The 2,222 figure is the seed the **deployment script** passes; it is not
+> asserted on chain, and the pool can be topped up afterwards at any size via
+> `mintToGachaPool` (`gacha.ts:14–21`, exposed as `world.ts:99`). Any such
+> top-up shifts the arithmetic above by the same amount. Unrevealed mint
+> commits also leave their Kami resident in the pool, growing it above the
+> seed until the commit is revealed (or force-revealed).
+
+> Source: `Kami721.sol:44, 88–97`, `LibKamiCreate.sol:75–91, 154–156`,
+> `KamiGachaMintSystem.sol:34–35`, `LibGacha.sol:40–70`
+
 ## Commit-Reveal Pattern
 
 All gacha operations (mint and reroll) use a **two-step commit-reveal** pattern
