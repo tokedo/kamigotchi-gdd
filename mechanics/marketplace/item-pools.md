@@ -35,13 +35,17 @@ pool interface. It can also be reached from the Menu.
 > clickbox → `triggerPoolModal`),
 > `packages/client/src/app/triggers/triggerPoolModal.ts`
 
-> ⚠️ **Swapping can be switched off world-side.** Beyond the per-pool
-> `IsDisabled` component, pool systems are gated by world config flags
-> (`POOL_SWAP_ENABLED` and siblings). While such a flag is `0`, every swap
-> reverts: the fountain still opens and the entrypoints below still exist, but
-> the transaction fails. These flags are chain state, not source constants —
-> the live value is read from the world config by key (`0` = disabled) and
-> cannot be derived from this document.
+> ⚠️ **Swapping can be switched off per pool.** A pool entity may carry an
+> `IsDisabled` component ("pauses swaps and liquidity adds",
+> `LibPoolRegistry.sol:25`). `PoolSystem.swap` and `addLiquidity` both check
+> it (`PoolSystem.sol:32, 71`); `removeLiquidity` deliberately does not, so
+> providers can always exit a disabled pool (`PoolSystem.sol:16`). The switch
+> is admin-set (`_PoolRegistrySystem.setDisabled`) and is chain state, not a
+> source constant: absence of the component means enabled, **no world-config
+> key exposes it**, and a disabled pool simply reverts swaps while the
+> fountain and the entrypoints below still exist. Swaps are additionally
+> gated on both items being transferable (`verifyTradable`,
+> `PoolSystem.sol:117`).
 
 ## Which Pools Exist Is World State, Not Code
 

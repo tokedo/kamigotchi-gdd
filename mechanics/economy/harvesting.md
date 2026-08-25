@@ -66,8 +66,10 @@ Withdraws accrued bounty **without stopping** the harvest.
 4. Grant **XP equal to the post-tax output** to the Kami
 5. Add the post-tax output to the account's scavenge bar for the node — no
    droptable roll here (see `mechanics/world/scavenging.md`)
-6. Reset cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
-7. Reset harvest-action bonuses
+6. Increment the account's leaderboard score by the post-tax output
+   (`LibScore.incFor`, `HarvestCollectSystem.sol:100`)
+7. Reset cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
+8. Reset harvest-action bonuses
 
 > Source: `HarvestCollectSystem.sol:84–113`
 
@@ -85,9 +87,11 @@ Collects all accrued bounty **and ends** the harvest.
 5. Grant XP equal to the post-tax output
 6. Add the post-tax output to the account's scavenge bar for the node (no
    droptable roll here)
-7. Reset all harvest-stop bonuses
-8. Reset cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
-9. Log harvest time
+7. Increment the account's leaderboard score by the post-tax output
+   (`LibScore.incFor`, `HarvestStopSystem.sol:110`)
+8. Reset all harvest-stop bonuses
+9. Reset cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
+10. Log harvest time
 
 > Source: `HarvestStopSystem.sol:88–124`
 
@@ -389,6 +393,11 @@ When bounty is collected (via Collect or Stop):
    here — rewards are rolled in a separate `ScavengeClaimSystem` transaction,
    which extracts whole tiers and carries the remainder over
    (`LibScavenge.sol:99–114`). See `mechanics/world/scavenging.md`
-3. **Score** — account leaderboard score is incremented
+3. **Score** — the account's leaderboard score is incremented by the
+   post-tax output (`LibScore.incFor`, `HarvestCollectSystem.sol:100` /
+   `HarvestStopSystem.sol:110`). The score is **epoch-scoped** — keyed by
+   the current `SCORE_EPOCH` config value, the MUSU item index and the type
+   string `COLLECT` (`LibScore.sol:71–80, 145–147`) — so it is a resettable
+   leaderboard (an admin can start a new epoch), not a lifetime counter
 
 > Source: `HarvestStopSystem.sol:97–110`, `HarvestCollectSystem.sol:87–100`
