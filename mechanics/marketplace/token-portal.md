@@ -95,6 +95,19 @@ revert with `"Token Portal: disabled"`. The owner flips it via
 > acknowledges this scale-deletion edge case
 > (`TokenPortalSystem.sol:97–98, 104–108`).
 
+### The Pending Queue Is Public
+
+A receipt is an ordinary world entity, so the set of unclaimed withdrawals is
+readable by anyone — it is not scoped to its owner. The client's portal view
+splits into a Deposit tab and a Withdraw tab with a toggleable queue panel
+beneath them, and that panel lists **other players' open withdrawals** next to
+your own. A pending exit is therefore publicly observable for the whole
+`PORTAL_TOKEN_EXPORT_DELAY` window before it can be claimed.
+
+> Source: `packages/client/src/app/components/modals/tokenPortal/TokenPortal.tsx`
+> (`getOpenWithdrawals` with an empty account filter, minus the caller's own),
+> `queue/table/Table.tsx` (mine / others' split)
+
 ### Step 3: Cancel (optional, before claim)
 
 `TokenPortalSystem.cancel(receiptID)`:

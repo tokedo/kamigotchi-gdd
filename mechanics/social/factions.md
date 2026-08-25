@@ -77,6 +77,17 @@ Returns 0 if no reputation exists.
 
 > Source: `LibFaction.sol:76–98`
 
+### No On-Chain Cap
+
+`LibFaction` imposes no maximum: reputation is an unbounded `LibScore` counter
+that only quest rewards and other grants move. The **0–500** range players see
+is a presentation choice — the account modal draws each faction bar against a
+fixed reference total, raised from 300 to 500. Nothing in the contracts reads
+that number, and a reputation above it is representable.
+
+> Source: `LibFaction.sol:76–98`,
+> `packages/client/src/app/components/modals/account/Factions.tsx:46`
+
 ## Current Factions
 
 | Index | Name | Key | Description |
