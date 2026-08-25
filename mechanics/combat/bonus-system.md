@@ -212,16 +212,21 @@ if (!LibItem.bypassBonusReset(components, itemIndex)) {
   the flag, the item can be fed mid-harvest without collateral damage. It does
   **not** exempt the item's own bonuses from their own end types.
 - Scope: the flag is only consulted on the own-Kami `USE` path.
-  `KamiCastItemSystem` (`ENEMY_KAMI` items) and `AccountUseItemSystem` never
-  call the reset at all, so the flag is inert on those paths — including on
-  Cthonic Blight (19201), which carries the flag but is an `Enemy_Kami` item.
-- **17** deployed items carry the flag
+  `KamiCastItemSystem` and `AccountUseItemSystem` never call the reset at all,
+  so the flag is inert on those paths — including on Cthonic Blight (19201),
+  which carries the flag but is an `Enemy_Kami` item and so only ever reaches
+  the cast path.
+- An `Any_Kami` item reaches **both** doors, so the same flag is live or inert
+  depending on which one is used: Flash Talisman (11412) honours it when used
+  on your own Kami through `KamiUseItemSystem` and ignores it when cast on
+  someone else's through `KamiCastItemSystem`.
+- **18** deployed items carry the flag
   (`deployment/world/data/items/items.csv`) — 16 `Kami`-target consumables
-  (11224–11226, 11401–11410, 11413, 11501–11502) plus the one `Enemy_Kami`
-  item noted above.
+  (11224–11226, 11401–11410, 11413, 11501–11502), the one `Enemy_Kami` item
+  noted above, and Flash Talisman (11412, `Any_Kami`).
 
 > Source: `KamiUseItemSystem.sol:34–37`, `LibItem.sol:239–243`,
-> `LibBonus.sol:308–311`, `KamiCastItemSystem.sol:18–46`,
+> `LibBonus.sol:308–311`, `KamiCastItemSystem.sol:18–54`,
 > `AccountUseItemSystem.sol:18–36`
 
 ### The `_KK` Effect-Key Suffix

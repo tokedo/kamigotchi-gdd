@@ -36,7 +36,7 @@
 | Name | string | Display name |
 | Type | enum | Item type category (see types below) |
 | Rarity | enum | Common / Uncommon / Rare / Epic / Legendary |
-| For | enum | Target entity: `Kami`, `Account`, `Enemy_Kami`, `Passport_slot`, `Kami_Pet_Slot`, or empty |
+| For | enum | Target entity: `Kami`, `Account`, `Enemy_Kami`, `Any_Kami`, `Passport_slot`, `Kami_Pet_Slot`, or empty |
 | Flags | string | Comma-separated flags (e.g., `NOT_TRADABLE`, `BYPASS_BONUS_RESET`) |
 | Effects | string | Comma-separated effect keys (references `effects.csv`) |
 | Requirements | string | Comma-separated requirement keys (see Item Requirements below) |
@@ -75,7 +75,7 @@ target.
 | Material | 41 | Raw and processed crafting ingredients |
 | Equipment | 36 | Equipable pet-slot items with passive stat bonuses |
 | NFT | 14 | Passport items (equippable cosmetics) |
-| Potion | 11 | Consumables with targeted effects (Kami or Enemy_Kami) |
+| Potion | 11 | Consumables with targeted effects (Kami, Enemy_Kami, or Any_Kami) |
 | Key Item | 11 | Quest-related unique items (incl. Ring of Spirits, 22802) |
 | Misc | 7 | Currencies and special items (MUSU, Gacha Ticket, etc.) |
 | Lootbox | 6 | Openable containers that roll on a droptable |
@@ -204,8 +204,9 @@ An item flag, not an effect. When **absent**, using the item on your own Kami
 first clears that Kami's `UPON_HARVEST_ACTION` bonuses; when **present**, the
 item can be fed mid-harvest without destroying an active buff
 (`KamiUseItemSystem.sol:34–37`, `LibItem.sol:239–243`). It is read only on the
-own-Kami `USE` path, so it is inert on `Enemy_Kami` casts and account items.
-17 items carry it. Full semantics:
+own-Kami `USE` path, so it is inert on casts and on account items — including
+for an `Any_Kami` item, which honours the flag when used on your own Kami and
+ignores it when cast. 18 items carry it. Full semantics:
 [bonus-system.md](../../mechanics/combat/bonus-system.md#bypass_bonus_reset-item-flag).
 
 ## droptables.csv Schema
