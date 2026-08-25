@@ -1,8 +1,8 @@
 # Item Pools (Constant-Product AMM)
 
-> Source: `packages/contracts/src/systems/PoolSystem.sol` (L1–127),
-> `packages/contracts/src/systems/_PoolRegistrySystem.sol` (L1–132),
-> `packages/contracts/src/libraries/LibPool.sol` (L1–330),
+> Source: `packages/contracts/src/systems/PoolSystem.sol` (L1–130),
+> `packages/contracts/src/systems/_PoolRegistrySystem.sol` (L1–137),
+> `packages/contracts/src/libraries/LibPool.sol` (L1–379),
 > `packages/contracts/src/libraries/LibPoolRegistry.sol` (L1–109),
 > `packages/contracts/src/libraries/LibInventory.sol` (L252–274, L319–323),
 > `packages/contracts/deployment/contracts/PoolCeremony.s.sol` (L1–129)
@@ -38,14 +38,14 @@ pool interface. It can also be reached from the Menu.
 > ⚠️ **Swapping can be switched off per pool.** A pool entity may carry an
 > `IsDisabled` component ("pauses swaps and liquidity adds",
 > `LibPoolRegistry.sol:25`). `PoolSystem.swap` and `addLiquidity` both check
-> it (`PoolSystem.sol:32, 71`); `removeLiquidity` deliberately does not, so
+> it (`PoolSystem.sol:32, 72`); `removeLiquidity` deliberately does not, so
 > providers can always exit a disabled pool (`PoolSystem.sol:16`). The switch
 > is admin-set (`_PoolRegistrySystem.setDisabled`) and is chain state, not a
 > source constant: absence of the component means enabled, **no world-config
 > key exposes it**, and a disabled pool simply reverts swaps while the
 > fountain and the entrypoints below still exist. Swaps are additionally
 > gated on both items being transferable (`verifyTradable`,
-> `PoolSystem.sol:117`).
+> `PoolSystem.sol:120`).
 
 ## Which Pools Exist Is World State, Not Code
 
@@ -235,7 +235,7 @@ All three are called by the account's **operator** address
 
 Returns `amountOut`.
 
-> Source: `PoolSystem.sol:22–48`, `LibPool.sol:41–60`
+> Source: `PoolSystem.sol:22–49`, `LibPool.sol:41–60`
 
 ### `addLiquidity(indexA, indexB, amountADesired, amountBDesired, amountAMin, amountBMin)`
 
@@ -258,7 +258,7 @@ desired and minimum bounds the same way the UniswapV2 router does:
 
 Returns `(amtA, amtB, liquidity)`.
 
-> Source: `PoolSystem.sol:51–86`, `LibPool.sol:73–106`
+> Source: `PoolSystem.sol:52–88`, `LibPool.sol:73–106`
 
 ### `removeLiquidity(indexA, indexB, shares, amountAMin, amountBMin)`
 
@@ -278,7 +278,7 @@ Returns `(amtA, amtB, liquidity)`.
 
 Returns `(amtA, amtB)`.
 
-> Source: `PoolSystem.sol:89–115`, `LibPool.sol:117–138`
+> Source: `PoolSystem.sol:91–118`, `LibPool.sol:117–138`
 
 ### Tradability
 
@@ -291,8 +291,8 @@ applies the same check.
 `removeLiquidity` does **not** re-check tradability, so an item flagged
 untradable after a pool already exists still lets its LPs exit.
 
-> Source: `PoolSystem.sol:117–122`, `LibInventory.sol:319–323`,
-> `_PoolRegistrySystem.sol:36, 122–127`
+> Source: `PoolSystem.sol:120–125`, `LibInventory.sol:319–323`,
+> `_PoolRegistrySystem.sol:36, 127–132`
 
 ### Reserve Moves Are Not Acquisitions
 
@@ -354,27 +354,27 @@ Then:
 
 Returns the pool ID.
 
-> Source: `_PoolRegistrySystem.sol:15–16` (constants), `:26–62`
+> Source: `_PoolRegistrySystem.sol:15–16` (constants), `:26–63`
 
 ### `donate(indexA, indexB, amtA, amtB)`
 
 Adds reserves from the caller's inventory **without minting shares**, which
 raises the value of every existing LP share. Either amount may be zero.
 
-> Source: `_PoolRegistrySystem.sol:65–76`
+> Source: `_PoolRegistrySystem.sol:65–78`
 
 ### `setFee(indexA, indexB, feeBps)`
 
 Re-sets the swap fee. Re-checks `feeBps ≤ MAX_FEE_BPS`.
 
-> Source: `_PoolRegistrySystem.sol:78–83`, `LibPoolRegistry.sol:69–71`
+> Source: `_PoolRegistrySystem.sol:80–85`, `LibPoolRegistry.sol:69–71`
 
 ### `setDisabled(indexA, indexB, disabled)`
 
 Pauses the pool. Blocks `swap` and `addLiquidity`; `removeLiquidity` still
 works, so a pause can never trap LP value.
 
-> Source: `_PoolRegistrySystem.sol:86–90`, `PoolSystem.sol:17, 32, 71`
+> Source: `_PoolRegistrySystem.sol:88–92`, `PoolSystem.sol:17, 32, 72`
 
 ### `remove(indexA, indexB)`
 
@@ -391,7 +391,7 @@ Deletes the pool. Teardown cannot be griefed by a leftover dust position:
 4. Remove `EntityType`, `Keys`, `Rate`, `Value`, `TimeStart` and any
    `IsDisabled` entry
 
-> Source: `_PoolRegistrySystem.sol:97–119`, `LibPool.sol:190–211`
+> Source: `_PoolRegistrySystem.sol:99–124`, `LibPool.sol:190–211`
 > (`forceExitAll`), `LibPoolRegistry.sol:57–64`
 
 ## Logging & Events
@@ -407,15 +407,76 @@ Deletes the pool. Teardown cannot be griefed by a leftover dust position:
 > and increments it. The source explicitly warns never to key a quest
 > objective or reward off it.
 
-Emitted events:
+### World Events
+
+Four world events. Every field is `uint256` unless marked otherwise:
 
 | Event | Payload |
 |---|---|
-| `POOL_SWAP` | `accID`, `poolID`, `itemIn` (uint32), `itemOut` (uint32), `amountIn`, `amountOut` |
-| `POOL_LIQUIDITY_ADD` | `accID`, `poolID`, `amtA`, `amtB`, `shares` |
-| `POOL_LIQUIDITY_REMOVE` | `accID`, `poolID`, `amtA`, `amtB`, `shares` |
+| `POOL_SWAP` | `accID`, `poolID`, `itemIn` (uint32), `itemOut` (uint32), `amountIn`, `amountOut`, `timestamp` |
+| `POOL_LIQUIDITY_ADD` | `accID`, `poolID`, `amtA`, `amtB`, `shares`, `timestamp` |
+| `POOL_LIQUIDITY_REMOVE` | `accID`, `poolID`, `amtA`, `amtB`, `shares`, `timestamp` |
+| `POOL_SYNC` | `poolID`, `indexA` (uint32), `indexB` (uint32), `reserveA`, `reserveB`, `totalSupply`, `timestamp` |
 
-> Source: `LibPool.sol:261–322`
+`timestamp` is `block.timestamp` in unix seconds, appended as the **trailing**
+field on all four. It was added after the events were already in use;
+appending preserves every earlier 32-byte word offset, so payloads emitted
+before the change stay decodable at the same positions. Field counts:
+`POOL_SWAP` 6 → 7, `POOL_SYNC` 6 → 7, `POOL_LIQUIDITY_ADD`/`_REMOVE` 5 → 6.
+
+> Source: `LibPool.sol:258–371` (`logSwap`, `logLiquidity`, `logSync` and the
+> three schema builders)
+
+### `POOL_SYNC` — absolute pool state
+
+`POOL_SYNC` reports the pool's state *after* the action, not the delta:
+`reserveA`/`reserveB` are the two reserve balances and `totalSupply` is the LP
+share supply. The other three events carry only amounts, from which spot price
+(`reserveB / reserveA`), total value locked and LP share value cannot be
+derived — `POOL_SYNC` closes that gap.
+
+It is emitted from a single choke point, `LibPool.logSync`, called on **every
+reserve-changing path**:
+
+| Path | Call site |
+|---|---|
+| `swap` | `PoolSystem.sol:45` |
+| `addLiquidity` | `PoolSystem.sol:82` |
+| `removeLiquidity` | `PoolSystem.sol:112` |
+| `create` | `_PoolRegistrySystem.sol:62` |
+| `donate` (only if some amount moved) | `_PoolRegistrySystem.sol:77` |
+| `remove` | `_PoolRegistrySystem.sol:122` |
+
+Properties that follow from the source:
+
+- **`logSync` reads reserves itself** and never accepts them from the caller
+  (`LibPool.sol:303–336`). Reserves can be moved out of band —
+  `ItemTransferSystem` takes an arbitrary `targetID` and a pool ID is a
+  precomputable hash — so reading state means the next call self-corrects
+  instead of compounding the drift.
+- **Indices are sorted before emission.** `logSync` runs its arguments through
+  the pure `LibPoolRegistry.sortIndices` (imported into `LibPool` under the
+  alias `LibRegistry`), so `indexA`/`reserveA` always refer to the **lower**
+  item index regardless of the caller's argument order (`LibPool.sol:315`,
+  `LibPoolRegistry.sol:101–103`). This is the same ordering the pool ID hash
+  uses, so the two can never disagree.
+- **`forceExitAll` emits nothing.** The `remove` teardown's own sync fires
+  after it and subsumes it, so a teardown produces exactly one terminal row.
+- **The terminal row is `(0, 0, 0)`** — reserves and supply are all drained by
+  the time `remove` emits (`_PoolRegistrySystem.sol:120–122`). Pool IDs are
+  recycled: a pair removed and recreated gets the same `poolID`, so the
+  terminal row marks the end of a series rather than a data point in it.
+- **`setFee` and `setDisabled` emit no sync** — neither changes reserves.
+- **Reserve deltas between two syncs do not reconcile to traded volume**, for
+  the same out-of-band reason above; `POOL_SWAP` is the volume record.
+
+The emission is not free. Upstream measured the added cost per call at
+**+37,680 gas** for `swap` and **+33,675 gas** for both liquidity operations,
+attributed to the component-address lookup, the linked-library `DELEGATECALL`,
+the emitter call, and the log itself.
+
+> Source: `LibPool.sol:303–336` (`logSync`, `_encodeSync`),
+> `PoolSystem.sol:45, 82, 112`, `_PoolRegistrySystem.sol:62, 77, 120–122`
 
 ## System IDs
 
