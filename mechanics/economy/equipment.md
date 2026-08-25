@@ -168,18 +168,18 @@ alloID = LibAllo.genID(alloAnchor, "BONUS", 1)
 
 > Source: `LibEquipment.sol:48, 122–123, 216–225, 250–252, 276–278`
 
-> ⚠️ **SUSPECTED UPSTREAM DATA BUG**: the deployed item catalog registers
-> equipment bonuses under the **`USE`** use case with the bare terminator
-> `UPON_UNEQUIP` — `deployment/world/state/items/allos.ts:64` calls
-> `api.bonus(itemIndex, 'USE', descriptor, terminator, 0, value)` with the
+> ⚠️ **CHECKED-IN CATALOG DATA DOES NOT MATCH THE LIVE WORLD**: equipment
+> bonuses **do** apply — equipping attaches the item's bonuses and unequipping
+> removes them, confirmed by observation in the live world. The checked-in
+> deployment data reads otherwise: `deployment/world/state/items/allos.ts:64`
+> calls `api.bonus(itemIndex, 'USE', descriptor, terminator, 0, value)`,
+> registering equipment bonuses under the **`USE`** use case with the
 > terminator taken verbatim from `data/items/allos.csv`, whose equipment rows
-> all carry `UPON_UNEQUIP` with no slot suffix. Equip, however, reads the
-> **`EQUIP`** use-case anchor (`LibEquipment.getEquipBonusAlloID`,
+> all carry the bare `UPON_UNEQUIP` with no slot suffix — whereas equip reads
+> the **`EQUIP`** use-case anchor (`LibEquipment.getEquipBonusAlloID`,
 > `LibEquipment.sol:216–225`) and unequip clears the slot-suffixed end type
-> `UPON_UNEQUIP_{SLOT}` (`LibEquipment.sol:48, 277`). Per the source data,
-> catalog equipment bonuses are registered where equip never looks: equipping
-> attaches no bonuses (`LibBonus.assignTemporary` silently no-ops when the
-> anchor holds no bonus registrations, `LibBonus.sol:182–183`), and the bare
-> terminator would never match the unequip clear anyway. The test suite passes
-> because it registers `EQUIP` use-case bonuses with slot-suffixed terminators
-> directly (`test/systems/Equipment.t.sol:66–95`).
+> `UPON_UNEQUIP_{SLOT}` (`LibEquipment.sol:48, 277`). The live registration
+> therefore differs from the checked-in catalog rows; the lifecycle documented
+> above is the behavior that holds. The test suite registers `EQUIP` use-case
+> bonuses with slot-suffixed terminators directly
+> (`test/systems/Equipment.t.sol:66–95`), matching the observed behavior.

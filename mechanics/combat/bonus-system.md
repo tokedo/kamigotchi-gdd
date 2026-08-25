@@ -134,18 +134,19 @@ item systems pass `1` regardless (`KamiUseItemSystem.sol:42`,
 > also carries the `BYPASS_BONUS_RESET` flag, so feeding it does not clear
 > other temporary bonuses (`KamiUseItemSystem.sol:35–37`).
 
-> ⚠️ **SUSPECTED UPSTREAM DATA BUG**: the deployment pipeline registers *all*
-> item bonus allos — including equipment bonuses — under the `USE` use case
-> with the bare terminator string from the catalog (`UPON_UNEQUIP`, no slot
-> suffix) (`deployment/world/state/items/allos.ts:64`,
-> `deployment/world/data/items/allos.csv:6–35`). Equipping reads the `EQUIP`
-> use-case anchor (`LibEquipment.getEquipBonusAlloID`,
-> `LibEquipment.sol:216–225`) and finds no registry entries there, so
-> `assignTemporary` attaches nothing (`LibBonus.sol:182–183`); even if
-> attached, the bare `UPON_UNEQUIP` terminator would not match the
-> `UPON_UNEQUIP_{SLOT}` end type cleared on unequip (`LibEquipment.sol:48,
-> 252, 276–278`). Per source data, catalog equipment bonuses neither attach
-> on equip nor clear on unequip.
+> ⚠️ **CHECKED-IN CATALOG DATA DOES NOT MATCH THE LIVE WORLD**: equipment
+> bonuses **do** attach on equip and clear on unequip, confirmed by
+> observation in the live world. The checked-in deployment data reads
+> otherwise: the pipeline registers *all* item bonus allos — including
+> equipment bonuses — under the `USE` use case with the bare terminator string
+> from the catalog (`UPON_UNEQUIP`, no slot suffix)
+> (`deployment/world/state/items/allos.ts:64`,
+> `deployment/world/data/items/allos.csv:6–35`), while equipping reads the
+> `EQUIP` use-case anchor (`LibEquipment.getEquipBonusAlloID`,
+> `LibEquipment.sol:216–225`) and unequip clears the `UPON_UNEQUIP_{SLOT}` end
+> type (`LibEquipment.sol:48, 252, 276–278`). The live registration therefore
+> differs from the checked-in catalog rows; the `UPON_UNEQUIP_{SLOT}` row in
+> the table above is the behavior that holds.
 
 > Source: `LibBonus.sol:308–350`, `LibEquipment.sol:48` (`END_TYPE_PREFIX`)
 
