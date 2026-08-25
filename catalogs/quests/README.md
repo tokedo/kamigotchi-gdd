@@ -11,14 +11,14 @@ See `mechanics/progression/quests.md` for how the quest system works
 
 ## Summary
 
-**194 quests total** across 5 categories:
+**195 quests total** across 5 categories:
 
 | Category | Key Prefix | Index Range | Count | Primary Giver |
 |----------|-----------|-------------|-------|---------------|
 | Main Story | MSQ | 1-109 | 109 | MENU (65), MINA (41), DIMIDIATUS (3) |
 | Mina Line | MIN | 2001-2016, 2100-2101 | 18 | MINA (18) |
 | Side Quests | SQ | 3001-3998 | 60 | MENU (27), MINA (18), ROB (9), ZEVANA (5), DIMIDIATUS (1) |
-| Event/Misc | SQ999/SQ997 | 10002-10003 | 2 | MENU / unset |
+| Event/Misc | SQ999/SQ997/TTX01 | 10001-10003 | 3 | MENU / unset |
 | Test | test-* | 1000000-1000004 | 5 | unset |
 
 > Note: MSQ quests and MIN001-MIN016 have Type=MAIN in the data; MIN100-MIN101
@@ -32,8 +32,23 @@ See `mechanics/progression/quests.md` for how the quest system works
 
 | Status | Count |
 |--------|-------|
-| In Game | 189 |
+| In Game | 187 |
+| Defunct | 3 |
 | Test | 5 |
+
+**`Defunct`** is a retirement marker, not a deployment state. The deployment
+pipeline recognises `To Deploy`, `In Game`, `Test`, `To Update` /
+`Revise Deployment` (revise) and `To Remove` (delete); `Defunct` matches none
+of them, so a `Defunct` row is never created, revised or deleted by a bulk
+run. Removing an already-deployed quest requires calling the delete path with
+an explicit index.
+
+> ⚠️ UNCERTAIN: because no bulk run acts on the marker, whether SQ802 and
+> SQ999 have actually been deleted from the live world — or merely flagged as
+> retired in the sheet — is chain state and cannot be read from source.
+
+> Source: `deployment/world/state/quests/quests.ts:52–54, 80–101`,
+> `deployment/world/state/utils.ts:40–49`
 
 ### By Giver
 
@@ -44,12 +59,13 @@ See `mechanics/progression/quests.md` for how the quest system works
 | ROB | 9 |
 | ZEVANA | 5 |
 | DIMIDIATUS | 4 |
-| (unset) | 6 |
+| (unset) | 7 |
 
 ### Quest Features
 
 - **1 daily quest** (test-0, test only)
-- **1 time-gated quest** (SQ999, before 25/10/25 0 GMT)
+- **1 time-gated quest** (SQ999, before 25/10/25 0 GMT — now `Defunct`)
+- **3 retired quests** (SQ802, SQ999, TTX01 — all `Defunct`)
 - **1 zone-unlocking quest** (MSQ035 rewards the `FLAG_CAVES_UNLOCKED` flag)
 - **6 cross-storyline gates** where the MSQ and MIN lines depend on each other
 
@@ -59,7 +75,7 @@ See `mechanics/progression/quests.md` for how the quest system works
 
 | File | Rows | Description |
 |------|------|-------------|
-| `quests.csv` | 194 quests | Full quest definitions: key, index, status, title, type, giver, dialogues, requirements, objectives, rewards |
+| `quests.csv` | 195 quests | Full quest definitions: key, index, status, title, type, giver, dialogues, requirements, objectives, rewards |
 | `objectives.csv` | 202 objectives | Objective definitions: description, operator, delta type, tracking type, index, value |
 | `requirements.csv` | 201 requirements | Prerequisite definitions: quest completions, item ownership, room presence, time windows |
 | `rewards.csv` | 68 rewards | Reward definitions: items, reputation, flags |
@@ -73,7 +89,7 @@ See `mechanics/progression/quests.md` for how the quest system works
 
 - `Key`: Human-readable identifier (MSQ001, MIN003, SQ015, test-0)
 - `Index`: Numeric ID used on-chain (1-109, 2001-2016, 3001-3998, 10002-10003, 1000000-1000004)
-- `Status`: Deployment state (In Game, To Deploy, To Update Text, To Update, Test)
+- `Status`: Deployment state (In Game, To Deploy, To Update Text, To Update, Test) or the retirement marker `Defunct`
 - `Daily`: Yes/No — whether the quest is repeatable daily
 - `Giver`: The NPC or system that presents the quest (MENU, MINA, DIMIDIATUS, ROB, ZEVANA)
 - `Introduction Dialogue` / `Resolution Dialogue`: Full NPC dialogue text with speaker tags
@@ -154,8 +170,13 @@ main story at two critical junctures:
   (22802). SQ113-SQ118 ("Airing it Out", "Conditioned Environment", "Dry
   Conversation", "Lost and Found", "Trash Pickers", "Janitorial Supplies") are
   **To Deploy**
-- **Diagnostics** (SQ802-SQ803): "Quest Diagnostics", "Never Brought to Mind"
-- **Special** (SQ998, SQ997, SQ999): Conditional/event quests
+- **Diagnostics** (SQ802-SQ803): "Quest Diagnostics" (now `Defunct`),
+  "Never Brought to Mind"
+- **Special** (SQ998, SQ997, SQ999): Conditional/event quests. SQ999 is now
+  `Defunct`
+- **Retired stub** (TTX01, index 10001): "Proof of Honesty" — carries only the
+  `Missed Mina` requirement (`MINA_LAUNCH_VICTIM`); no type, giver, dialogue,
+  objectives or rewards, and `Defunct` from the row's first appearance
 
 ---
 

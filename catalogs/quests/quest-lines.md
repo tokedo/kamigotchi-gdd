@@ -507,17 +507,28 @@ SQ116  Lost and Found  (Complete SQ111)  ──→  SQ117  Trash Pickers  ──
 ### Diagnostics Side Quests (SQ802-SQ803)
 
 ```
-SQ802  Quest Diagnostics  (temp quest, Giver: MENU)
+SQ802  Quest Diagnostics  (temp quest, Giver: MENU)  [Defunct]
   |--- SQ803  Never Brought to Mind  (Giver: ROB)
 ```
+
+SQ802 is now `Defunct`. Its only requirement was a `BLOCKTIME MAX` window that
+has closed, so it was unacceptable on that gate alone. SQ803 is still
+`In Game` and still requires `Complete SQ802`, so it remains reachable only for
+accounts that finished SQ802 while it was live.
 
 ### Special / Conditional Side Quests
 
 ```
 SQ998  Hidden GEM  (requires Aetheric Sextant + In Room: Slippery Pit)
-SQ999  Claim Your Free Gift!  (time-limited, before 25/10/25)
+SQ999  Claim Your Free Gift!  (time-limited, before 25/10/25)  [Defunct]
 SQ997  Condolences on your Recent Liquidations  (requires Kami liquidated)
+TTX01  Proof of Honesty  (requires Missed Mina)  [Defunct]
 ```
+
+SQ999's `BLOCKTIME MAX` window closed on 2025-10-25 and the row is now
+`Defunct`. TTX01 (index 10001) is a stub with no type, giver, dialogue,
+objectives or rewards — only the `Missed Mina` (`MINA_LAUNCH_VICTIM`)
+requirement — and is `Defunct` from its first appearance.
 
 ---
 
@@ -552,14 +563,15 @@ test-2  Lottery Loving  (no prereqs)
 | SQ021 | In Room: Scenic View |
 | SQ998 | Aetheric Sextant + In Room: Slippery Pit |
 | SQ997 | Kami liquidated |
-| SQ999 | Time-gated + Kami liquidated |
+| SQ999 | Time-gated + Kami liquidated (`Defunct`) |
+| TTX01 | Missed Mina (`Defunct`) |
 
 ### Dead Ends (No Quest Depends On Them)
 
 MSQ006, MSQ076, MSQ079, MSQ086, MSQ095, MSQ097, MSQ098, MSQ099, MSQ103,
 MSQ109, MIN016 (feeds into MSQ032 but is itself a dead end in the MIN line),
 SQ001, SQ002, SQ004, SQ005, SQ006, SQ008, SQ009, SQ011, SQ013, SQ014,
-SQ016, SQ018, SQ020, SQ022, SQ997, SQ998, SQ999.
+SQ016, SQ018, SQ020, SQ022, SQ997, SQ998, SQ999, TTX01.
 
 ### Longest Chain
 
