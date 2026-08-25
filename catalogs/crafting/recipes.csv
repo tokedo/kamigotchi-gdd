@@ -18,14 +18,14 @@ Index,Name,Status,Type,Output Index,Output Name,Output Amount,Input Indices,Inpu
 17,Chisel Cup,In Game,MATERIAL,1102,Empty Cup,1,1002,1,25,30,23102,Screwdriver,1
 18,Brew Hostility Potion,In Game,CONSUMABLE,11410,Hostility Potion,1,"1102,1113,1104","1,250,250",20,75,23101,Portable Burner,1
 19,Brew Energy Drink,In Game,CONSUMABLE,11409,Energy Drink,1,"1005,1114,1202","1,250,250",20,75,23101,Portable Burner,1
-20,Write Apology Letter,In Game,CONSUMABLE,11406,Apology Letter,1,"1001,1113,1202","2,125,125",20,75,23100,Spice Grinder,1
+20,Write Apology Letter,In Game,CONSUMABLE,11406,Apology Letter,1,"1001,1113,1202","5,150,150",20,75,23100,Spice Grinder,1
 21,Craft Festival Chime,In Game,CONSUMABLE,11408,Festival Chime,1,"1005,1201","3,250",25,100,23102,Screwdriver,1
 22,Craft $MUSU Magnet,In Game,CONSUMABLE,11407,MUSU Magnet,1,"1002,1107,1201","1,50,100",25,100,23102,Screwdriver,1
-23,Craft Spirit Glue,In Game,CONSUMABLE,19001,Spirit Glue,1,"1003,1103,1114","1,200,200",20,75,23101,Portable Burner,1
-24,Craft Animistic Poison,In Game,CONSUMABLE,19101,Animistic Poison,1,"1202,11314,1113","150,5,150",25,200,23101,Portable Burner,15
+23,Craft Spirit Glue,In Game,CONSUMABLE,19001,Spirit Glue,1,"1003,1103,1114","1,250,250",20,75,23101,Portable Burner,1
+24,Craft Animistic Poison,In Game,CONSUMABLE,19101,Animistic Poison,1,"1202,11314,1113","100,1,100",20,200,23101,Portable Burner,15
 25,Craft Cthonic Blight,In Game,CONSUMABLE,19201,Cthonic Blight,1,"1201,11312,11227","100,1,1",25,300,23101,Portable Burner,15
-26,Craft Flash Talisman,In Game,CONSUMABLE,11412,Flash Talisman,7,"1016,6005,1103","2,1,500",50,1500,,None,20
-28,Craft Toadstool Liquor,In Game,CONSUMABLE,11501,Toadstool Liquor,1,"1113,1110,1114","5000,250,250",50,1000,23101,Portable Burner,15
+26,Craft Flash Talisman,In Game,CONSUMABLE,11412,Flash Talisman,5,"1016,6005,1103","5,1,500",50,1500,,None,20
+28,Craft Toadstool Liquor,In Game,CONSUMABLE,11501,Toadstool Liquor,1,"1113,1110,1114","2500,250,250",50,1000,23101,Portable Burner,15
 29,Craft Fortified XP Potion,In Game,CONSUMABLE,11411,Fortified XP Potion,1,"11402,1107,6006","1,300,1",75,7500,23101,Portable Burner,20
 30,Craft Pure Essence,In Game,REAGENT,6007,Pure Essence,1,"6001,6005,6003,6002,6004,6006","1,1,1,1,1,1",75,10000,,None,20
 31,Craft Timber with Stems,In Game,MATERIAL,1302,Timber,1,1016,100,50,300,23101,Portable Burner,15
