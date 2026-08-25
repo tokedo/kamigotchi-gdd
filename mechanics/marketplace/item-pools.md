@@ -35,6 +35,14 @@ pool interface. It can also be reached from the Menu.
 > clickbox → `triggerPoolModal`),
 > `packages/client/src/app/triggers/triggerPoolModal.ts`
 
+> ⚠️ **Swapping can be switched off world-side.** Beyond the per-pool
+> `IsDisabled` component, pool systems are gated by world config flags
+> (`POOL_SWAP_ENABLED` and siblings). While such a flag is `0`, every swap
+> reverts: the fountain still opens and the entrypoints below still exist, but
+> the transaction fails. These flags are chain state, not source constants —
+> the live value is read from the world config by key (`0` = disabled) and
+> cannot be derived from this document.
+
 ## Which Pools Exist Is World State, Not Code
 
 The contracts define *how* a pool works; they do not define *which* pools
