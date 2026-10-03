@@ -1,7 +1,8 @@
 # Accounts & Stamina
 
 > Source: `packages/contracts/src/libraries/LibAccount.sol` (L1–299),
-> `packages/contracts/src/systems/AccountRegisterSystem.sol` (L1–40),
+> `packages/contracts/src/systems/AccountRegisterSystem.sol` (L1–42),
+> `packages/contracts/src/systems/AccountSetOperatorSystem.sol` (L1–34),
 > `packages/contracts/src/systems/AccountMoveSystem.sol` (L1–50),
 > `packages/contracts/src/systems/AccountUseItemSystem.sol` (L1–41),
 > `packages/contracts/deployment/world/state/configs/configs.ts`
@@ -40,14 +41,20 @@ Entity ID: `addressToEntity(ownerAddress)` — derived from the owner's address.
 
 1. **World whitelist check** — if `WORLD_PRIVATE` config is true, owner must
    be whitelisted via `WORLD_WHITELIST` flag
-2. **Address uniqueness** — owner and operator must not already be in use
+2. **Address uniqueness**, in this order:
+   - the caller (owner) must not already own an account (`"Account: exists
+     for Owner"`)
+   - the operator must not already be another account's operator
+     (`"Account: exists for Operator"`)
+   - the operator must not itself be an account owner (`"Account: Operator is
+     an account owner"`)
 3. **Name validation** — non-empty, max 16 characters, globally unique
 4. Create account entity with:
    - Room set to **1** (starting room)
    - Stamina set to `ACCOUNT_STAMINA[0]` base value
    - Global account counter incremented
 
-> Source: `AccountRegisterSystem.sol:15–34`, `LibAccount.sol:45–71`
+> Source: `AccountRegisterSystem.sol:15–37`, `LibAccount.sol:45–71, 164–177`
 
 ## Owner / Operator Model
 
@@ -57,10 +64,25 @@ Entity ID: `addressToEntity(ownerAddress)` — derived from the owner's address.
   Can be changed by the owner via `AccountSetOperatorSystem`. Enables session
   keys / delegated wallets.
 
+`AccountSetOperatorSystem.execute(operator)` (owner-signed) applies the same
+operator rules as registration: the new operator must not already be in use
+(`"Account: Operator already in use"`) and must not be an account owner
+(`"Account: Operator is an account owner"`). The previous operator's
+reverse-lookup entry is removed and the new one written. Because an account's
+ID is its owner address, "is an account owner" is the check
+`isAccount(uint256(uint160(operator)))`.
+
+The checks run only when an operator is assigned. An address that was already
+an account's operator before it registered an account of its own is not
+retroactively unassigned; systems that accept either signer resolve such an
+address to **its own** account first (e.g. the token portal's operator lane,
+see [token-portal.md](../marketplace/token-portal.md#player-entrypoints-and-signers)).
+
 Operator lookup uses a cache component for efficient reverse mapping
 (`operatorAddress → accountID`).
 
-> Source: `LibAccount.sol:134–139, 253–267`
+> Source: `AccountSetOperatorSystem.sol:15–29`, `LibAccount.sol:134–139,
+> 164–177, 253–267`; `TokenPortalSystem.sol:238–244`
 
 ## Stamina System
 
