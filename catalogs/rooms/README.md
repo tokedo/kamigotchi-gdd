@@ -142,10 +142,22 @@ Condition Index / Condition Value / Condition Type / Logic / For.
 - **ITEM + CURR_MIN** (room 88) — the account must hold at least
   `Condition Value` (1) of item `Condition Index` (100004, Aetheric Sextant).
 
-> ⚠️ UNCERTAIN: room 19's gate references goal 999, which is not defined in
-> `goals.ts` (the gates.ts comment says "was coop 8 before"). Whether goal 999
-> exists on-chain (created by other means) is not determinable from the
-> deployment scripts alone.
+> ⚠️ SOURCE ≠ DEPLOYED WORLD: room 19's row is what source says — a gate on
+> goal 999, which is not defined in `goals.ts` (the gates.ts comment says "was
+> coop 8 before"). A read of every in-game room's gates from the live world on
+> 2026-08-27 found **no gate on room 19** and a `COMPLETE_COMP` gate on
+> **room 59** (Black Pool) on `getGoalID(13)` ("Secret of the Ooze", whose
+> display reward is "Fast Travel unlocked between Room 19 and Room 59") —
+> not listed here, because no checked-in file creates it. Whether that gate
+> covers every entrance of room 59 or only entry from room 19 was not
+> determined. The other ten rows matched the live world. This file is an
+> extraction of `gates.ts`; the deployed gate set is chain state. See
+> [mechanics/world/rooms.md](../../mechanics/world/rooms.md#deployed-gates-vs-source-rooms-19-and-59).
+
+Gate checks run **after** the reachability check, so a gated room that is not
+adjacent to (or a special exit of) the current room reverts
+`"AccMove: unreachable room"`; a failed gate reverts
+`"AccMove: inaccessible room"`.
 
 A commented-out test gate for room 1 in `gates.ts` is not deployed and is
 excluded. See [mechanics/world/rooms.md](../../mechanics/world/rooms.md)

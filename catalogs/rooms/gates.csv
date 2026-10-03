@@ -1,6 +1,6 @@
 Room Index,Room Name,Source Room Index,Condition Type,Logic,Condition Index,Condition Value,For,Notes
 15,Temple Cave,0,QUEST,BOOL_IS,35,0,ACCOUNT,"Account must have completed quest 35 (Steel Your Heart)"
-19,Temple of the Wheel,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(999),,"Gated on completion of goal 999, which is not defined in goals.ts (gates.ts comment: 'was coop 8 before')"
+19,Temple of the Wheel,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(999),,"SOURCE ONLY - not the deployed world. gates.ts gates room 19 on goal 999, which is not defined in goals.ts (comment: 'was coop 8 before'). The live world read on 2026-08-27 had no gate on room 19 and a COMPLETE_COMP gate on room 59 (Black Pool) on getGoalID(13) instead; see README"
 31,Scrapyard Exit,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(1),,"Goal 1 'A hole in reality?' complete"
 50,Ancient Forest Entrance,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(3),,"Goal 3 'Deep-Forest Ritual' complete"
 53,Blooming Tree,0,COMPLETE_COMP,BOOL_IS,0,getGoalID(4),,"Goal 4 'Shrine to Nature' complete"

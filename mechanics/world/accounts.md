@@ -158,16 +158,23 @@ Sources:
 
 ## Movement
 
-`AccountMoveSystem.execute(toRoomIndex)`:
+`AccountMoveSystem.execute(toRoomIndex)` — signed by the account's
+**operator**:
 
 1. **Reachability** — destination must be adjacent or a special exit from
-   current room (see [rooms.md](rooms.md))
-2. **Accessibility** — gate conditions on the destination room must be met
+   current room (see [rooms.md](rooms.md)); else `"AccMove: unreachable room"`
+2. **Accessibility** — gate conditions on the destination room must be met;
+   else `"AccMove: inaccessible room"`
 3. **Sync** — recover stamina based on elapsed time
-4. **Move** — deduct stamina cost, set new room, grant **account XP**
+4. **Move** — deduct stamina cost (`"Account: insufficient stamina"` if
+   short), set new room, grant **account XP**
 5. **Log** — increment `MOVE` counter, emit move event
 
-> Source: `AccountMoveSystem.sol:22–45`, `LibAccount.sol:80–85`
+Reachability is checked **before** accessibility: a non-adjacent destination
+reverts `unreachable` even when it is also gated. See
+[rooms.md → Move Check Order](rooms.md#move-check-order-and-revert-strings).
+
+> Source: `AccountMoveSystem.sol:22–45`, `LibAccount.sol:80–85, 101–107`
 
 ## Item Usage (Account-Level)
 

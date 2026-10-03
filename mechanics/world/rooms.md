@@ -92,7 +92,53 @@ conditions = queryGates(fromIndex, toIndex)  // combines generic + source-specif
 accessible = LibConditional.check(conditions, accountID)
 ```
 
+A destination with no gates is always accessible.
+
 > Source: `LibRoom.sol:51–68, 121–131, 211–246`
+
+### Move Check Order and Revert Strings
+
+`AccountMoveSystem.execute(toIndex)` (operator-signed) checks
+**reachability before accessibility**:
+
+| Order | Check | Revert |
+|---|---|---|
+| 1 | Destination is adjacent to the current room or one of its special exits (`LibRoom.isReachable`) | `"AccMove: unreachable room"` |
+| 2 | Every gate on the destination — generic plus any specific to entering from the current room — passes (`LibRoom.isAccessible`) | `"AccMove: inaccessible room"` |
+| 3 | Stamina covers the move cost (after the stamina sync) | `"Account: insufficient stamina"` |
+
+Because reachability is checked first, a move to a room that is not adjacent
+and not a special exit reverts `unreachable` **whether or not that room is
+gated**; `"AccMove: inaccessible room"` only ever means "reachable from here,
+but a gate fails". The system takes only a destination, so a gate can be
+tested only from a room adjacent to (or exiting into) the gated room — a
+multi-hop route meets each gate on the hop that enters it.
+
+> Source: `AccountMoveSystem.sol:22–45`, `LibRoom.sol:103–131`,
+> `LibAccount.sol:80–85, 101–107`
+
+### Deployed Gates vs. Source (Rooms 19 and 59)
+
+The checked-in gate list (`gates.ts`, the source of
+[`catalogs/rooms/gates.csv`](../../catalogs/rooms/gates.csv)) gates **room 19**
+(Temple of the Wheel) on `getGoalID(999)`, a goal no seed script defines.
+
+> ⚠️ SOURCE ≠ DEPLOYED WORLD: a read of every in-game room's gates from the
+> live world on 2026-08-27 found **no gate on room 19** and instead a
+> `COMPLETE_COMP` gate on **room 59** (Black Pool) whose condition value is
+> `getGoalID(13)` — goal 13, "Secret of the Ooze", which is contributed in
+> room 19 and whose display reward reads "Fast Travel unlocked between Room 19
+> and Room 59" (`goals.ts:149–159`). Rooms 19 and 59 are each other's special
+> exit (`rooms.csv`); room 19 is otherwise reached from room 74, room 59 from
+> room 58. The other ten gated destinations matched the checked-in list.
+> Whether the room-59 gate applies to every entrance of room 59 or only to
+> entry from room 19 was not determined by that read. Gates are created by
+> admin transactions and `gates.ts` is labelled a placeholder, so the deployed
+> gate set is chain state and must be read from the world.
+
+> Source: `deployment/world/state/rooms/gates.ts:4–27`,
+> `deployment/world/state/goals.ts:149–159`, `deployment/world/data/rooms/rooms.csv`
+> (rows 19, 59), `deployment/world/state/utils.ts:85–91` (`getGoalID`)
 
 ## Room Sharing
 
