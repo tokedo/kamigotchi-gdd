@@ -28,10 +28,13 @@ The `Kami_`/`Account_` prefix is an **unenforced naming convention**:
 `LibEquipment.equip` never validates the slot prefix against the holder type
 (`LibEquipment.sol:91–124`), and the only equip entry point targets Kamis.
 
-Only **one item** can occupy a given slot at a time. Equipping a new item into an
-occupied slot automatically unequips the existing one first.
+Only **one item** can occupy a given slot at a time. Equipping into an
+**occupied slot swaps**: the equipped item is unequipped first — its
+slot bonuses are cleared and the item is **returned to the account's
+inventory** — and only then is the new item taken from the inventory and
+equipped. A swap needs no free capacity. There is no "slot occupied" revert.
 
-> Source: `LibEquipment.sol:27–41`
+> Source: `LibEquipment.sol:27–41, 105–118, 244–255`
 
 ## Equipment Capacity
 
@@ -85,22 +88,27 @@ Note: unequip takes a **slot name** (string), not an item index.
 `LibEquipment.equip(world, components, holderID, inventoryID, itemIndex)`:
 
 1. **Verify item type** — must be `"EQUIPMENT"`
-2. **Get slot** — read the item's `For` component
-3. **Check slot** — if occupied, unequip existing item first (no capacity check).
-   If new slot, check `equippedCount < capacity`
-4. **Consume from inventory** — remove 1 of the item from the inventory
+2. **Get slot** — read the item's `For` component; revert `"Equipment: no slot"`
+   if empty
+3. **Check slot** — if occupied, run the full unequip for that slot first
+   (clear `UPON_UNEQUIP_{SLOT}` bonuses, remove the instance, **return the old
+   item to the inventory**); no capacity check. If the slot is free, require
+   `equippedCount < capacity` (`"Equipment: at capacity"`)
+4. **Consume from inventory** — remove 1 of the new item from the inventory
+   (reverts on insufficient balance)
 5. **Create equipment instance** — ECS entity linking holder + item + slot
 6. **Assign bonuses** — apply the item's `EQUIP` use case bonuses to the holder
 
-Kamis must be in `RESTING` state to equip.
+Kamis must be in `RESTING` state to equip (`"kami not RESTING"`).
 
-> Source: `LibEquipment.sol:91–124, 158–160`
+> Source: `LibEquipment.sol:91–124, 158–160, 244–255`, `LibKami.sol:284–286`
 
 ## Unequip Process
 
 `LibEquipment.unequip(world, components, holderID, inventoryID, slot)`:
 
-1. **Get equipment instance** from the slot
+1. **Get equipment instance** from the slot; revert `"Equipment: slot empty"`
+   if nothing is equipped there
 2. **Clear bonuses** — unassign all bonuses with end type `UPON_UNEQUIP_{SLOT}`
 3. **Remove equipment instance** — delete the ECS entity
 4. **Return to inventory** — add 1 of the item back to the inventory
