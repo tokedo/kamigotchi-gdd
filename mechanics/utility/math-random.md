@@ -146,7 +146,7 @@ only decrements `max` after each draw (`LibRandom.sol:61–91`), so the returned
 indices can numerically repeat. Uniqueness there is the caller's
 responsibility: the gacha draws against a shrinking pool, removing each
 selected Kami from the pool order via swap-pop between draws
-(`LibGacha.sol:94–115`).
+(`LibGacha.sol:103–121`).
 
 > Source: `LibRandom.sol:40–156`
 

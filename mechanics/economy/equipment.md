@@ -139,7 +139,7 @@ the **previous owner / seller**.
 > Source: `LibEquipment.sol:232–255`, `KamiSendSystem.sol:63`,
 > `KamiMarketListSystem.sol:34`, `LibKamiMarket.sol:129, 158, 187`,
 > `Kami721UnstakeSystem.sol:47`, `LibSacrifice.sol:85`,
-> `KamiGachaRerollSystem.sol:30`
+> `KamiGachaRerollSystem.sol:33`
 
 ## Equipment Instance Shape
 

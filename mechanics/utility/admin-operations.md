@@ -46,7 +46,7 @@ Roles can only be set through `_AuthManageRoleSystem.setFull`.
 | `KamiMarketCancelSystem.executeAdmin` | `onlyAdmin` | Cancels any active Kami market order (listing, offer, or collection offer) on behalf of its owner (`KamiMarketCancelSystem.sol:31–38`) |
 | `TradeCancelSystem.executeAdmin` | `onlyAdmin` | Batch-cancels `PENDING` trades; emits the cancel event with acting account 0 (`TradeCancelSystem.sol:37–45`) |
 | `TradeCompleteSystem.executeAdmin` | `onlyAdmin` | Batch-completes `EXECUTED` trades on behalf of each maker (`TradeCompleteSystem.sol:37–48`) |
-| `DroptableRevealSystem.forceReveal`, `KamiGachaRevealSystem.forceReveal` | `onlyCommManager` | Recovers commits whose 256-block reveal window lapsed — see [commit-reveal.md](commit-reveal.md) (`DroptableRevealSystem.sol:32`, `KamiGachaRevealSystem.sol:31–33`) |
+| `DroptableRevealSystem.forceReveal`, `KamiGachaRevealSystem.forceReveal` | `onlyCommManager` | Recovers commits whose 256-block reveal window lapsed by re-seeding them from the previous block; the intended "window has lapsed" guard is inert, so it also re-seeds unexpired commits — see [commit-reveal.md](commit-reveal.md#force-reveal-community-manager-recovery) (`DroptableRevealSystem.sol:32–42`, `KamiGachaRevealSystem.sol:31–49`, `LibCommit.sol:77–82`) |
 
 Registry and config systems (`_*RegistrySystem`, `_ConfigSetSystem`) are also
 `onlyAdmin`, but they define game content and parameters rather than mutating

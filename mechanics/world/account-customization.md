@@ -43,10 +43,16 @@ profile picture, and operator address.
 **owner EOA**:
 
 - Operator address must not already be in use by another account
+  (`"Account: Operator already in use"`)
+- Operator address must not itself be an account owner (`"Account: Operator
+  is an account owner"`)
 - Replaces the previous operator address
 
 The **operator** is a hot wallet that can perform most actions on behalf of the
 account, while the **owner** (cold wallet) retains exclusive control over
-sensitive operations like naming and operator changes.
+sensitive operations like naming and operator changes. Rotating the operator
+also redirects any pending token-portal withdrawals made through the operator
+lane, which pay the operator current at claim time (see
+[token-portal.md](../marketplace/token-portal.md#operator-lane)).
 
-> Source: `AccountSetOperatorSystem.sol:15–27`
+> Source: `AccountSetOperatorSystem.sol:15–29`, `TokenPortalSystem.sol:124–130`

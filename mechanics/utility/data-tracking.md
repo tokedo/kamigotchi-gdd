@@ -17,7 +17,7 @@ Data ID: `keccak256("is.data", holderID, index, type)`
 
 | Key part | Meaning |
 |---|---|
-| `holderID` | Owning entity — usually an account; `0` for global totals (`LibAccount.sol:286–287`); can be any entity, e.g. a token address cast to uint (`LibTokenPortal.sol:303`) or a fresh log entity (`LibKill.sol:283–287`) |
+| `holderID` | Owning entity — usually an account; `0` for global totals (`LibAccount.sol:286–287`); can be any entity, e.g. a token address cast to uint (`LibTokenPortal.sol:316`) or a fresh log entity (`LibKill.sol:283–287`) |
 | `index` | Numeric sub-key — often an item/currency index (`LibListing.sol:181`), a node or account index (`LibKill.sol:292–303`), or `0` when unused |
 | `type` | String key naming the statistic (e.g. `"TOKEN_SPEND"`) |
 
