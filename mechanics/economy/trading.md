@@ -1,6 +1,6 @@
 # Trading (P2P)
 
-> Source: `packages/contracts/src/libraries/LibTrade.sol` (L1–467),
+> Source: `packages/contracts/src/libraries/LibTrade.sol` (L1–477),
 > `packages/contracts/src/systems/TradeCreateSystem.sol` (L1–70),
 > `packages/contracts/src/systems/TradeExecuteSystem.sol` (L1–40),
 > `packages/contracts/src/systems/TradeCompleteSystem.sol` (L1–54),
@@ -28,7 +28,7 @@ Sub-entities for orders:
 
 Trade ID: unique entity ID assigned by the world.
 
-> Source: `LibTrade.sol:30–46, 62–79, 339–345`
+> Source: `LibTrade.sol:30–46, 62–79, 349–355`
 
 ## Structure Constraints
 
@@ -40,7 +40,7 @@ Trades are currently limited to:
 - **Both sides cannot be MUSU**
 - All items must not have the `NOT_TRADABLE` flag
 
-> Source: `LibTrade.sol:267–280, 294–303`
+> Source: `LibTrade.sol:277–290, 304–313`
 
 ## Trade Lifecycle
 
@@ -57,7 +57,7 @@ Trades are currently limited to:
 7. **Escrow sell-side items**: maker's items are transferred from their inventory
    to the trade entity's inventory
 
-> Source: `TradeCreateSystem.sol:15–54`, `LibTrade.sol:62–98, 348–358`
+> Source: `TradeCreateSystem.sol:15–54`, `LibTrade.sol:62–98, 358–368`
 
 ### Step 2: Execute (Taker)
 
@@ -68,11 +68,12 @@ Trades are currently limited to:
 3. Deduct **delivery fee** from taker (waived in Trade Room)
 4. **Execute buy order**: transfer buy-side items from taker to trade entity
    (held in escrow). Log amounts for both parties.
-5. **Execute sell order**: transfer escrowed sell-side items from trade entity
-   to taker, **after deducting tax**. Log amounts.
+5. **Execute sell order**: compute the tax on each sell-side item, **burn** it
+   from the trade entity's escrow, and transfer the rest to the taker. Log
+   amounts (pre-tax) and the taker's `TRADE_TAX`.
 6. Set trade state to `EXECUTED`, record taker ID
 
-> Source: `TradeExecuteSystem.sol:15–34`, `LibTrade.sol:104–152`
+> Source: `TradeExecuteSystem.sol:15–34`, `LibTrade.sol:104–153`
 
 ### Step 3: Complete (Maker)
 
@@ -80,12 +81,15 @@ Trades are currently limited to:
 
 1. Verify trade is `EXECUTED` and caller is maker
 2. Deduct **delivery fee** from maker (waived in Trade Room)
-3. **Complete buy order**: transfer escrowed buy-side items from trade entity
-   to maker, **after deducting tax**. Clean up order data.
+3. **Complete buy order**: compute the tax on each buy-side item, **burn** it
+   from the trade entity's escrow, and transfer the rest to the maker; log the
+   maker's `TRADE_TAX`. Clean up order data.
 4. **Complete sell order**: clean up remaining data
-5. Remove all trade entity data
+5. **Burn residue**: any MUSU still held by the trade entity is burned, so no
+   inventory outlives the trade
+6. Remove all trade entity data
 
-> Source: `TradeCompleteSystem.sol:16–34`, `LibTrade.sol:159–197`
+> Source: `TradeCompleteSystem.sol:16–34`, `LibTrade.sol:160–207`
 
 ### Cancel (Maker only, while PENDING)
 
@@ -97,7 +101,7 @@ Trades are currently limited to:
    entity to maker's inventory
 4. Remove all trade entity data
 
-> Source: `TradeCancelSystem.sol:16–34`, `LibTrade.sol:203–231`
+> Source: `TradeCancelSystem.sol:16–34`, `LibTrade.sol:213–241`
 
 ## Fees
 
@@ -108,7 +112,7 @@ Trades are currently limited to:
 
 Both fees are paid in MUSU.
 
-> Source: `LibTrade.sol:348–358`
+> Source: `LibTrade.sol:358–368`
 
 ## Trade Tax
 
@@ -119,13 +123,31 @@ for buy-side):
 tax = (amount × TRADE_TAX_RATE[1]) / 10^TRADE_TAX_RATE[0]
 ```
 
-Tax only applies to **MUSU** transfers. Non-MUSU items are not taxed. The
-taxed amount is burned (not distributed).
-
 `TRADE_TAX_RATE` is a config array where index 0 is the precision exponent and
-index 1 is the rate numerator.
+index 1 is the rate numerator. Deployed value `[3, 10]`: `10 / 10^3` = **1%**,
+floored.
 
-> Source: `LibTrade.sol:329–337`
+Tax only applies to **MUSU** transfers. Non-MUSU items are not taxed. Since one
+side of every trade is MUSU (see [Structure Constraints](#structure-constraints)),
+exactly one side is taxed: the taker pays it on a MUSU sell side, the maker on
+a MUSU buy side.
+
+**The tax is burned, not distributed.** In both tax branches the tax is
+removed from the trade entity's escrow with `LibInventory.decFor` before the
+payout transfer, so escrow ends at exactly the payout and the transfer empties
+it. Because `decFor` also decrements the global `ITEM_COUNT` for MUSU, the
+burn shows up as a supply reduction. `complete()` then calls `burnResidue`,
+which burns any MUSU still left in the trade's escrow — this catches the
+sell-side tax of trades **executed before** this burn existed (which kept
+their tax in escrow) and any MUSU sent to the trade entity directly.
+
+Before the burn was added, the tax was subtracted from the payout but left in
+the trade entity's escrow; once the trade entity was stripped, that inventory
+belonged to a dead ID that no system can reach — out of circulation, but still
+counted in `ITEM_COUNT`. Those remnants are not swept by the new code.
+
+> Source: `LibTrade.sol:140–149, 164, 180–189, 195–200, 339–347`,
+> `LibInventory.sol:183–198` (`_decFor`, `ITEM_COUNT`), `configs.ts:181`
 
 ## Trade Room
 
@@ -133,7 +155,7 @@ Room 66 is the designated **Trade Room**. Players in this room are exempt from
 the delivery fee. This incentivizes using a specific in-game location for
 trading.
 
-> Source: `LibTrade.sol:28, 237–239, 354–358`
+> Source: `LibTrade.sol:28, 247–249, 364–368`
 
 ## Admin Operations
 

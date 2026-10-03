@@ -66,7 +66,7 @@ Systems log lifetime counters on most player actions. Representative keys:
 | `LIQUIDATE_TOTAL`, `LIQUIDATE_AT_NODE`, `LIQ_WHEN_{PHASE}` | Account (node index for AT_NODE) | `LibKill.sol:290–298` |
 | `LIQUIDATED_VICTIM`, `LIQ_TARGET_ACC` | Victim / attacker account | `LibKill.sol:301–304` |
 | `QUEST_COMPLETE`, `QUEST_REPEATABLE_COMPLETE` | Account | `LibQuest.sol:377–382` |
-| `TRADE_CREATE` / `_EXECUTE` / `_COMPLETE` / `_CANCEL`, `TRADE_TAX` | Account | `LibTrade.sol:146, 184, 367–405` |
+| `TRADE_CREATE` / `_EXECUTE` / `_COMPLETE` / `_CANCEL`, `TRADE_TAX` | Account | `LibTrade.sol:147, 187, 377–415` |
 | `ITEM_COUNT` | Global 0 (item index) | `LibInventory.sol:197` |
 | `GACHA_COMMITS_PENDING` | Global 0 (index 0) — unrevealed gacha commits; incremented on commit, decremented (saturating) on reveal | `LibGacha.sol:24, 38, 80–83` |
 | `POOL_SWAP_TOTAL`, `POOL_LIQUIDITY_ADD` / `_REMOVE` | Account | `LibPool.sol:273, 294` |
