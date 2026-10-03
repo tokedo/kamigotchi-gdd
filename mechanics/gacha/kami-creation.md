@@ -1,7 +1,7 @@
 # Kami Creation (Entity + Traits + Stats)
 
-> Source: `packages/contracts/src/libraries/LibKamiCreate.sol` (L1–164),
-> `packages/contracts/src/systems/_721BatchMinterSystem.sol` (L1–397)
+> Source: `packages/contracts/src/libraries/LibKamiCreate.sol` (L1–182),
+> `packages/contracts/src/systems/_721BatchMinterSystem.sol` (L1–405)
 
 ## Overview
 
@@ -12,6 +12,12 @@ traits and derived stats. There are two creation paths:
    during normal gameplay
 2. **Batch minting** (`_721BatchMinterSystem.batchMint`) — admin-only, used to
    seed the initial gacha pool
+
+Both paths stop at the ERC-721 cap (`MAX_SUPPLY = 22,222`) instead of
+reverting: runtime creation returns `0` (the batch overload clamps to the
+remaining headroom), and the batch minter clamps its batch and returns an
+empty array at zero headroom. See
+[gacha.md → Supply Cap and Pool Drawdown](gacha.md#supply-cap-and-pool-drawdown).
 
 Both paths produce the same Kami entity shape, but batch minting uses a
 pre-computed seed while runtime creation uses `blockhash(block.number - 1)`.
@@ -40,7 +46,7 @@ pre-computed seed while runtime creation uses `blockhash(block.number - 1)`.
 | `Slots` | `0 + trait deltas` | Equipment slot count |
 | `MediaURI` | Packed trait indices | Image identifier |
 
-> Source: `LibKamiCreate.sol:43–71, 96–135`
+> Source: `LibKamiCreate.sol:43–71, 106–145`
 
 ## Entity ID
 
@@ -57,7 +63,7 @@ nextIndex = uint32(Kami721.totalSupply()) + 1
 
 Token indices start at 1 (not 0).
 
-> Source: `LibKamiCreate.sol:154–156`
+> Source: `LibKamiCreate.sol:164–166`
 
 ## Trait Assignment
 
@@ -91,7 +97,7 @@ produce exponentially higher weights (more common).
 
 `LibRandom.selectFromWeighted(keys, weights, seed)` performs the selection.
 
-> Source: `LibKamiCreate.sol:106–149`, `_721BatchMinterSystem.sol:200–231`
+> Source: `LibKamiCreate.sol:116–159`, `_721BatchMinterSystem.sol:200–231`
 
 ## Stat Calculation
 
@@ -120,7 +126,7 @@ Slots:  Stat(finalSlots, 0, 0, finalSlots)
 Others: Stat(value, 0, 0, 0)
 ```
 
-> Source: `LibKamiCreate.sol:116–130`, `_721BatchMinterSystem.sol:145–165`
+> Source: `LibKamiCreate.sol:126–140`, `_721BatchMinterSystem.sol:145–165`
 
 ## Media URI
 
@@ -135,12 +141,14 @@ Each trait index occupies 8 bits. The full image URL is:
 https://{BASE_URI}/{mediaURI}.gif
 ```
 
-> Source: `LibKamiCreate.sol:132–135`, `LibKami721.sol:68–73`
+> Source: `LibKamiCreate.sol:142–145`, `LibKami721.sol:68–73`
 
 ## Batch Minter (Admin Seeding)
 
 `_721BatchMinterSystem.batchMint(amount)` — owner-only:
 
+0. **Clamp** `amount` to `MAX_SUPPLY − totalSupply()`; return an empty array
+   if nothing is left to mint
 1. **Create** Kami entities in `RESTING` state, owned by `GACHA_ID`
 2. **Reveal** traits using a deterministic seed:
    `baseSeed = keccak256(abi.encode(blockhash(block.number − 1)))`, fixed in
@@ -152,7 +160,7 @@ https://{BASE_URI}/{mediaURI}.gif
 The batch minter uses a one-time `setTraits()` call to memoize all trait
 weights, stats, and offsets from the trait registry for gas efficiency.
 
-> Source: `_721BatchMinterSystem.sol:298, 312–328, 330–333`
+> Source: `_721BatchMinterSystem.sol:298, 312–336, 338–341`
 
 ## Config
 

@@ -46,7 +46,7 @@ When a Kami is created, its 5 trait indices (Body, Color, Face, Hand, Background
 are **bit-packed** into a single uint and stored as a string:
 
 ```solidity
-// LibKamiCreate.sol:132-134
+// LibKamiCreate.sol:142-144
 function setURI(IUintComp comps, uint256 id, uint32[] memory traits) internal {
     string memory image = LibString.toString(LibPack.packArr(traits, 8));
     MediaURIComponent(...).set(id, image);

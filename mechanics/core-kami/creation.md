@@ -1,6 +1,6 @@
 # Kami Creation
 
-> Source: `packages/contracts/src/libraries/LibKamiCreate.sol` (L72–164),
+> Source: `packages/contracts/src/libraries/LibKamiCreate.sol` (L72–174),
 > `packages/contracts/src/libraries/LibTraitRegistry.sol` (L55–339),
 > `packages/contracts/deployment/world/state/configs/configs.ts`
 
@@ -14,6 +14,9 @@ it in the Gacha pool awaiting claim.
 
 `LibKamiCreate.create()` performs these steps in order:
 
+0. **Supply cap** — if `Kami721.totalSupply() ≥ MAX_SUPPLY` (22,222), return
+   `0` and create nothing (no revert). See
+   [gacha.md → Supply Cap and Pool Drawdown](../gacha/gacha.md#supply-cap-and-pool-drawdown)
 1. **Assign index** — `nextIndex = Kami721.totalSupply() + 1`
 2. **Generate entity ID** — deterministic: `id = keccak256("kami.id", index)`
 3. **Verify uniqueness** — reverts if entity type `KAMI` already exists for this ID
@@ -23,7 +26,7 @@ it in the Gacha pool awaiting claim.
 7. **Set media URI** (packed trait indices)
 8. **Mint ERC-721** — `Kami721.mint(nftContractAddress, index)`
 
-> Source: `LibKamiCreate.sol:75–86`
+> Source: `LibKamiCreate.sol:78–91`
 
 ## Base Properties
 
@@ -31,18 +34,18 @@ On creation every Kami receives:
 
 | Property | Initial Value | Source |
 |---|---|---|
-| Owner | `GACHA_ID` (sits in gacha pool) | `LibKamiCreate.sol:97` |
-| Name | `"{BASE_KAMI_NAME}{index}"` (config: `"Kamigotchi "`) | `LibKamiCreate.sol:99`, `configs.ts:62` |
-| State | `"RESTING"` | `LibKamiCreate.sol:100` |
-| Level | `1` | `LibKamiCreate.sol:101` |
-| Skill Points | `1` | `LibKamiCreate.sol:102` |
-| Experience | `0` | `LibKamiCreate.sol:103` |
+| Owner | `GACHA_ID` (sits in gacha pool) | `LibKamiCreate.sol:107` |
+| Name | `"{BASE_KAMI_NAME}{index}"` (config: `"Kamigotchi "`) | `LibKamiCreate.sol:109`, `configs.ts:62` |
+| State | `"RESTING"` | `LibKamiCreate.sol:110` |
+| Level | `1` | `LibKamiCreate.sol:111` |
+| Skill Points | `1` | `LibKamiCreate.sol:112` |
+| Experience | `0` | `LibKamiCreate.sol:113` |
 
 Possible Kami states: `RESTING`, `HARVESTING`, `DEAD`, `721_EXTERNAL`, plus
 `LISTED` (marketplace listing — not in the `KamiState` enum but a real
 `StateComponent` value, set by `KamiMarketListSystem.sol:35`)
 
-> Source: `LibKamiCreate.sol:50–51, 96–104`
+> Source: `LibKamiCreate.sol:50–51, 106–114`
 
 ## Trait System
 
@@ -83,7 +86,7 @@ the CSV `Tier` column (`traits.ts:40`) — **higher tier = more common**, and
 each +1 tier doubles the selection weight (e.g. Common tier 9 → weight 256,
 Legendary tier 4 → weight 8).
 
-> Source: `LibKamiCreate.sol:106–114, 137–149`, `LibTraitRegistry.sol:246–253`
+> Source: `LibKamiCreate.sol:116–124, 147–159`, `LibTraitRegistry.sol:246–253`
 
 ### Trait Properties
 
@@ -132,7 +135,7 @@ Stats are computed as: **hardcoded base + sum of all trait stat deltas**.
 | Harmony | 10 |
 | Slots | 0 |
 
-> Source: `LibKamiCreate.sol:117`
+> Source: `LibKamiCreate.sol:127`
 
 ### Stat Computation
 
@@ -146,7 +149,7 @@ for each trait in [FACE, HAND, BODY, BACKGROUND, COLOR]:
     base.slots   += traitStats.slots
 ```
 
-> Source: `LibKamiCreate.sol:116–130`
+> Source: `LibKamiCreate.sol:126–140`
 
 ### Initial Stat Component Values
 
@@ -162,7 +165,7 @@ Stats are stored as `Stat` structs (see [stats.md](stats.md) for full stat syste
 
 Health and Slots are "depletable" — their `sync` value starts at max (= base).
 
-> Source: `LibKamiCreate.sol:125–129`
+> Source: `LibKamiCreate.sol:135–139`
 
 ## Media URI
 
@@ -173,11 +176,14 @@ The media URI is a packed integer encoding all 5 trait indices, each packed into
 mediaURI = toString(pack([faceIdx, handIdx, bodyIdx, bgIdx, colorIdx], 8))
 ```
 
-> Source: `LibKamiCreate.sol:132–135`
+> Source: `LibKamiCreate.sol:142–145`
 
 ## Batch Creation
 
 `create(components, amount)` creates multiple Kamis in a single transaction by
-calling `create()` in a loop.
+calling `create()` in a loop, after clamping `amount` to the remaining 721
+headroom (`getSupplyHeadroom() = max(0, MAX_SUPPLY − totalSupply())`). It
+returns only the Kamis actually created — an empty array once the cap is
+reached.
 
-> Source: `LibKamiCreate.sol:88–91`
+> Source: `LibKamiCreate.sol:95–101, 168–174`

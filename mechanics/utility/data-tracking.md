@@ -68,6 +68,7 @@ Systems log lifetime counters on most player actions. Representative keys:
 | `QUEST_COMPLETE`, `QUEST_REPEATABLE_COMPLETE` | Account | `LibQuest.sol:377–382` |
 | `TRADE_CREATE` / `_EXECUTE` / `_COMPLETE` / `_CANCEL`, `TRADE_TAX` | Account | `LibTrade.sol:146, 184, 367–405` |
 | `ITEM_COUNT` | Global 0 (item index) | `LibInventory.sol:197` |
+| `GACHA_COMMITS_PENDING` | Global 0 (index 0) — unrevealed gacha commits; incremented on commit, decremented (saturating) on reveal | `LibGacha.sol:24, 38, 80–83` |
 | `POOL_SWAP_TOTAL`, `POOL_LIQUIDITY_ADD` / `_REMOVE` | Account | `LibPool.sol:273, 294` |
 | `POOL_VOLUME` | Global 0 (item index) | `LibPool.sol:274–275` |
 | `TOTAL_NUM_ACCOUNTS` | Global 0 | `LibAccount.sol:286–287` |
