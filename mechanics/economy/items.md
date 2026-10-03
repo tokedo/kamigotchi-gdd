@@ -129,7 +129,15 @@ components. These items:
   must go through the Token Portal system)
 - Can be transferred between accounts
 
-> Source: `LibItem.sol:122–137`
+Two items are token-backed: **Onyx Shard** (100, ONYX, scale 2) and **Ether
+Shard** (103, ETH, scale 5 — 1 ETH = 100,000 shards). Both are type `ERC20`,
+rarity Uncommon, with no flags, so both are tradable and poolable. Item 103 is
+also the currency `GachaBuyTicketSystem` debits (`CURRENCY = 103`) — see
+[gacha.md](../gacha/gacha.md#buying-gacha-tickets). See
+[token-portal.md](../marketplace/token-portal.md) for the bridge.
+
+> Source: `LibItem.sol:122–137`, `data/items/items.csv` (rows 100, 103),
+> `data/portal/tokens.csv`, `GachaBuyTicketSystem.sol:17`
 
 ---
 

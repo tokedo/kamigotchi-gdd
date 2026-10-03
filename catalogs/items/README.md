@@ -1,13 +1,13 @@
 # Items Catalog
 
 > Source: `packages/contracts/deployment/world/data/items/`
-> Commit: `8302734d`
+> Commit: `ffda3963`
 
 ## Files
 
 | File | Entries | Description |
 |---|---|---|
-| `items.csv` | 178 items | Complete item catalog with stats, effects, and descriptions |
+| `items.csv` | 179 items | Complete item catalog with stats, effects, and descriptions |
 | `effects.csv` | 93 effects | Item effect definitions (what items do when used/equipped) |
 | `droptables.csv` | 6 tables | Weighted loot pools for lootbox items |
 
@@ -82,14 +82,14 @@ target.
 | Tool | 3 | Crafting tools (Grinder, Burner, Screwdriver) |
 | Consumable | 2 | Generic consumables (Djed Pillar, VIPP) |
 | Revive | 2 | Items that resurrect liquidated Kami |
-| ERC20 | 1 | On-chain token (Onyx Shard) |
+| ERC20 | 2 | Portal-bridged tokens (Onyx Shard, Ether Shard) |
 
 ## Rarity Distribution
 
 | Rarity | Count | Numeric Value |
 |---|---|---|
 | Common | 21 | 1 |
-| Uncommon | 51 | 2 |
+| Uncommon | 52 | 2 |
 | Rare | 66 | 3 |
 | Epic | 34 | 4 |
 | Legendary | 6 | 5 |
@@ -99,7 +99,7 @@ target.
 | Range | Category | Examples |
 |---|---|---|
 | 1–33 | Currency, tickets, passports | MUSU (1), Gacha Ticket (10), Passports (20-33) |
-| 100 | Premium currency | Onyx Shard (ERC20) |
+| 100, 103 | Bridged tokens (ERC20) | Onyx Shard (100), Ether Shard (103) — see `mechanics/marketplace/token-portal.md` |
 | 1001–1021 | Raw materials | Wooden Stick, Stone, Black Poppy, Bone Chunk |
 | 1102–1303 | Processed materials | Empty Cup, Microplastics, Ashlar, Timber, Ingot |
 | 6001–6007 | Essences | Six elemental essences + Pure Essence |
