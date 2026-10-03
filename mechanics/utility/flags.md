@@ -48,6 +48,7 @@ Flag ID: `keccak256("has.flag", holderID, flagType)`
 | `ITEM_UNBURNABLE` | Item burn system | Items are burnable by default; burning reverts if any input item carries this flag (`LibItem.sol:283`) |
 | `NOT_NAMABLE` | — | Defined in comments only (`LibKami.sol:50`, `LibKamiCreate.sol:70`); enforced nowhere — `KamiNameSystem` reads no flag |
 | `ROLE_ADMIN`, `ROLE_COMMUNITY_MANAGER` | Auth system | Role gating for admin / community-manager functions (`AuthRoles.sol:14, 22`); set with parentType `"AUTH"` via `_AuthManageRoleSystem` (`_AuthManageRoleSystem.sol:21`) |
+| `PORTAL_TO_OPERATOR` | Token portal | Bare flag on a withdrawal receipt created by `withdrawToOperator`: the claim pays the account's operator wallet. Never removed, so it outlives the receipt (`TokenPortalSystem.sol:17, 104, 253`); see [token-portal.md](../marketplace/token-portal.md#operator-lane) |
 
 Flags are also used by the conditional system (`BOOL_IS` / `BOOL_NOT` logic)
 to gate actions behind flag requirements.
