@@ -57,7 +57,11 @@ START → [accruing bounty, taking strain] → COLLECT (partial) or STOP (full)
 
 Withdraws accrued bounty **without stopping** the harvest.
 
-**Prerequisites**: ownership, state `HARVESTING`, cooldown clear, healthy, same room
+**Prerequisites**, checked in this order: a live harvest (`"not a harvest"`),
+ownership (`"kami not urs"`), state `HARVESTING` (`"kami not HARVESTING"`),
+cooldown clear (`"kami on cooldown"`), then — **after** syncing the Kami's
+health — healthy, HP > 0 (`"kami starving.."`), and same room
+(`"kami too far"`). See [Starving Kami: Feed First](#starving-kami-0-hp-feed-first).
 
 **Process**:
 1. Sync Kami health
@@ -77,7 +81,8 @@ Withdraws accrued bounty **without stopping** the harvest.
 
 Collects all accrued bounty **and ends** the harvest.
 
-**Prerequisites**: same as Collect
+**Prerequisites**: same as Collect, in the same order (a starving Kami
+reverts `"kami starving.."`)
 
 **Process**:
 1. Sync Kami health
@@ -94,6 +99,31 @@ Collects all accrued bounty **and ends** the harvest.
 10. Log harvest time
 
 > Source: `HarvestStopSystem.sol:88–124`
+
+### Starving Kami (0 HP): Feed First
+
+Collect and Stop both sync the Kami — applying the strain accrued since the
+last sync — and then require `HP > 0`. A harvesting Kami whose HP has reached 0
+therefore **cannot be collected from or stopped**: both revert
+`"kami starving.."`. (The batched `executeAllowFailure` variants return `0` for
+that Kami instead of reverting.) The Kami stays `HARVESTING` at 0 HP, which
+also leaves it open to liquidation.
+
+The way out is to **feed it first**. `KamiUseItemSystem` has no state or health
+gate of its own, and Food and Potion items carry the type-derived `USE`
+requirement `KAMI_CAN_EAT` (state `RESTING` **or** `HARVESTING`), so an
+HP-restoring food can be used on a starving harvesting Kami. The use is subject
+to the normal item-use checks — the owner's account (operator-signed) in the
+Kami's room (`"kami too far"`), Kami off cooldown (`"kami on cooldown"`), item
+requirements met — and, like any item use on a harvesting Kami, it resets the
+harvest's intensity and (unless the item has `BYPASS_BONUS_RESET`) the
+harvest-action bonuses. Once fed, Stop or Collect passes the health check as
+long as HP is still above 0 after that call's own strain sync.
+
+> Source: `HarvestCollectSystem.sol:28–37, 50–57`,
+> `HarvestStopSystem.sol:30–41, 54–61`, `LibKami.sol:202–204, 264–266`,
+> `KamiUseItemSystem.sol:19–52`, `LibGetter.sol:97–100`,
+> `deployment/world/state/items/requirements.ts:56–81`
 
 ### Liquidate (`HarvestLiquidateSystem`)
 

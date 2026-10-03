@@ -38,10 +38,13 @@ dies:
   address (`LibSacrifice.sol:110`; see sacrifice mechanics)
 
 **Reaching 0 HP is not death.** A harvesting Kami whose HP drains to 0 stays in
-`HARVESTING` state. It fails `verifyHealthy` checks, so its owner cannot stop or
-collect the harvest (`HarvestStopSystem.sol:38`, `HarvestCollectSystem.sol:36`)
-— it remains stuck at 0 HP and liquidatable until another player liquidates it
-(see [health-healing.md](health-healing.md)).
+`HARVESTING` state. It fails `verifyHealthy` checks (`"kami starving.."`), so
+its owner cannot stop or collect the harvest (`HarvestStopSystem.sol:38`,
+`HarvestCollectSystem.sol:36`) and it is liquidatable. It stays that way until
+the owner **feeds it** — Food and Potion items are usable on a `HARVESTING`
+Kami and item use has no health gate — after which stop/collect pass again, or
+until another player liquidates it. See
+[harvesting.md → Starving Kami: Feed First](../economy/harvesting.md#starving-kami-0-hp-feed-first).
 
 ### What dead Kamis cannot do
 

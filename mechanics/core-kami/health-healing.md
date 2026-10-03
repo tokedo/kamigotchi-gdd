@@ -9,7 +9,10 @@
 Health is a **depletable stat** tracked in the `sync` field of the Health
 `Stat` struct. It decreases from harvest strain and increases from resting
 (metabolism). Reaching 0 HP does **not** kill the Kami — a harvesting Kami at
-0 HP stays `HARVESTING`, fails `verifyHealthy` checks, and becomes liquidatable.
+0 HP stays `HARVESTING`, fails `verifyHealthy` checks (`"kami starving.."`), and
+becomes liquidatable. Its owner cannot stop or collect until it is **fed**: an
+HP-restoring Food or Potion is usable on a `HARVESTING` Kami (see
+[harvesting.md → Starving Kami: Feed First](../economy/harvesting.md#starving-kami-0-hp-feed-first)).
 Death only occurs via liquidation or sacrifice (see
 [death-revival.md](death-revival.md)).
 
@@ -169,6 +172,11 @@ Both operations modify the Health stat's `sync` value:
 The `sync` value is always clamped: `0 ≤ sync ≤ Total` (where Total includes
 bonuses).
 
-A Kami is considered "healthy" when `Health.sync > 0`.
+A Kami is considered "healthy" when `Health.sync > 0`. `verifyHealthy` reverts
+`"kami starving.."` otherwise; it gates harvest start, collect, stop and (for
+the killer) liquidation, always **after** a sync, so strain or recovery accrued
+up to that block counts.
 
-> Source: `LibKami.sol:64–73, 202–203`
+> Source: `LibKami.sol:64–73, 202–204, 264–266`; `HarvestStartSystem.sol:39–42`,
+> `HarvestCollectSystem.sol:35–36`, `HarvestStopSystem.sol:37–38`,
+> `HarvestLiquidateSystem.sol:36–37`
