@@ -212,11 +212,16 @@ If a player misses the **256-block window** (after which `blockhash()` returns
 `onlyCommManager` (requires the caller to hold the `ROLE_COMMUNITY_MANAGER`
 flag). It:
 
-1. Verifies the blockhash is no longer available
+1. Checks that the blockhash is no longer available — but this guard never
+   fires (the array overload of `LibCommit.isAvailable` always returns
+   `false`; see
+   [commit-reveal.md → Force Reveal](../utility/commit-reveal.md#force-reveal-community-manager-recovery)),
+   so a force reveal also works on commits still inside their window
 2. Resets commit blocks to `block.number - 1` (generating new seeds)
 3. Proceeds with normal reveal flow
 
-> Source: `KamiGachaRevealSystem.sol:30–49`, `AuthRoles.sol:12–14`
+> Source: `KamiGachaRevealSystem.sol:30–49`, `LibCommit.sol:77–82`,
+> `AuthRoles.sol:12–14`
 
 ## Minting
 

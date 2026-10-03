@@ -262,12 +262,17 @@ offers) and sent to the configured `KAMI_MARKET_FEE_RECIPIENT` address.
 After any Kami purchase, a cooldown is applied to the Kami:
 
 ```
-cooldown = KAMI_MARKET_PURCHASE_COOLDOWN (default: 3600 seconds / 1 hour)
+cooldown = KAMI_MARKET_PURCHASE_COOLDOWN (3600 seconds / 1 hour if unset; 0 = none)
+LibCooldown.modify(kami, +cooldown)   // extends a cooldown already running
 ```
 
-This prevents immediate re-listing or other actions on newly purchased Kamis.
+The key is admin-set via `_KamiMarketRegistrySystem.setPurchaseCooldown`; no
+init script sets it. For the buyer, the cooldown blocks harvesting with the
+Kami, using items on it and liquidating with it (`"kami on cooldown"`); it
+does **not** block re-listing, sending or equipping it. See
+[cooldowns.md → What a Cooldown Blocks](../utility/cooldowns.md#what-a-cooldown-blocks).
 
-> Source: `LibKamiMarket.sol:271–277`
+> Source: `LibKamiMarket.sol:271–277`, `_KamiMarketRegistrySystem.sol:70–73`
 
 ## KamiMarketVault
 

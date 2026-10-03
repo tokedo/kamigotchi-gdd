@@ -37,10 +37,17 @@ Supports batch sending of multiple Kamis in one transaction. See
 ## Cooldown
 
 A purchase cooldown is applied to each transferred Kami (same cooldown used by
-marketplace purchases). This prevents immediate re-listing or other actions.
+marketplace purchases):
 
 ```
-cooldown = KAMI_MARKET_PURCHASE_COOLDOWN config (default: 3600s / 1 hour)
+cooldown = KAMI_MARKET_PURCHASE_COOLDOWN config (3600s / 1 hour if unset; 0 = none)
+LibCooldown.modify(kami, +cooldown)   // extends a cooldown already running
 ```
 
-> Source: `KamiSendSystem.sol:48–50, 70`
+For the recipient, the cooldown blocks **harvest start / collect / stop,
+item use on the Kami (feeding), and liquidating with it** — all revert
+`"kami on cooldown"`. It does **not** block sending the Kami on, listing it,
+equipping it or rerolling it. See
+[cooldowns.md → What a Cooldown Blocks](../utility/cooldowns.md#what-a-cooldown-blocks).
+
+> Source: `KamiSendSystem.sol:47–50, 70`, `LibCooldown.sol:34–53`
