@@ -6,7 +6,9 @@
 
 The scoring system provides **epoch-based point tracking** with both individual
 and aggregate totals. It is a generic building block used by multiple systems:
-faction reputation, community goals, trading metrics, and player leaderboards.
+faction reputation, community goals, the harvest (`COLLECT`) and liquidation
+(`LIQUIDATE`) leaderboards, NPC-shop spend, and VIP (see
+[Known Score Types](#known-score-types)).
 
 Scores are designed for **reverse-mapping** — the `IdHolder` and `IDType`
 components enable front-end leaderboard queries without full table scans.
@@ -88,17 +90,23 @@ Systems that don't use epochs (e.g., factions, goals) call the raw
 
 ## Known Score Types
 
+Every `LibScore` writer in the contracts:
+
 | Score Type | Used By | Description |
 |---|---|---|
-| `TOTAL_SPENT` | NPC shops (`ListingBuySystem`) | Epoch-scoped spend at NPC shop listings, indexed per currency item |
-| Faction reputation | Faction system | Per-faction reputation points |
-| Goal contributions | Goal system | Per-goal contribution amounts |
-| Custom epoch scores | Leaderboard | Configurable per-epoch scoring |
+| `COLLECT` (index `MUSU_INDEX`) | Harvest collect and stop (`HarvestCollectSystem`, `HarvestStopSystem`) | Epoch-scoped post-tax MUSU harvested, +output per collect/stop — see [harvesting.md](../economy/harvesting.md#side-effects-on-collection) |
+| `LIQUIDATE` (index `0`) | Harvest liquidation (`HarvestLiquidateSystem`) | Epoch-scoped liquidation count for the killer's account, +1 per liquidation |
+| `TOTAL_SPENT` (index = currency item) | NPC shops (`ListingBuySystem`) | Epoch-scoped spend at NPC shop listings, indexed per currency item |
+| `VIP_SCORE` (index `0`) | VIP (`LibVIP.inc`) | Keyed by the current VIP **stage** in the epoch slot rather than `SCORE_EPOCH` |
+| Faction reputation | Faction system (`LibFaction`) | Per-faction reputation points (pre-computed IDs; increment and decrement) |
+| Goal contributions | Goal system (`LibGoal`) | Per-goal contribution amounts (pre-computed IDs) |
 
 The only `TOTAL_SPENT` writer is `ListingBuySystem.sol:50` — `LibTrade` makes
 no `LibScore` calls (P2P trades are not scored).
 
-> Source: `ListingBuySystem.sol:50`, `LibFaction.sol`, `LibGoal.sol`
+> Source: `HarvestCollectSystem.sol:100`, `HarvestStopSystem.sol:110`,
+> `HarvestLiquidateSystem.sol:90`, `ListingBuySystem.sol:50`,
+> `LibVIP.sol:36`, `LibFaction.sol:79, 85`, `LibGoal.sol:277`
 
 ## Operations
 
