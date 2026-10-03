@@ -15,11 +15,14 @@ It holds a reserve of each item and prices swaps by the constant-product rule
 item indices, not ERC-20 tokens.
 
 Anything that exists as an item can be pooled. That includes **MUSU** (item
-index `1`), the game's currency, and **ONYX** (item index `100`), which becomes
-an item only after being bridged in through the token portal — see
+index `1`), the game's currency, and the two portal-bridged tokens — **Onyx
+Shard** (item `100`, ONYX) and **Ether Shard** (item `103`, ETH) — which become
+items only after being bridged in through the token portal — see
 [Token Portal](token-portal.md). A pool never mints: every unit in a reserve
-was supplied by an account, so ONYX in a pool is backed by real bridged
-tokens.
+was supplied by an account, so shards in a pool are backed by real bridged
+tokens. A MUSU ↔ Ether Shard pool together with the portal therefore forms a
+MUSU ↔ ETH route (swap, then withdraw; or deposit, then swap) whose existence
+depends on that pool being deployed — see below.
 
 Three player actions exist — **swap**, **add liquidity**, **remove
 liquidity** — all on `PoolSystem`. Liquidity providers (LPs) hold **share**
@@ -70,6 +73,12 @@ revoke.
 
 > ⚠️ UNCERTAIN: the live pool list is on-chain state. This document describes
 > the mechanism only; any specific pair must be read from the world.
+
+**Deployed state, not source:** the upstream release that added item 103
+records that a **MUSU ↔ Ether Shard (103)** pool with a **30 bps** fee was
+created by this ceremony on the production world on **2026-10-01**, the same
+day item 103 went In Game. Its reserves, and therefore its price, are live
+chain state and are not derivable from source.
 
 > Source: `PoolCeremony.s.sol:11–51` (parameters and doctrine), `:75–127`
 > (ephemeral role grant/revoke, create, rerun self-heal)
@@ -236,6 +245,31 @@ All three are called by the account's **operator** address
 Returns `amountOut`.
 
 > Source: `PoolSystem.sol:22–49`, `LibPool.sol:41–60`
+
+#### Client framing: buys are exact-output over this exact-input swap
+
+The contract has only the exact-input `swap` above. In pools with MUSU on one
+side, the client presents MUSU → item as a **buy of an exact item amount**: it
+inverts the swap formula to find the smallest `amountIn` whose output reaches
+the ask,
+
+```
+amountIn = ⌈ reserveIn × amountOut × 10000 / ((reserveOut − amountOut) × (10000 − feeBps)) ⌉
+```
+
+and submits an ordinary `swap` with that `amountIn` and `minAmountOut` set to
+the **full asked amount** — so a price move between quote and execution
+reverts (`"Pool: slippage exceeded"`) instead of delivering less. Item → MUSU
+(sells) and item ↔ item swaps keep the exact-input framing with a 1%
+minimum-output tolerance; liquidity adds and removes also use 1%. For MUSU
+pools the client takes the item amount as the liquidity input and pairs MUSU
+at the current ratio (`quote`). A "My Positions" view lists, per pool, the
+account's share of LP supply and what burning all its shares would return (the
+[LP Burn](#lp-burn) formula).
+
+> Source: client `packages/client/src/network/shapes/Pool/pricing.ts:24–37,
+> 54–68`, `app/components/modals/pool/Pool.tsx:38, 164–209`,
+> `app/components/modals/pool/Positions.tsx`
 
 ### `addLiquidity(indexA, indexB, amountADesired, amountBDesired, amountAMin, amountBMin)`
 
