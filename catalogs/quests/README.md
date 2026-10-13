@@ -172,7 +172,7 @@ main story at two critical junctures:
   Talking", "My Ears Are Burning". Tied to the **Ring of Spirits** key item
   (22802). SQ113-SQ118 ("Airing it Out", "Conditioned Environment", "Dry
   Conversation", "Lost and Found", "Trash Pickers", "Janitorial Supplies") are
-  **To Deploy**
+  **In Game**
 - **Diagnostics** (SQ802-SQ803): "Quest Diagnostics" (now `Defunct`),
   "Never Brought to Mind"
 - **Special** (SQ998, SQ997, SQ999): Conditional/event quests. SQ999 is now
