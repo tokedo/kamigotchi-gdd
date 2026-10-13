@@ -1,6 +1,6 @@
 Index,Name,Status,Type,Output Index,Output Name,Output Amount,Input Indices,Input Amounts,Stamina Cost,XP Output,Tool Index,Tool Name,Min Level
-1,Brew XP Potion,In Game,CONSUMABLE,11401,XP Potion,1,"1003,1104","1,250",20,50,23101,Portable Burner,1
-2,Brew Greater XP Potion,In Game,CONSUMABLE,11402,Greater XP Potion,1,"1006,1104","1,2500",50,1000,23101,Portable Burner,1
+1,Brew XP Potion,In Game,CONSUMABLE,11401,XP Potion,1,"1003,1104","1,1000",20,50,23101,Portable Burner,1
+2,Brew Greater XP Potion,In Game,CONSUMABLE,11402,Greater XP Potion,1,"1006,1104","1,15000",50,1000,23101,Portable Burner,1
 3,Brew Respec Potion,In Game,CONSUMABLE,11403,Respec Potion,1,"1003,1112","1,500",50,200,23101,Portable Burner,1
 4,Brew Grace Potion,In Game,CONSUMABLE,11404,Grace Potion,1,"1003,1111,1110","1,100,50",25,150,23101,Portable Burner,1
 5,Brew Bless Potion,In Game,CONSUMABLE,11405,Bless Potion,1,"1003,1111","1,100",15,50,23101,Portable Burner,1
