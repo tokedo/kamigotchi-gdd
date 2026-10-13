@@ -3,7 +3,9 @@
 > Source: `packages/contracts/src/libraries/LibGoal.sol` (L1–404),
 > `packages/contracts/src/systems/GoalContributeSystem.sol` (L1–50),
 > `packages/contracts/src/systems/GoalClaimSystem.sol` (L1–36),
-> `packages/contracts/src/systems/_GoalRegistrySystem.sol` (L1–175)
+> `packages/contracts/src/systems/_GoalRegistrySystem.sol` (L1–175),
+> `packages/contracts/test/systems/Goals.t.sol` (L192–225),
+> `packages/contracts/deployment/world/state/goals.ts` (L1–323)
 
 ## Overview
 
@@ -17,11 +19,14 @@ accepted. Contributions are tracked via `LibScore` for leaderboard
 compatibility.
 
 > ⚠️ UNCERTAIN: the goal catalog is not fully derivable from source. The
-> deployment seed (`deployment/world/state/goals.ts`) actively creates only
-> goals 7 ("Titanic Offering") and 13 ("Secret of the Ooze"); definitions for
-> goals 1–6 and 8–11 exist only as commented-out code. Other live goals were
-> seeded at runtime by admin calls, so the full set of deployed goal
-> instances cannot be reconstructed from this repo.
+> deployment seed `initGoals` (`deployment/world/state/goals.ts:4–305`)
+> actively creates only **goal 14 ("Tremors")** — see
+> [Goal Instances at the Pin](#goal-instances-at-the-pin). Definitions for
+> goals 1, 3–13 exist only as commented-out code (there is no goal 2); goals 7,
+> 12 and 13 sit under the comment "goals up to 13 are all complete on PROD;
+> commented so `goals init` only creates new goals" (`goals.ts:127`). Other
+> live goals were seeded at runtime by admin calls, so the full set of deployed
+> goal instances cannot be reconstructed from this repo.
 
 ## Goal Entity Shape
 
@@ -32,13 +37,52 @@ compatibility.
 | `Name` | Display name |
 | `Description` | Goal description |
 | `IndexRoom` | (optional) Room the player must be in to contribute/claim |
-| `Disabled` | Initially `true` — must be enabled |
+| `IsDisabled` | Set to `true` at creation — the goal must be enabled before it accepts contributions or claims (see [Enabling and Pausing](#enabling-and-pausing)) |
 | `IsComplete` | Set when goal target is reached |
 | `Value` | Current accumulated balance (total contributions so far) |
 
 Goal ID: `keccak256("goal", goalIndex)`
 
 > Source: `LibGoal.sol:68–87`
+
+## Enabling and Pausing
+
+Every goal is **created disabled**: `LibGoal.create` sets `IsDisabled` on the
+goal entity (`LibGoal.sol:82`, "disabled initially"). The flag is flipped only
+by the admin-gated registry call `_GoalRegistrySystem.setDisabled(index,
+disabled)`, which reverts `"Goal does not exist"` for an unknown index
+(`_GoalRegistrySystem.sol:43–48`). The deployment helper
+`api.goal.enable(index)` is `setDisabled(index, false)`
+(`deployment/world/api/goals.ts:23–32`); `initGoals` enables each goal it
+creates right after adding its rewards, and `enableGoals(indices)`
+(`goals.ts:307–311`, exposed as the world-state command `goals.enable`,
+`world.ts:130`) enables already-created goals by index.
+
+Both player entrypoints check the flag on the **goal entity ID**:
+`LibGoal.verifyEnabled(components, goalID)` → `LibDisabled.verifyEnabled`
+reverts **`"entity not enabled"`** while `IsDisabled` is set
+(`GoalContributeSystem.sol:23`, `GoalClaimSystem.sol:21`, `LibGoal.sol:203–205`,
+`LibDisabled.sol:11–13`). So a disabled goal is **paused** for both
+contributing and claiming; re-enabling it restores both, and contributions
+made before the pause, completion, and unclaimed rewards are kept (the flag
+touches nothing else). The test `testGoalDisabled` covers the cycle: a
+contribution reverts while disabled, succeeds and completes the goal once
+re-enabled; a claim reverts while disabled and pays out once re-enabled
+(`Goals.t.sol:192–225`).
+
+Removing a goal (`LibGoal.remove`) clears the flag along with the rest of the
+goal (`LibGoal.sol:120`).
+
+> Earlier source (before the upstream change of 2026-10-08) passed the goal
+> **index** to `verifyEnabled` in both systems, so the check read `IsDisabled`
+> on the raw index instead of the goal entity and never fired: the flag set at
+> creation had no effect on contributing or claiming.
+
+> Source: `LibGoal.sol:82, 120, 203–205`, `LibDisabled.sol:11–26`,
+> `_GoalRegistrySystem.sol:43–48`, `GoalContributeSystem.sol:21–23`,
+> `GoalClaimSystem.sol:19–21`, `Goals.t.sol:192–225`,
+> `deployment/world/api/goals.ts:23–32`, `deployment/world/state/goals.ts:219, 307–311`,
+> `deployment/world/world.ts:130`
 
 ## Objective
 
@@ -60,7 +104,7 @@ current progress toward that target.
 
 `GoalContributeSystem.execute(goalIndex, amount)`:
 
-1. Verify goal exists and is enabled
+1. Verify goal exists (`"goal not found"`) and is enabled (`"entity not enabled"`)
 2. Verify contributability:
    - Player meets all requirements (`LibConditional`)
    - Player is in the correct room (if room-gated), or goal is global (no room)
@@ -97,7 +141,7 @@ Claiming sets `IsComplete` on the contribution entity to prevent double-claims.
 
 `GoalClaimSystem.execute(goalIndex)`:
 
-1. Verify goal exists and is enabled
+1. Verify goal exists (`"goal not found"`) and is enabled (`"entity not enabled"`)
 2. Verify claimability:
    - Goal must be complete (`IsComplete` on goal)
    - Account must have contributed (`Value` exists on contribution entity)
@@ -193,6 +237,44 @@ Goal rewards support all standard `LibAllo` types:
 Reward anchor: `keccak256("goal.reward", tierID)`
 
 > Source: `_GoalRegistrySystem.sol:74–157`
+
+## Goal Instances at the Pin
+
+There is no goal catalog file: goals are created by `initGoals`, and at this
+pin it creates exactly one goal (all others are commented out — see the note
+under [Overview](#overview)).
+
+| Field | Goal 14 |
+|---|---|
+| Name | Tremors |
+| Room | 11 (Temple by the Waterfall) — contributing and claiming only from there |
+| Objective | `ITEM` / `CURR_MIN`, item 1 (MUSU), target **50,000,000** |
+| Display reward | "Seismic monitoring online." (cutoff-0 "Community" tier; distributes nothing) |
+| Enabled by seed | yes — `api.goal.enable(14)` after its rewards |
+
+Description (verbatim; the source string's `\n\n` is a paragraph break):
+
+> MENU: “My logs say the first tremor hit the same hour the relic left this altar. That’s no coincidence. Every quake since points to one spot: right under the Sacrarium. Something foul is dreaming down there. It seems restless.”
+>
+> MENU: “The quakes have buried the caves in rubble. Whatever was worth finding now sits under heaps of junk. Pool your MUSU here so I can get monitoring equipment in place and find out what’s stirring. And who took the relic.”
+
+Reward tiers — the cutoff is the minimum MUSU contributed; tiers stack, so a
+Gold contributor receives the Bronze, Silver and Gold rewards:
+
+| Tier | Cutoff (MUSU) | Rewards |
+|---|---|---|
+| Bronze | 250,000 | 10 Wonder Egg (21003), 20 Honeydew Scale (11312), 10 Golden Apple (11313), `REPUTATION` +3 with The Agency (faction index 1) |
+| Silver | 500,000 | 10 Wonder Egg (21003), 10 Essence of Thought (6006), 10 Red Amber Crystal (1007), `REPUTATION` +3 Agency |
+| Gold | 2,000,000 | 1 Homecoming Data Chip (100011), 15 Wonder Egg (21003), 20 Essence of Thought (6006), 10 Flash Talisman (11412), `REPUTATION` +3 Agency |
+
+`REPUTATION` rewards go through `LibSetter.update` → `LibFaction.incRep`
+(`LibSetter.sol:52–53`). Item names are from
+[`catalogs/items/items.csv`](../../catalogs/items/items.csv); faction 1 is The
+Agency ([`catalogs/factions/factions.csv`](../../catalogs/factions/factions.csv)).
+
+> Source: `deployment/world/state/goals.ts:193–219` (goal 14),
+> `deployment/world/state/utils.ts:7` (`MUSU_INDEX = 1`),
+> `LibGoal.sol:337–352` (tier filter)
 
 ## Logging
 
