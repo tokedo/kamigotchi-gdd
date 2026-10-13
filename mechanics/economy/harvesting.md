@@ -362,8 +362,11 @@ One harvesting Kami can raid another's active harvest if they share the same nod
 
 1. Sync both Kamis' health
 2. **Salvage** — victim retains a portion: `salvage = calcSalvage(victimID, bounty)`.
-   It is paid as MUSU to the victim's account inventory, and the victim Kami
-   gains XP equal to the salvage (`LibKill.sendSalvage`, `LibKill.sol:51–56`)
+   It is paid to the victim's account inventory **in the node's yield item**
+   (`LibNode.getItem(components, nodeID)`, `HarvestLiquidateSystem.sol:56`) —
+   MUSU on MUSU nodes, VIPP on VIPP nodes — and the victim Kami gains XP equal
+   to the salvage (`LibKill.sendSalvage`, `LibKill.sol:50–56`; rule in
+   [kill.md](../combat/kill.md#salvage-to-victims-account))
 3. **Spoils** — killer steals a portion: `spoils = calcSpoils(killerID, bounty - salvage)`.
    Spoils are credited to the **killer's own harvest balance**
    (`LibKill.sendSpoils` → `LibHarvest.incBounty`, `LibKill.sol:59–62`), not to

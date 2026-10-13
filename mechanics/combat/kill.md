@@ -282,8 +282,8 @@ salvage = ⌊bounty × ratio / precision⌋
 >
 > Exact condition, since `salvage > bounty` requires the floor to clear an
 > extra unit: `bounty × (ratio − 1000) ≥ 1000`, i.e.
-> `bounty ≥ ⌈1000 / (10·power − 1000)⌉` — 100 MUSU at Power 101, 10 at Power
-> 110, 2 from Power 150 up. Below that bounty the call still succeeds with
+> `bounty ≥ ⌈1000 / (10·power − 1000)⌉` — a bounty of 100 at Power 101, 10 at
+> Power 110, 2 from Power 150 up. Below that bounty the call still succeeds with
 > `salvage = bounty` and zero spoils.
 >
 > Boundary values: at Power **100** (`ratio` exactly 1000) salvage equals the
@@ -294,10 +294,25 @@ salvage = ⌊bounty × ratio / precision⌋
 > The band is far above deployed Kami Power in practice (base Power is 10,
 > `configs.ts:115`), so it is a latent defect rather than an observed one.
 
-The victim's account receives the salvage as MUSU, plus the victim Kami gets
-XP equal to the salvage amount.
+**Salvage is paid in the item the node yields** — MUSU (item 1) on MUSU nodes,
+VIPP (item 2) on VIPP nodes (the node's `YieldIndex`, see
+[`catalogs/rooms/nodes.csv`](../../catalogs/rooms/nodes.csv)).
+`HarvestLiquidateSystem` passes `LibNode.getItem(components, nodeID)` — the
+node both Kamis share — to `LibKill.sendSalvage(comps, victimID, itemIndex, amt)`,
+which credits `itemIndex` to the victim's account
+(`LibInventory.incFor(comps, accID, itemIndex, amt)`). This is the same item
+the harvest itself pays out on collect/stop (`LibHarvest.claim`). The victim
+Kami also gains XP equal to the salvage amount (`LibExperience.inc`), whatever
+the item. A zero salvage is a no-op (no item, no XP).
 
-> Source: `LibKill.sol:51–56, 222–238`, `HarvestLiquidateSystem.sol:53–58`
+> Deployed state (not derivable from source): the liquidation system carrying
+> this rule was redeployed on chain at block 34,199,935 (2026-10-08). Before
+> that block, salvage was always paid in MUSU, whatever the node yielded.
+
+> Source: `LibKill.sol:50–56, 222–238`, `HarvestLiquidateSystem.sol:53–59`,
+> `LibHarvest.sol:97–99`, `Murder.t.sol:63–91` (`testMurderSalvageNodeItem`:
+> on a node yielding item 2 the victim receives the salvage as item 2 and no
+> MUSU)
 
 ### Spoils (to killer's harvest)
 
@@ -323,12 +338,13 @@ spoils = ⌊(bounty - salvage) × ratio / precision⌋
 > `spoils = ⌊(bounty − salvage) × ratio / 1000⌋` — **101–199% of the remaining
 > bounty**, uncapped. `sendSpoils` credits that straight onto the killer's
 > harvest balance (`LibKill.sol:59–62`, `LibHarvest.incBounty`), so the killer
-> gains more MUSU than the victim lost: net issuance, not a transfer.
+> gains more of the node's yield item than the victim lost: net issuance, not a
+> transfer.
 >
 > Unlike the salvage band this does **not** revert — nothing subtracts the
 > spoils from a smaller quantity. Exact condition for a strict overpay:
-> `(bounty − salvage) ≥ ⌈1000 / (450 + 10·power − 1000)⌉` — 100 MUSU at Power
-> 56, 20 at Power 60, 3 at Power 100.
+> `(bounty − salvage) ≥ ⌈1000 / (450 + 10·power − 1000)⌉` — 100 at Power 56,
+> 20 at Power 60, 3 at Power 100.
 >
 > Boundaries: at Power **55** `ratio` is exactly 1000 (spoils = 100% of the
 > remainder, no overpay). At Power **≥ 155** (`ratio ≥ 2000`) the clamp fires
