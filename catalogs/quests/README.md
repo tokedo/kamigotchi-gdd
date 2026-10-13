@@ -11,13 +11,13 @@ See `mechanics/progression/quests.md` for how the quest system works
 
 ## Summary
 
-**195 quests total** across 5 categories:
+**196 quests total** across 5 categories:
 
 | Category | Key Prefix | Index Range | Count | Primary Giver |
 |----------|-----------|-------------|-------|---------------|
 | Main Story | MSQ | 1-109 | 109 | MENU (65), MINA (41), DIMIDIATUS (3) |
 | Mina Line | MIN | 2001-2016, 2100-2101 | 18 | MINA (18) |
-| Side Quests | SQ | 3001-3998 | 60 | MENU (27), MINA (18), ROB (9), ZEVANA (5), DIMIDIATUS (1) |
+| Side Quests | SQ | 3001-3998 | 61 | MENU (28), MINA (18), ROB (9), ZEVANA (5), DIMIDIATUS (1) |
 | Event/Misc | SQ999/SQ997/TTX01 | 10001-10003 | 3 | MENU / unset |
 | Test | test-* | 1000000-1000004 | 5 | unset |
 
@@ -25,14 +25,14 @@ See `mechanics/progression/quests.md` for how the quest system works
 > are Type=SIDE. The MIN quests form a distinct parallel storyline given
 > exclusively by Mina, focused on crafting education and the Elders faction.
 > They are separated here for clarity. Combined MAIN type count: 128. Combined
-> SIDE type count: 60 (58 SQ + MIN100-MIN101). Remaining 6 have no type set
-> (event + test quests).
+> SIDE type count: 61 (59 SQ + MIN100-MIN101). Remaining 7 have no type set
+> (TTX01, SQ999 and the five test quests).
 
 ### By Status
 
 | Status | Count |
 |--------|-------|
-| In Game | 187 |
+| In Game | 188 |
 | Defunct | 3 |
 | Test | 5 |
 
@@ -54,7 +54,7 @@ an explicit index.
 
 | Giver | Count |
 |-------|-------|
-| MENU | 93 |
+| MENU | 94 |
 | MINA | 77 |
 | ROB | 9 |
 | ZEVANA | 5 |
@@ -63,7 +63,10 @@ an explicit index.
 
 ### Quest Features
 
-- **1 daily quest** (test-0, test only)
+- **2 daily quests** — SQ900 "Warm Your Hands" (index 3900, In Game: the first
+  live daily quest) and test-0 (test only). `Daily=Yes` deploys the quest as
+  repeatable with an 18-hour (64,800 s) window counted from the previous
+  acceptance; see `mechanics/progression/quests.md` → Daily Quests
 - **1 time-gated quest** (SQ999, before 25/10/25 0 GMT — now `Defunct`)
 - **3 retired quests** (SQ802, SQ999, TTX01 — all `Defunct`)
 - **1 zone-unlocking quest** (MSQ035 rewards the `FLAG_CAVES_UNLOCKED` flag)
@@ -75,8 +78,8 @@ an explicit index.
 
 | File | Rows | Description |
 |------|------|-------------|
-| `quests.csv` | 195 quests | Full quest definitions: key, index, status, title, type, giver, dialogues, requirements, objectives, rewards |
-| `objectives.csv` | 202 objectives | Objective definitions: description, operator, delta type, tracking type, index, value |
+| `quests.csv` | 196 quests | Full quest definitions: key, index, status, title, type, giver, dialogues, requirements, objectives, rewards |
+| `objectives.csv` | 203 objectives | Objective definitions: description, operator, delta type, tracking type, index, value |
 | `requirements.csv` | 201 requirements | Prerequisite definitions: quest completions, item ownership, room presence, time windows |
 | `rewards.csv` | 68 rewards | Reward definitions: items, reputation, flags |
 | `quest-lines.md` | — | Quest chain map showing all prerequisite links, storyline branches, and convergence points |
@@ -90,7 +93,7 @@ an explicit index.
 - `Key`: Human-readable identifier (MSQ001, MIN003, SQ015, test-0)
 - `Index`: Numeric ID used on-chain (1-109, 2001-2016, 3001-3998, 10002-10003, 1000000-1000004)
 - `Status`: Deployment state (In Game, To Deploy, To Update Text, To Update, Test) or the retirement marker `Defunct`
-- `Daily`: Yes/No — whether the quest is repeatable daily
+- `Daily`: Yes/No — `Yes` deploys the quest as repeatable, re-acceptable 18 hours (64,800 s) after the previous run was accepted, once that run is completed
 - `Giver`: The NPC or system that presents the quest (MENU, MINA, DIMIDIATUS, ROB, ZEVANA)
 - `Introduction Dialogue` / `Resolution Dialogue`: Full NPC dialogue text with speaker tags
 - `Requirements`: Comma-separated prerequisite IDs referencing `requirements.csv` entries
@@ -174,6 +177,11 @@ main story at two critical junctures:
   "Never Brought to Mind"
 - **Special** (SQ998, SQ997, SQ999): Conditional/event quests. SQ999 is now
   `Defunct`
+- **Daily** (SQ900, index 3900): "Warm Your Hands" (giver MENU, no
+  requirements) — objectives: be in the Trash-Strewn Graves (room 26, `ROOM`)
+  and give 3 Wooden Sticks (`ITEM_BURN` 1001 ×3, counted from acceptance);
+  reward: 1 Melkarth's Heroic Awakening Spell Card (11002). Re-acceptable 18
+  hours after the previous run was accepted, once that run is completed
 - **Retired stub** (TTX01, index 10001): "Proof of Honesty" — carries only the
   `Missed Mina` requirement (`MINA_LAUNCH_VICTIM`); no type, giver, dialogue,
   objectives or rewards, and `Defunct` from the row's first appearance

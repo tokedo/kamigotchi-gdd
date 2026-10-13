@@ -72,6 +72,32 @@ Instance ID: `keccak256("quest.instance", questIndex, accID)`
 
 > Source: `QuestAcceptSystem.sol:16–39`, `LibQuest.sol:53–86`
 
+### Daily Quests (`Daily=Yes`)
+
+The catalog's `Daily` column is read only by the deployment script:
+`Daily=Yes` creates the quest with a repeat duration of **64,800 s
+(18 hours)**, every other row with 0 (`deployment/world/state/quests/quests.ts:15,
+22–30`). `_QuestRegistrySystem.create` makes any quest with a nonzero duration
+repeatable — `Flag REPEATABLE` plus `Time = duration` on the registry entry
+(`_QuestRegistrySystem.sol:40–41`, `LibQuestRegistry.sol:64–67`).
+
+A repeatable quest can be accepted again only when the account's previous run
+is **completed** and `block.timestamp > TimeStart + 64,800`, where `TimeStart`
+is when that previous run was **accepted**, not completed
+(`LibQuest.checkRepeat`, `LibQuest.sol:172–190`); otherwise accept reverts
+`"repeat cons not met"` (`LibQuest.sol:316–318`). Re-accepting reuses the
+same instance: completion and `TimeLast` are cleared, `TimeStart` is reset and
+the objectives are re-snapshotted (`LibQuest.sol:68–86`). So a daily quest
+pays out at most once per run, with runs at least 18 hours apart counted from
+acceptance — not a calendar-day reset. A run that is dropped instead of
+completed removes the instance (see [Dropping Quests](#dropping-quests)), so
+the next accept counts as a first accept and needs no wait.
+
+> Source: `deployment/world/state/quests/quests.ts:10–38`,
+> `deployment/world/api/quests.ts:7–23`, `_QuestRegistrySystem.sol:19–44`,
+> `LibQuestRegistry.sol:60–67`, `LibQuest.sol:68–86, 172–190, 316–318`,
+> `QuestAcceptSystem.sol:26–30`
+
 ## Objective System
 
 Objectives are conditions that must be met to complete a quest. Each objective
@@ -199,7 +225,7 @@ Reward anchor: `keccak256("registry.quest.reward", questIndex)`
 
 ## Quest Data Summary
 
-The catalog contains **195 quests** — 187 In Game, 3 Defunct, 5 Test:
+The catalog contains **196 quests** — 188 In Game, 3 Defunct, 5 Test:
 
 | Type | Indices | Keys | Givers | Description |
 |---|---|---|---|---|
@@ -207,13 +233,15 @@ The catalog contains **195 quests** — 187 In Game, 3 Defunct, 5 Test:
 | MAIN | 2001–2016 | MIN001–MIN016 | MINA | Mina's quest line |
 | SIDE | 2100–2101 | MIN100–MIN101 | MINA | Fountain / item-pool intro pair |
 | MAIN | 3100–3102 | SQ100–SQ102 | MENU, MINA | Side-numbered but typed MAIN |
-| SIDE | 3001–3022, 3028–3045, 3104–3118, 3802–3803, 3998, 10003 | SQ001–SQ118, SQ802–SQ803, SQ998, SQ997 | MENU (27), MINA (16), ROB (9), ZEVANA (5), DIMIDIATUS (1) | Side quests (58 SQ-keyed; 60 counting MIN100–MIN101). SQ802 is `Defunct` |
+| SIDE | 3001–3022, 3028–3045, 3104–3118, 3802–3803, 3900, 3998, 10003 | SQ001–SQ118, SQ802–SQ803, SQ900, SQ998, SQ997 | MENU (28), MINA (16), ROB (9), ZEVANA (5), DIMIDIATUS (1) | Side quests (59 SQ-keyed; 61 counting MIN100–MIN101). SQ802 is `Defunct`; SQ900 is daily |
 | (no type) | 10001–10002, 1000000–1000004 | TTX01, SQ999, test-0…test-4 | — | TTX01 and SQ999 are `Defunct`; test-0…test-4 are Status=Test |
 
 There is **no `FACTION` quest type** — Mina's MIN001–MIN016 are `Type=MAIN`
 with `Giver=MINA`, while MIN100–MIN101 are `Type=SIDE` with the same giver.
-Index 10003 (SQ997) is a live quest, not a test entry. The only `Daily=Yes`
-quest is test-0.
+Index 10003 (SQ997) is a live quest, not a test entry. Two rows are
+`Daily=Yes`: **SQ900 "Warm Your Hands"** (index 3900, In Game — the first live
+daily quest; see [Daily Quests](#daily-quests-dailyyes)) and test-0 (Status
+Test).
 
 Three rows carry the status **`Defunct`**: SQ802 ("Quest Diagnostics"), SQ999
 ("Claim Your Free Gift!") and TTX01 ("Proof of Honesty", index 10001, a

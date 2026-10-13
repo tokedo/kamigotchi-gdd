@@ -530,6 +530,18 @@ SQ999's `BLOCKTIME MAX` window closed on 2025-10-25 and the row is now
 objectives or rewards — only the `Missed Mina` (`MINA_LAUNCH_VICTIM`)
 requirement — and is `Defunct` from its first appearance.
 
+### Daily Side Quest (SQ900)
+
+```
+SQ900  Warm Your Hands  (daily, no prereqs, Giver: MENU)
+       objectives: Move to the Trash-Strewn Graves (In Room 26), Give 3 Wooden Sticks
+       reward:     1x Melkarth's Heroic Awakening Spell Card (11002)
+```
+
+SQ900 (index 3900, `Type=SIDE`, In Game) is the first live `Daily=Yes` quest:
+it is deployed as repeatable and can be taken again 18 hours after the previous
+run was accepted, once that run is completed. No other quest requires it.
+
 ---
 
 ## Test Quests (5 total, Index 1000000-1000004)
@@ -563,6 +575,7 @@ test-2  Lottery Loving  (no prereqs)
 | SQ021 | In Room: Scenic View |
 | SQ998 | Aetheric Sextant + In Room: Slippery Pit |
 | SQ997 | Kami liquidated |
+| SQ900 | None (daily) |
 | SQ999 | Time-gated + Kami liquidated (`Defunct`) |
 | TTX01 | Missed Mina (`Defunct`) |
 
@@ -571,7 +584,7 @@ test-2  Lottery Loving  (no prereqs)
 MSQ006, MSQ076, MSQ079, MSQ086, MSQ095, MSQ097, MSQ098, MSQ099, MSQ103,
 MSQ109, MIN016 (feeds into MSQ032 but is itself a dead end in the MIN line),
 SQ001, SQ002, SQ004, SQ005, SQ006, SQ008, SQ009, SQ011, SQ013, SQ014,
-SQ016, SQ018, SQ020, SQ022, SQ997, SQ998, SQ999, TTX01.
+SQ016, SQ018, SQ020, SQ022, SQ900, SQ997, SQ998, SQ999, TTX01.
 
 ### Longest Chain
 
