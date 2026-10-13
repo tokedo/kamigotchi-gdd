@@ -9,5 +9,5 @@ Extracted from source code at commit `ffda3963`.
 
 - `mechanics/` — 53 mechanic files covering all game systems with formulas,
   configs, and source citations
-- `catalogs/` — complete game data: 179 items, 72 skills, 195 quests, 71 rooms,
+- `catalogs/` — complete game data: 180 items, 72 skills, 195 quests, 71 rooms,
   64 nodes, 135 traits, 41 recipes, 3 factions, 2 NPCs, 18 shop listings

@@ -1,13 +1,13 @@
 # Items Catalog
 
 > Source: `packages/contracts/deployment/world/data/items/`
-> Commit: `ffda3963`
+> Commit: `50198c68`
 
 ## Files
 
 | File | Entries | Description |
 |---|---|---|
-| `items.csv` | 179 items | Complete item catalog with stats, effects, and descriptions |
+| `items.csv` | 180 items | Complete item catalog with stats, effects, and descriptions |
 | `effects.csv` | 93 effects | Item effect definitions (what items do when used/equipped) |
 | `droptables.csv` | 6 tables | Weighted loot pools for lootbox items |
 
@@ -24,7 +24,7 @@
   "Item Requirements" below).
 - **Name/description normalization**: the GDD strips decorative curly quotes
   (`“ ”`) from the display names of items 11002, 11211–11214, 11305, 21204,
-  and 100006, and normalizes curly apostrophes/punctuation in some
+  100006 and 100011, and normalizes curly apostrophes/punctuation in some
   descriptions. In-game names include the original characters (e.g.,
   `“Melkarth’s Heroic Awakening” Spell Card`).
 
@@ -76,7 +76,7 @@ target.
 | Equipment | 36 | Equipable pet-slot items with passive stat bonuses |
 | NFT | 14 | Passport items (equippable cosmetics) |
 | Potion | 11 | Consumables with targeted effects (Kami, Enemy_Kami, or Any_Kami) |
-| Key Item | 11 | Quest-related unique items (incl. Ring of Spirits, 22802) |
+| Key Item | 12 | Quest-related unique items (incl. Ring of Spirits, 22802) |
 | Misc | 7 | Currencies and special items (MUSU, Gacha Ticket, etc.) |
 | Lootbox | 6 | Openable containers that roll on a droptable |
 | Tool | 3 | Crafting tools (Grinder, Burner, Screwdriver) |
@@ -91,7 +91,7 @@ target.
 | Common | 21 | 1 |
 | Uncommon | 52 | 2 |
 | Rare | 66 | 3 |
-| Epic | 34 | 4 |
+| Epic | 35 | 4 |
 | Legendary | 6 | 5 |
 
 ## Index Ranges
@@ -113,7 +113,7 @@ target.
 | 21001–21206 | Account consumables | Lootboxes, Ice Cream, Spell Cards |
 | 23100–23102 | Tools | Spice Grinder, Portable Burner, Screwdriver |
 | 30001–30036 | Equipment (Pet Slot) | 12 sets of 3 tiers (Common/Uncommon/Rare) |
-| 100001–100010 | Key Items | Quest items (Astrolabe Disk, Data Chips, etc.) |
+| 100001–100011 | Key Items | Quest and co-op items (Astrolabe Disk, Data Chips, etc.) |
 
 ## effects.csv Schema
 
