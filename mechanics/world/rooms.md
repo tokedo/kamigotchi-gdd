@@ -166,7 +166,11 @@ Notable rooms:
 - **Room 1** (Misty Riverside) — starting room for all new accounts
 - **Room 11** (Temple by the Waterfall) — required location for every Kami
   naming/renaming; the **Kami** must be in room 11 and each naming consumes
-  1 Holy Dust (`KamiNameSystem.sol:16–17, 29–33`)
+  1 Holy Dust (`KamiNameSystem.sol:16–17, 29–33`). It is also the room of
+  community goal 14, "Tremors" (see
+  [goals.md](../progression/goals.md#goal-instances-at-the-pin)); in the
+  client its "small shrine" object opens that goal
+  (`packages/client/src/constants/rooms/11_waterfall.ts:29–33`)
 - **Room 66** (Marketplace) — trade room (delivery fee waived)
 - **Room 31** (Scrapyard Exit) — the crossroads fountain here opens the item
   pool / liquidity interface (see

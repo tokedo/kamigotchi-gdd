@@ -305,9 +305,13 @@ the harvest itself pays out on collect/stop (`LibHarvest.claim`). The victim
 Kami also gains XP equal to the salvage amount (`LibExperience.inc`), whatever
 the item. A zero salvage is a no-op (no item, no XP).
 
-> Deployed state (not derivable from source): the liquidation system carrying
-> this rule was redeployed on chain at block 34,199,935 (2026-10-08). Before
-> that block, salvage was always paid in MUSU, whatever the node yielded.
+> Deployed state: the liquidation system carrying this rule was redeployed on
+> chain at block 34,199,935 (2026-10-08, 15:06:53 UTC). Before that block,
+> salvage was always paid in MUSU, whatever the node yielded. The contracts do
+> not record this; the cut-over is stated in the client's battle log, which
+> labels salvage with the node's item from that time on and as MUSU before it
+> (`packages/client/src/app/components/modals/kami/battles/EventColumn.tsx:8–9,
+> 38–43`; timestamp `1791472013`).
 
 > Source: `LibKill.sol:50–56, 222–238`, `HarvestLiquidateSystem.sol:53–59`,
 > `LibHarvest.sol:97–99`, `Murder.t.sol:63–91` (`testMurderSalvageNodeItem`:
