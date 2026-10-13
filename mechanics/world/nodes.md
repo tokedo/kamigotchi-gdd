@@ -214,8 +214,7 @@ Yield: 49 nodes yield MUSU (item 1) and 15 yield VIPP (item 2) — nodes 6, 18,
 the harvest and the liquidation salvage on that node.
 
 Scavenge costs range from 100 to 1,000 points per tier: 100–500 on the
-surface, 200–1,000 on the cave and castle planes, where every node costs
-double its earlier (100–500) value. Higher costs sit on nodes with rarer
+surface, 200–1,000 on the cave and castle planes. Higher costs sit on nodes with rarer
 droptables — the six 1,000-point nodes are the essence nodes. Per-tier counts
 are in [`catalogs/rooms/README.md`](../../catalogs/rooms/README.md#scavenge-cost-tiers).
 

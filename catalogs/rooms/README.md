@@ -97,8 +97,7 @@ Drop probability: `P(item) = tier / sum(all tiers)`
 ## Scavenge Cost Tiers
 
 The 400, 600 and 1,000 tiers hold only cave- and castle-plane nodes (Z 3–4:
-15, 16, 18, 19, 67–90), and every node on those planes costs at least 200 —
-each is double the cost it had in earlier source (100–500).
+15, 16, 18, 19, 67–90), and every node on those planes costs at least 200.
 
 | Cost | Node Count | Typical Drops |
 |---|---|---|
