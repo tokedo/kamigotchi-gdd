@@ -19,8 +19,9 @@ and other players can **liquidate** (PvP raid) active harvests.
 
 Strictly, the harvest pays out the node's configured yield item
 (`LibNode.getItem`, applied in `LibHarvest.claim` — `LibHarvest.sol:97–99`),
-set per node via the `YieldIndex` column in deployment data: 53 nodes yield
-Musu (item 1) and 11 yield item 2 — see `catalogs/rooms/nodes.csv`.
+set per node via the `YieldIndex` column in deployment data: 49 nodes yield
+Musu (item 1) and 15 yield item 2 (VIPP) — see `catalogs/rooms/nodes.csv`.
+Liquidation salvage is paid in the same item (see [Liquidation](#liquidation-pvp)).
 
 ## Harvest Lifecycle
 

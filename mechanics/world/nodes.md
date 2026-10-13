@@ -1,7 +1,8 @@
 # Nodes (Sub-Locations)
 
 > Source: `packages/contracts/src/libraries/LibNode.sol` (L1–225),
-> `packages/contracts/deployment/world/data/rooms/nodes.csv`
+> `packages/contracts/deployment/world/data/rooms/nodes.csv`,
+> `packages/contracts/deployment/world/state/rooms/nodes.ts` (L1–195)
 
 ## Overview
 
@@ -55,9 +56,9 @@ affinity (e.g., `"NORMAL-EERIE"` is invalid). Compound affinities must be
 two typed affinities (e.g., `"EERIE-SCRAP"` is valid). The on-chain format
 is hyphen-separated — `isValidAffinity` splits on `"-"` (`LibNode.sol:164`),
 and deployment converts the CSV's comma format via `.replace(',', '-')`
-(`deployment/world/state/rooms/nodes.ts:11`).
+(`deployment/world/state/rooms/nodes.ts:16`).
 
-> Source: `LibNode.sol:163–167`, `nodes.ts:11`
+> Source: `LibNode.sol:163–167`, `nodes.ts:16`
 
 ## Node Bonuses
 
@@ -95,7 +96,7 @@ Deleting a node removes its whole bonus set via `regRemoveByAnchor`
 >   **`💥 Node Effects`** column, but it is **empty on all 64 rows**, and the
 >   node initialiser never reads it — `initNode` consumes only `Index`,
 >   `YieldIndex`, `Name`, `Affinity`, and separately `Level Limit` and
->   `Scav Cost` (`deployment/world/state/rooms/nodes.ts:6–19, 44–47`).
+>   `Scav Cost` (`deployment/world/state/rooms/nodes.ts:11–24, 49–52`).
 > - The admin helper `api.node.bonus.add` exists
 >   (`deployment/world/api/nodes.ts:35–42, 102–104`) but has **zero callers** anywhere
 >   in the repo at the pin.
@@ -115,21 +116,63 @@ Deleting a node removes its whole bonus set via `regRemoveByAnchor`
 > cells are empty like every other row.
 
 > Source: `deployment/world/data/rooms/nodes.csv` (header + all 64 rows),
-> `deployment/world/state/rooms/nodes.ts:6–19, 34–51`,
+> `deployment/world/state/rooms/nodes.ts:11–24, 39–56`,
 > `deployment/world/api/nodes.ts:35–42, 99–112`,
 > `_NodeRegistrySystem.sol:48–54`, `LibNode.sol:72–88`
 
 ## Node Requirements
 
 Nodes can have **conditional requirements** that a Kami (or its account) must
-meet to start harvesting. Checked via `LibConditional.check()`.
+meet to start harvesting. Checked via `LibConditional.check()` when a harvest
+**starts** (`HarvestStartSystem.sol:44`) — a Kami that fails reverts
+`"node reqs not met"`; nothing re-checks a harvest already running.
 
-Requirements are anchored to: `keccak256("node.requirement", nodeIndex)`
+Requirements are anchored to: `keccak256(abi.encodePacked("node.requirement",
+nodeIndex))` (`LibNode.genReqAnchor`). They are written only by the
+admin-gated `_NodeRegistrySystem.addRequirement`; the only removal path is
+deleting the whole node (`LibNode.remove` drops every requirement under the
+anchor).
 
-Common requirement types from node data:
-- Level limits (e.g., max level 15 for some starter nodes)
+### Level caps from node data
 
-> Source: `LibNode.sol:91–99, 142–156`
+The only requirement the deployment scripts write is a **level cap**: a node's
+`Level Limit` cell becomes `LEVEL` / `CURR_MAX` / value = the limit / for
+`KAMI` (`addRequirement`, "hardcoded to only allow max levels"). At the pin
+14 nodes carry one:
+
+| Max level | Nodes |
+|---|---|
+| 15 | 1 Misty Riverside, 2 Tunnel of Trees, 3 Torii Gate, 29 Misty Forest Path, 30 Scrapyard Entrance, 55 Shady Path |
+| 35 | 31 Scrapyard Exit, 35 Elder Path, 36 Parting Path, 47 Scrap Paths, 50 Ancient Forest Entrance, 56 Butterfly Forest, 57 River Crossing, 59 Black Pool |
+
+The other 50 nodes have no cap. See
+[`catalogs/rooms/nodes.csv`](../../catalogs/rooms/nodes.csv).
+
+Caps reach the chain two ways:
+
+- **At node creation** — `initNodes` adds the cap right after `initNode`
+  whenever `Level Limit` is not empty.
+- **On a live node** — `addNodeRequirements(indices)` (world-state command
+  `nodes.addRequirements`) adds the CSV's cap **without re-creating the node**,
+  so harvests in progress are untouched (no delete/re-init as in
+  `reviseNodes`). For each given index it skips nodes absent from the CSV or
+  with an empty `Level Limit`, computes the anchor
+  `solidityPackedKeccak256(['string','uint32'], ['node.requirement', index])`
+  — mirroring `LibNode.genReqAnchor` — and **skips the node if any entity
+  already carries that anchor on chain** (`getEntitiesWithValue` on the anchor
+  component). It is **add-only**: there is no admin call that removes a single
+  requirement, so an existing cap is never replaced or raised by this helper.
+
+> ⚠️ UNCERTAIN: the helper only adds; whether a given live node already
+> carried a cap before it was run is chain state, not source. In particular
+> the eight level-35 caps are in the CSV at the pin, but which of those nodes
+> carry the cap on chain depends on whether the helper (or a node re-create)
+> was run for them.
+
+> Source: `LibNode.sol:91–99, 101–121, 142–156, 207–209, 222–224`,
+> `_NodeRegistrySystem.sol:59–80`, `HarvestStartSystem.sol:44`,
+> `deployment/world/state/rooms/nodes.ts:30–57, 145–195`,
+> `deployment/world/world.ts:160–161`
 
 ## Scavenging Integration
 
@@ -161,11 +204,19 @@ distribution:
 | Affinity | Count | Examples |
 |---|---|---|
 | Normal | 19 | Tunnel of Trees, Torii Gate, Forest paths |
-| Insect | 15 | Forest: Insect Node, Cave Crossroads, Centipedes |
-| Eerie | 14 | Misty Riverside, Labs Entrance, Blooming Tree |
+| Insect | 13 | Forest: Insect Node, Cave Crossroads, Centipedes |
+| Eerie | 13 | Misty Riverside, Labs Entrance, Blooming Tree |
 | Scrap | 12 | Scrap Confluence, Scrapyard Entrance, Deeper Into Scrap |
-| Compound | 4 | Techno Temple (Eerie-Scrap), Temple of the Wheel (Eerie-Scrap), Hatch to Nowhere (Insect-Scrap), Guardian Skull (Eerie-Insect) |
+| Compound | 7 | Forest: Old Growth 9 (Insect-Eerie), Techno Temple 16 (Eerie-Scrap), Temple of the Wheel 19 (Eerie-Scrap), Trash-Strewn Graves 26 (Eerie-Scrap), Scrap-Littered Undergrowth 51 (Scrap-Insect), Hatch to Nowhere 72 (Insect-Scrap), Guardian Skull 86 (Eerie-Insect) |
 
-Scavenge costs range from 100 to 500, with higher costs on more rewarding nodes.
+Yield: 49 nodes yield MUSU (item 1) and 15 yield VIPP (item 2) — nodes 6, 18,
+48, 49, 52, 58, 60, 61, 62, 65, 73, 75, 79, 83 and 88. The same item pays out
+the harvest and the liquidation salvage on that node.
 
-> Source: `data/rooms/nodes.csv`
+Scavenge costs range from 100 to 1,000 points per tier: 100–500 on the
+surface, 200–1,000 on the cave and castle planes, where every node costs
+double its earlier (100–500) value. Higher costs sit on nodes with rarer
+droptables — the six 1,000-point nodes are the essence nodes. Per-tier counts
+are in [`catalogs/rooms/README.md`](../../catalogs/rooms/README.md#scavenge-cost-tiers).
+
+> Source: `data/rooms/nodes.csv` (all 64 rows)

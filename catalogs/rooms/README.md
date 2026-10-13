@@ -1,7 +1,7 @@
 # Rooms Catalog
 
 > Source: `packages/contracts/deployment/world/data/rooms/`
-> Commit: `8302734d`
+> Commit: `50198c68`
 
 ## Files
 
@@ -9,7 +9,7 @@
 |---|---|---|
 | `rooms.csv` | 71 rooms | Room locations, coordinates, exits, lore text |
 | `nodes.csv` | 64 nodes | Harvest/scavenge nodes per room with affinity and drops |
-| `scavenge-droptables.csv` | 50 tables | Weighted loot pools for scavenging (with resolved item names) |
+| `scavenge-droptables.csv` | 54 tables | Weighted loot pools for scavenging (with resolved item names) |
 | `gates.csv` | 11 gates | Room access conditions (extracted from `deployment/world/state/rooms/gates.ts`) |
 
 ## rooms.csv Schema
@@ -34,13 +34,13 @@
 | Status | enum | `In Game` |
 | Drops | string | Droptable name (references `scavenge-droptables.csv`) |
 | Affinity | enum | `Normal`, `Eerie`, `Insect`, `Scrap`, or multi (e.g., `Eerie, Scrap`) |
-| Level Limit | uint32 | Max kami level for harvesting at this node (empty = no limit) |
-| YieldIndex | uint32 | Base yield item index: 1 = MUSU (53 nodes) or 2 = VIPP (11 nodes, e.g., Cave Crossroads 18, Scrap Trees 60, Treasure Hoard 88) |
-| Scav Cost | uint32 | Scavenge bar point cost (100–500) |
+| Level Limit | uint32 | Max kami level for harvesting at this node (empty = no limit): 15 on 6 nodes (1, 2, 3, 29, 30, 55), 35 on 8 nodes (31, 35, 36, 47, 50, 56, 57, 59) |
+| YieldIndex | uint32 | Base yield item index: 1 = MUSU (49 nodes) or 2 = VIPP (15 nodes: 6, 18, 48, 49, 52, 58, 60, 61, 62, 65, 73, 75, 79, 83, 88 — e.g., Labs Entrance 6, Cave Crossroads 18, Scrap Trees 60, Treasure Hoard 88) |
+| Scav Cost | uint32 | Scavenge bar point cost (100–1,000) |
 
 The source CSV carries one further column, **`💥 Node Effects`**, which is
 dropped here: it is **empty on all 64 source rows** and is never read by the
-node initialiser (`deployment/world/state/rooms/nodes.ts:6–19, 44–47`).
+node initialiser (`deployment/world/state/rooms/nodes.ts:11–24, 49–52`).
 
 ### No per-node bonus catalog
 
@@ -89,19 +89,26 @@ Drop probability: `P(item) = tier / sum(all tiers)`
 | Affinity | Node Count | Description |
 |---|---|---|
 | Normal | 19 | No elemental bonus |
-| Insect | 15 | Bug elemental |
-| Eerie | 14 | Ghost/spirit elemental |
+| Insect | 13 | Bug elemental |
+| Eerie | 13 | Ghost/spirit elemental |
 | Scrap | 12 | Metal/junk elemental |
-| Dual affinity | 4 | Eerie+Scrap (2), Insect+Scrap (1), Eerie+Insect (1) |
+| Dual affinity | 7 | Eerie+Scrap (3: nodes 16, 19, 26), Insect+Eerie (2: nodes 9, 86), Insect+Scrap (2: nodes 51, 72) |
 
 ## Scavenge Cost Tiers
 
+The 400, 600 and 1,000 tiers hold only cave- and castle-plane nodes (Z 3–4:
+15, 16, 18, 19, 67–90), and every node on those planes costs at least 200 —
+each is double the cost it had in earlier source (100–500).
+
 | Cost | Node Count | Typical Drops |
 |---|---|---|
-| 100 | 18 | Basic materials (sticks, stones, scrap) |
-| 200 | 26 | Intermediate (cones, daffodils, resin, pansy) |
-| 300 | 12 | Advanced (mint, amber, ooze, coins) |
-| 500 | 8 | Premium (essences, screwdriver, rename dust) |
+| 100 | 11 | Surface basics (sticks, stones, bottles, scrap; some cheeseburger, resin or holy dust) |
+| 200 | 19 | Forest and path nodes (cones, poppy, resin, daffodil, holy dust), Black Pool 59, and the cheapest cave nodes (Temple Cave 15, Still Stream 70, Thriving Mushrooms 77, Abandoned Campsite 79, Canyon Bridge 83) |
+| 300 | 9 | Surface nodes with rarer drops (golden apple, honeydew scale, mint, red amber, glass jar) |
+| 400 | 12 | Mid cave and castle nodes (bone chunks, stems, butts, pipes; pansy, honeydew scale, candyfloss, golden apple, coins) |
+| 500 | 2 | Scrap Confluence 12, Scrap Trees 60 (screwdriver) |
+| 600 | 5 | Temple of the Wheel 19, Broken Tube 73, Sacrarium 87, Treasure Hoard 88, Trophies of the Hunt 89 |
+| 1,000 | 6 | The six essence nodes (Techno Temple 16, Lotus Pool 69, Hatch to Nowhere 72, Fungus Garden 76, Geometric Cliffs 82, Guardian Skull 86) |
 
 ## Statistics
 
@@ -110,7 +117,7 @@ Drop probability: `P(item) = tier / sum(all tiers)`
 - **Rooms with nodes**: 64 (7 rooms have no harvest node, counting the deadzone)
 - **In Game**: 71 rooms / 64 nodes
 - **Rooms with special exits**: 14
-- **Unique droptables**: 50 defined, but only 49 referenced by nodes — the
+- **Unique droptables**: 54 defined, but only 53 referenced by nodes — the
   `Bottle Scrap Burger` table is orphaned (referenced by no node; same in source)
 - **Missing exit targets**: Rooms 20, 24, 28 are referenced as exits but not defined in the CSV
 - **Name normalization**: room 85 is stored here as `Giant's Palm` (straight

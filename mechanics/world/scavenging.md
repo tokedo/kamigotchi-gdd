@@ -103,9 +103,15 @@ From node data, scavenge costs (tier costs) vary by node:
 | Cost | Node Examples |
 |---|---|
 | 100 | Misty Riverside, Tunnel of Trees, starter nodes |
-| 200 | Forest paths, cave rooms, mid-tier nodes |
-| 300 | Deeper Forest Path, Airplane Crash, advanced nodes |
-| 500 | Scrap Confluence, Techno Temple, premium nodes |
+| 200 | Forest paths, Black Pool, the cheapest cave nodes (Temple Cave, Still Stream) |
+| 300 | Labs Entrance, Deeper Forest Path, Airplane Crash, advanced surface nodes |
+| 400 | Cave Crossroads, Boulder Tunnel, Giant's Palm, mid cave nodes |
+| 500 | Scrap Confluence, Scrap Trees |
+| 600 | Temple of the Wheel, Sacrarium, Treasure Hoard |
+| 1,000 | Techno Temple, Lotus Pool, Guardian Skull — the six essence nodes |
+
+Cave- and castle-plane nodes (15, 16, 18, 19, 67–90) all cost 200 or more;
+they hold every 400-, 600- and 1,000-point bar.
 
 Higher scavenge costs mean more harvesting is needed per reward tier, but
 these nodes typically have rarer reward droptables.
