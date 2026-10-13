@@ -60,7 +60,7 @@ A Kami's cooldown is read by exactly these entrypoints, all of which revert
 | Harvest start | the Kami starting | `HarvestStartSystem.sol:36` |
 | Harvest collect | the harvesting Kami | `HarvestCollectSystem.sol:32` |
 | Harvest stop | the harvesting Kami | `HarvestStopSystem.sol:34` |
-| Liquidation | the **killer** (not the victim) | `HarvestLiquidateSystem.sol:32` |
+| Liquidation | the **killer** (not the victim) | `HarvestLiquidateSystem.sol:33` |
 | Item use on a Kami (feeding, potions) | the target Kami | `KamiUseItemSystem.sol:28` |
 
 The batched `executeAllowFailure` variants of collect and stop skip a Kami on

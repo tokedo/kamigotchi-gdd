@@ -132,7 +132,7 @@ the 2,222 seeded Kamis (plus any later top-ups) are what mint claims draw down.
 
 > ⚠️ The 2,222 figure is the seed the **deployment script** passes; it is not
 > asserted on chain, and the pool can be topped up afterwards at any size via
-> `mintToGachaPool` (`gacha.ts:14–21`, exposed as `world.ts:99`) — but only
+> `mintToGachaPool` (`gacha.ts:14–21`, exposed as `world.ts:101`) — but only
 > while headroom remains, since the batch minter is capped too. Unrevealed mint
 > commits made with headroom leave their new Kami resident in the pool until
 > revealed.

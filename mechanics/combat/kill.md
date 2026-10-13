@@ -228,7 +228,7 @@ recoil  = (karma + nudge) × strain × boost / 10^(config[1] + config[3] + confi
 Where:
 - `strain` = `LibKami.calcStrain(killerID, spoils)` — the strain the **killer**
   would incur harvesting the **spoils taken from this kill**
-  (`HarvestLiquidateSystem.sol:62`). Recoil scales with the loot taken, not
+  (`HarvestLiquidateSystem.sol:63`). Recoil scales with the loot taken, not
   with the attacker's own harvest output
 - `karma` = Gaussian CDF multiplier (see [Karma](#karma-recoil-multiplier))
 - `nudge` = affinity-based efficacy (see [Recoil Efficacy](#recoil-efficacy)),
@@ -276,7 +276,7 @@ salvage = ⌊bounty × ratio / precision⌋
 > yields `ratio` 1010–1990. The clamp at `LibKill.sol:236` does not fire
 > (`1010/1000 = 1`, not `> 1`), so `salvage = ⌊bounty × ratio / 1000⌋`, which
 > **exceeds** the bounty. The subtraction `bounty - salvage` at
-> `HarvestLiquidateSystem.sol:58` then underflows under Solidity ≥0.8 checked
+> `HarvestLiquidateSystem.sol:59` then underflows under Solidity ≥0.8 checked
 > arithmetic (`LibKill.sol:2`, `HarvestLiquidateSystem.sol:2`) and the whole
 > liquidation **reverts** — victims in this Power band are unliquidatable.
 >
@@ -384,7 +384,7 @@ The killer's account receives **1 Obol** (item index `OBOL_INDEX`) per kill.
 | Victim's harvest must be ACTIVE | `"harvest inactive"` |
 | Victim HP must be below threshold | `"kami lacks violence (weak)"` |
 
-> Source: `HarvestLiquidateSystem.sol:28–50`, `Murder.t.sol`, `HiredHitman.t.sol`
+> Source: `HarvestLiquidateSystem.sol:29–51`, `Murder.t.sol`, `HiredHitman.t.sol`
 
 ## Hired Hitman (Quest Integration)
 

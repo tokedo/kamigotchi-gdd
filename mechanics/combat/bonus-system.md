@@ -127,7 +127,7 @@ item systems pass `1` regardless (`KamiUseItemSystem.sol:42`,
 > Every cooldown-reset path calls `resetUponCooldownSet`: harvest start
 > (`HarvestStartSystem.sol:54`), collect (`HarvestCollectSystem.sol:89`), stop
 > (`HarvestStopSystem.sol:99`), and liquidation
-> (`HarvestLiquidateSystem.sol:81`). **Energy Drink**'s `STND_COOLDOWN_SHIFT`
+> (`HarvestLiquidateSystem.sol:82`). **Energy Drink**'s `STND_COOLDOWN_SHIFT`
 > −30 buff is the one deployed bonus that uses this terminator
 > (`deployment/world/data/items/allos.csv:11`), so it lasts until the Kami's
 > next cooldown is set rather than until its next harvest action. Item 11409
@@ -164,8 +164,8 @@ resetUponLiquidation(holder)  → clears UPON_LIQUIDATION  + UPON_KILL_OR_KILLED
 
 | Side | Resetters called | Line |
 |---|---|---|
-| Killer | `resetUponLiquidation`, then `resetUponCooldownSet` | `HarvestLiquidateSystem.sol:79, 81` |
-| Victim | `resetUponHarvestStop`, then `resetUponDeath` | `HarvestLiquidateSystem.sol:86–87` |
+| Killer | `resetUponLiquidation`, then `resetUponCooldownSet` | `HarvestLiquidateSystem.sol:80, 82` |
+| Victim | `resetUponHarvestStop`, then `resetUponDeath` | `HarvestLiquidateSystem.sol:87–88` |
 
 Consequences worth stating plainly:
 
@@ -187,7 +187,7 @@ strictly **one-shot and non-cumulative per source**: a second dose before the
 trigger fires adds nothing, and the first dose persists indefinitely until its
 specific trigger occurs.
 
-> Source: `LibBonus.sol:324–334`, `HarvestLiquidateSystem.sol:76–87`,
+> Source: `LibBonus.sol:324–334`, `HarvestLiquidateSystem.sol:77–88`,
 > `LibSacrifice.sol:102–114`, `LibKami.sol:76–79`
 
 ### `BYPASS_BONUS_RESET` (item flag)

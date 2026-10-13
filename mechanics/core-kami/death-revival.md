@@ -2,7 +2,7 @@
 
 > Source: `packages/contracts/src/libraries/LibKami.sol` (L76–79),
 > `packages/contracts/src/systems/KamiOnyxReviveSystem.sol` (L1–49),
-> `packages/contracts/src/systems/HarvestLiquidateSystem.sol` (L84),
+> `packages/contracts/src/systems/HarvestLiquidateSystem.sol` (L85),
 > `packages/contracts/src/libraries/LibSacrifice.sol` (L110),
 > `packages/contracts/src/systems/KamiUseItemSystem.sol` (L19–52)
 
@@ -33,7 +33,7 @@ function kill(components, id):
 `LibKami.kill()` has exactly **two call sites** — these are the only ways a Kami
 dies:
 - **Liquidation** — another player's Kami liquidates it while harvesting
-  (`HarvestLiquidateSystem.sol:84`; see combat mechanics)
+  (`HarvestLiquidateSystem.sol:85`; see combat mechanics)
 - **Sacrifice** — voluntary permanent death; the NFT is also sent to the burn
   address (`LibSacrifice.sol:110`; see sacrifice mechanics)
 

@@ -352,9 +352,9 @@ One harvesting Kami can raid another's active harvest if they share the same nod
 ### Requirements
 
 1. Both Kamis must be `HARVESTING` on the **same node**
-2. The victim's harvest must be `ACTIVE` (`HarvestLiquidateSystem.sol:33`)
+2. The victim's harvest must be `ACTIVE` (`HarvestLiquidateSystem.sol:34`)
 3. The killer's account must be in the node's room (`LibRoom.sharesRoom`,
-   `HarvestLiquidateSystem.sol:43`)
+   `HarvestLiquidateSystem.sol:44`)
 4. Killer must pass `LibKill.isLiquidatableBy()` — violence threshold check
 5. Killer must be healthy and off cooldown
 
@@ -376,19 +376,19 @@ One harvesting Kami can raid another's active harvest if they share the same nod
    `strain = LibKami.calcStrain(killerID, spoils)` — the killer's would-be
    strain on the stolen spoils — then
    `recoil = LibKill.calcRecoil(victimID, killerID, strain)`
-   (`HarvestLiquidateSystem.sol:62–63`); karma is computed inside `calcRecoil`
+   (`HarvestLiquidateSystem.sol:63–64`); karma is computed inside `calcRecoil`
    via `calcKarma` (`LibKill.sol:202–220`; `calcKarma` at `LibKill.sol:165–179`)
 5. **Killer reward** — the killer's account receives 1 Obol
    (`LibKill.rewardKiller`, `LibKill.sol:65–68`, called at
-   `HarvestLiquidateSystem.sol:78`)
+   `HarvestLiquidateSystem.sol:79`)
 6. Killer's cooldown resets (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink), and `UPON_LIQUIDATION` bonuses reset
 7. **Victim dies** — state → `DEAD`, HP → 0, harvest stops, all bonuses reset
 8. **Score** — the killer's account `LIQUIDATE` score increments by 1
-   (`HarvestLiquidateSystem.sol:90`)
+   (`HarvestLiquidateSystem.sol:91`)
 
 The victim's **unsalvaged, unspoiled bounty is destroyed** (not transferred).
 
-> Source: `HarvestLiquidateSystem.sol:24–94`, `LibKill.sol:51–68`
+> Source: `HarvestLiquidateSystem.sol:25–95`, `LibKill.sol:50–68`
 
 > The detailed liquidation formulas (salvage, spoils, karma, recoil) are
 > documented in `mechanics/combat/kill.md`.

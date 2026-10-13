@@ -105,7 +105,7 @@ The only `TOTAL_SPENT` writer is `ListingBuySystem.sol:50` — `LibTrade` makes
 no `LibScore` calls (P2P trades are not scored).
 
 > Source: `HarvestCollectSystem.sol:100`, `HarvestStopSystem.sol:110`,
-> `HarvestLiquidateSystem.sol:90`, `ListingBuySystem.sol:50`,
+> `HarvestLiquidateSystem.sol:91`, `ListingBuySystem.sol:50`,
 > `LibVIP.sol:36`, `LibFaction.sol:79, 85`, `LibGoal.sol:277`
 
 ## Operations
