@@ -14,11 +14,16 @@ rewards at regular intervals.
 
 ## Requirements
 
+- Signed by the account's **operator** (`LibAccount.getByOperator`)
+- Kami must exist (`"kami does not exist"`)
 - Kami must be owned by the caller's account
-- Kami must be in `RESTING` state
+- Kami must **not be soulbound** (`"kami is soulbound"`) — a Kami bought from
+  the [Newbie Vendor](../marketplace/newbie-vendor.md#what-the-3-day-soulbind-blocks)
+  cannot be sacrificed for 3 days
+- Kami must be in `RESTING` state (`"kami must be resting"`)
 - One Kami per transaction
 
-> Source: `KamiSacrificeCommitSystem.sol:36–53`
+> Source: `KamiSacrificeCommitSystem.sol:38–56` (header comment `:20–24`)
 
 ## Sacrifice Process
 
@@ -26,7 +31,9 @@ rewards at regular intervals.
 
 `KamiSacrificeCommitSystem.execute(kamiIndex)`:
 
-1. Verify ownership and RESTING state
+1. Verify, in this order: the Kami exists, it is owned by the caller's
+   account, it is not soulbound (`LibSoulbound.verify`,
+   `KamiSacrificeCommitSystem.sol:46`), and it is `RESTING`
 2. Sync Kami state (update health, etc.)
 3. Increment the account's **pity counter**
 4. Select which droptable to use based on pity count

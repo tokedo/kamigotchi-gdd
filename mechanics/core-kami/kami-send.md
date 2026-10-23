@@ -20,14 +20,18 @@ bypasses the marketplace.
 3. Verify sender is not sending to themselves
 4. For each Kami:
    a. Verify Kami is owned by sender and in `RESTING` or `LISTED` state
-   b. If Kami is `LISTED`, cancel all marketplace listings
-   c. **Force-unequip all items** back to the sender's inventory
+   b. Verify the Kami is **not soulbound** (`LibSoulbound.verify`,
+      `"kami is soulbound"`, `KamiSendSystem.sol:59`) — a Kami bought from the
+      [Newbie Vendor](../marketplace/newbie-vendor.md#what-the-3-day-soulbind-blocks)
+      cannot be sent for 3 days
+   c. If Kami is `LISTED`, cancel all marketplace listings
+   d. **Force-unequip all items** back to the sender's inventory
       (`LibEquipment.unequipAll`) — equipment stays with the sender, not the recipient
-   d. Reassign ownership to target account
-   e. Set state to `RESTING`
-   f. Apply **purchase cooldown** (default: 1 hour, from
+   e. Reassign ownership to target account
+   f. Set state to `RESTING`
+   g. Apply **purchase cooldown** (default: 1 hour, from
       `KAMI_MARKET_PURCHASE_COOLDOWN` config)
-   g. Log `KAMI_SEND` and emit event
+   h. Log `KAMI_SEND` and emit event
 
 Supports batch sending of multiple Kamis in one transaction. See
 [Equipment → Force-Unequip on Ownership Change](../economy/equipment.md#force-unequip-on-ownership-change).

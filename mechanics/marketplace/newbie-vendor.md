@@ -65,8 +65,8 @@ shrink.
 3. Verify `msg.value >= price`
 4. Set `NEWBIE_VENDOR_PURCHASED` flag on account
 5. Verify Kami is in the current display window; remove from pool
-6. **Soulbind** the purchased Kami for **3 days** (prevents listing, unstaking,
-   or accepting offers)
+6. **Soulbind** the purchased Kami for **3 days** — see
+   [What the 3-Day Soulbind Blocks](#what-the-3-day-soulbind-blocks)
 7. Verify vendor account owns the Kami and it is `RESTING`
 8. Reassign Kami ownership to buyer
 9. Send ETH to the **marketplace fee recipient** (`KAMI_MARKET_FEE_RECIPIENT`),
@@ -82,6 +82,28 @@ listed or sent from inside that callback.
 
 > Source: `NewbieVendorBuySystem.sol:50–88` (order),
 > `:73–77` (soulbind-before-transfer comment), `:143–147` (refund)
+
+### What the 3-Day Soulbind Blocks
+
+`LibSoulbound.set(components, kamiID, 3 days)` stores an expiry timestamp
+(see [soulbound.md](../utility/soulbound.md)). Until it passes, each of these
+actions reverts `"kami is soulbound"` for that Kami:
+
+| Action | System | Check |
+|---|---|---|
+| Listing it on the Kami marketplace | `KamiMarketListSystem` | `KamiMarketListSystem.sol:33` |
+| Selling it into a specific or collection offer | `KamiMarketAcceptOfferSystem` | `KamiMarketAcceptOfferSystem.sol:66, 141` |
+| Bridging it out to its ERC-721 (unstaking) | `Kami721UnstakeSystem` | `Kami721UnstakeSystem.sol:44` |
+| Sending it to another player | `KamiSendSystem` | `KamiSendSystem.sol:59` |
+| Rerolling it in the gacha | `KamiGachaRerollSystem` | `KamiGachaRerollSystem.sol:27` |
+| Sacrificing it | `KamiSacrificeCommitSystem` | `KamiSacrificeCommitSystem.sol:46` |
+
+Nothing else checks the soulbind — these are every `LibSoulbound.verify` call
+at the pin, so a bound Kami harvests, eats, levels and equips as usual. And
+nothing else sets it — the vendor purchase
+(`NewbieVendorBuySystem.sol:77`) is the only `LibSoulbound.set` call at the
+pin, so a Kami obtained any other way (gacha mint or reroll, a marketplace
+purchase or offer, a send, a bridge-in) is never soulbound.
 
 ## Price Calculation
 

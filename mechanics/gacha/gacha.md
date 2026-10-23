@@ -259,19 +259,23 @@ receives random Kamis from the pool (not necessarily the ones just created).
    `LibArray.sortAndVerifyNoRepeats` guard used by reveal, so the same Kami
    cannot be submitted twice in one call
 3. Verify all Kamis are owned by caller and in `RESTING` state
-4. **Pool floor check** — `getNumFree() > 0`, else `"gacha pool exhausted"`
+4. Verify no Kami is **soulbound** — `LibSoulbound.verify` per Kami
+   (`"kami is soulbound"`, `KamiGachaRerollSystem.sol:27`); a Kami bought from
+   the [Newbie Vendor](../marketplace/newbie-vendor.md#what-the-3-day-soulbind-blocks)
+   cannot be rerolled for 3 days
+5. **Pool floor check** — `getNumFree() > 0`, else `"gacha pool exhausted"`
    (before the ticket burn: on an empty pool a reroll could only hand back
    the deposit)
-5. **Force-unequip all items** from each Kami back to the player's inventory
+6. **Force-unequip all items** from each Kami back to the player's inventory
    (`LibEquipment.unequipAll`) — equipment is recovered before the Kami leaves
    the player's ownership
-6. Extract previous reroll counts from the Kamis
-7. Deduct `kamiIDs.length` Reroll Tokens (item 11) from inventory
-8. **Deposit** the player's Kamis into the gacha pool (ownership → `GACHA_ID`)
-9. Create commits (same amount as Kamis deposited; added to
-   `GACHA_COMMITS_PENDING`)
-10. Store previous reroll counts on the commit entities
-11. Log reroll
+7. Extract previous reroll counts from the Kamis
+8. Deduct `kamiIDs.length` Reroll Tokens (item 11) from inventory
+9. **Deposit** the player's Kamis into the gacha pool (ownership → `GACHA_ID`)
+10. Create commits (same amount as Kamis deposited; added to
+    `GACHA_COMMITS_PENDING`)
+11. Store previous reroll counts on the commit entities
+12. Log reroll
 
 On reveal, the player receives the same number of random Kamis. Each received
 Kami's counter is set to the value carried on the commit plus 1 (see Reroll
