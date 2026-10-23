@@ -165,20 +165,33 @@ the account's **owner** wallet or by its **operator**; owner is checked first
 (`ItemTransferSystem.sol:21`). See
 [accounts.md → Who May Sign](../world/accounts.md#who-may-sign).
 
-1. Verify arrays match in length
-2. Verify all items are flagged as **transferable**
-3. Transfer items from sender to target account
-4. Deduct **transfer fee**: `15 MUSU per item type transferred`
+1. Resolve the sender's account (owner or operator, above)
+2. Verify arrays match in length (`"ItemTransfer: arrays length mismatch"`)
+3. **Verify the target is a registered account** —
+   `LibAccount.isAccount(targetID)`, i.e. the entity carries the `ACCOUNT`
+   shape (an account's ID is its owner address as a `uint256`); otherwise
+   revert `"ItemTransfer: target is not an account"`
+4. Verify all items are flagged as **transferable** (`"Transfer includes
+   untradeable item"`)
+5. Transfer items from sender to target account
+6. Deduct **transfer fee**: `15 MUSU per item type transferred`
 
-The fee is charged per distinct item type in the transfer, not per unit.
-Currency: MUSU (item index 1).
+The target check runs after the length check and before the transferability
+check (`ItemTransferSystem.sol:24–26`). Before upstream commit `04cb25f8` there
+was no target check: items sent to an arbitrary entity ID were credited to
+that ID, and lost if it was no account (deployed state: see
+[accounts.md → Who May Sign](../world/accounts.md#who-may-sign)).
+
+The fee is `indices.length × 15` — charged per entry in the `indices` array,
+not per unit. Currency: MUSU (item index 1).
 
 | Constant | Value | Description |
 |---|---|---|
 | `MUSU_INDEX` | 1 | MUSU currency item index |
 | `TRANSFER_FEE` | 15 | MUSU cost per item type transferred |
 
-> Source: `ItemTransferSystem.sol:15–38`, `LibInventory.sol:24–29`
+> Source: `ItemTransferSystem.sol:15–37`, `LibAccount.sol:164–166` (`isAccount`),
+> `LibInventory.sol:24–29, 319–323`
 
 ## Droptable Reveal
 

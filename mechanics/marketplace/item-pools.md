@@ -376,8 +376,11 @@ Creates the pool and atomically seeds it. Validation, in order:
 Then:
 
 7. **Pre-funding sweep** — because the pool ID is a precomputable hash, anyone
-   can send items to it *before* it exists. Any pre-existing balance on either
-   index is swept to the caller first. Reverting instead would let a 1-unit
+   can route items to it *before* it exists: a harvest tax accepts an
+   arbitrary recipient ID (`HarvestStartSystem` passes `taxerID` unchecked to
+   `LibTax.create`), whereas an item transfer requires a registered account as
+   target (see [item-usage.md → Transferring](../economy/item-usage.md#transferring)).
+   Any pre-existing balance on either index is swept to the caller first. Reverting instead would let a 1-unit
    deposit permanently brick the pair (there is no `donate`/`remove` path
    before creation), and seeding on top of it would launch the pool at a
    skewed price. Sweeping keeps the launch price at exactly the seeded ratio.
@@ -388,7 +391,9 @@ Then:
 
 Returns the pool ID.
 
-> Source: `_PoolRegistrySystem.sol:15–16` (constants), `:26–63`
+> Source: `_PoolRegistrySystem.sol:15–16` (constants), `:26–63` (the
+> pre-funding comment at `:41–47`), `HarvestStartSystem.sol:25, 51`,
+> `LibTax.sol:30–43`
 
 ### `donate(indexA, indexB, amtA, amtB)`
 
@@ -484,9 +489,10 @@ reserve-changing path**:
 Properties that follow from the source:
 
 - **`logSync` reads reserves itself** and never accepts them from the caller
-  (`LibPool.sol:303–336`). Reserves can be moved out of band —
-  `ItemTransferSystem` takes an arbitrary `targetID` and a pool ID is a
-  precomputable hash — so reading state means the next call self-corrects
+  (`LibPool.sol:303–336`). Reserves can be moved out of band — a harvest
+  tax accepts an arbitrary recipient ID and a pool ID is a precomputable hash
+  (`LibPool.sol:304–307`; item transfers cannot, since they require an
+  account target) — so reading state means the next call self-corrects
   instead of compounding the drift.
 - **Indices are sorted before emission.** `logSync` runs its arguments through
   the pure `LibPoolRegistry.sortIndices` (imported into `LibPool` under the
