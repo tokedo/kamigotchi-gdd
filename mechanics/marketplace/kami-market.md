@@ -8,15 +8,30 @@
 > `packages/contracts/src/systems/KamiMarketOfferSystem.sol` (L1–70),
 > `packages/contracts/src/systems/KamiMarketAcceptOfferSystem.sol` (L1–172),
 > `packages/contracts/src/systems/KamiMarketCancelSystem.sol` (L1–59),
-> `packages/contracts/src/tokens/KamiMarketVault.sol` (L1–49)
+> `packages/contracts/src/tokens/KamiMarketVault.sol` (L1–56)
 
 ## Overview
 
-The Kami marketplace is an on-chain **orderbook** for trading Kami NFTs. It
+The Kami marketplace is an on-chain **orderbook** for trading Kamis. It
 supports three order types: **listings** (sell for ETH), **specific offers**
 (buy a specific Kami for WETH), and **collection offers** (buy any Kami for
-WETH). The marketplace is non-custodial — Kamis stay in the seller's wallet
-during listings, and WETH stays in the buyer's wallet during offers.
+WETH). There is no escrow — a listed Kami stays in the seller's **account**,
+and WETH stays in the buyer's wallet during offers.
+
+**Kamis never leave the world.** Only in-world Kamis trade: listing requires
+`RESTING`, accepting an offer requires `RESTING` or `LISTED`, so an external
+(`721_EXTERNAL`) Kami can be neither listed nor sold. A sale reassigns the
+Kami's `IDOwnsKami` to the buyer's account — there is no ERC-721 transfer, so
+sellers need no Kami721 approval. See [Kami Ownership on a Sale](#kami-ownership-on-a-sale).
+
+**Signers:** buying a listing is signed by the buyer account's **owner**
+wallet, which pays the ETH (`KamiMarketBuySystem.sol:29`); listing, offering,
+accepting an offer and cancelling are signed by the **operator**. See
+[accounts.md → Who May Sign](../world/accounts.md#who-may-sign).
+
+> Source: `LibKamiMarket.sol:368–383` (`verifyKamiResting`,
+> `verifyKamiOwnedRestingOrListed`), `KamiMarketListSystem.sol:25–27`,
+> `KamiMarketAcceptOfferSystem.sol:55, 63, 121, 140`
 
 The marketplace can be globally enabled/disabled via the `KAMI_MARKET_ENABLED`
 config flag.
@@ -27,7 +42,7 @@ config flag.
 
 Sellers list a specific Kami at a fixed ETH price. The Kami is marked as
 `LISTED` state (prevents harvesting, bridging, etc.) but stays in the
-seller's wallet — no escrow.
+seller's account (`IDOwnsKami` unchanged) — no escrow.
 
 | Component | Description |
 |---|---|
@@ -159,13 +174,39 @@ All three fill paths (`fillOffer`, `fillCollectionOffer`, `fillListing`) call
 `unequipAll` before reassigning ownership — equipment never transfers with a
 sold Kami. See [Equipment → Force-Unequip on Ownership Change](../economy/equipment.md#force-unequip-on-ownership-change).
 
+WETH moves between **owner wallets**: the buyer address the vault pulls from
+and the seller address it pays are the two accounts' owners
+(`LibAccount.getOwner`), whichever address signed the offer or the
+acceptance — so the WETH approval must come from the buyer's owner wallet.
+
 Accept-offer validation now reverts with **custom errors**
 (`KamiMarketAcceptKamiMismatch`, `KamiMarketAcceptInvalidOrderType`,
 `KamiMarketAcceptEmptyBatch`) instead of string messages.
 
 All sales feed the TWAP oracle via `LibTWAP.poke(price)`.
 
-> Source: `KamiMarketAcceptOfferSystem.sol:50–171`, `LibKamiMarket.sol:130–193`
+> Source: `KamiMarketAcceptOfferSystem.sol:54–171`, `LibKamiMarket.sol:145–207`
+
+### Kami Ownership on a Sale
+
+The three fill functions in `LibKamiMarket` move the Kami entirely in-world:
+
+| Step | `fillListing` (buy) | `fillOffer` (specific) | `fillCollectionOffer` |
+|---|---|---|---|
+| Pre-check | Kami still `LISTED` and still owned by the seller's account (`IDOwnsKami`) | — (the system checked owned + `RESTING`/`LISTED` + not soulbound) | — (same) |
+| Open listings | — (the Kami is the listing) | cancelled if `LISTED` | cancelled if `LISTED` |
+| Equipment | `unequipAll` → seller | `unequipAll` → seller | `unequipAll` → seller |
+| Ownership | `IDOwnsKami` → buyer's account | `IDOwnsKami` → buyer's account | `IDOwnsKami` → buyer's account |
+| State | `RESTING` | `RESTING` | `RESTING` |
+| Cooldown | purchase cooldown | purchase cooldown | purchase cooldown |
+| Order | `FILLED` | `FILLED` | `Balance − 1`; `FILLED` at 0 |
+
+No fill path calls the ERC-721 contract, and none handles a `721_EXTERNAL`
+Kami (those cannot reach a fill — see [Overview](#overview)). The buyer
+receives the Kami `RESTING`, under the [purchase cooldown](#purchase-cooldown).
+
+> Source: `LibKamiMarket.sol:112–143` (`fillListing`), `:145–172`
+> (`fillOffer`), `:174–207` (`fillCollectionOffer`), `:263–277`
 
 ## Cancellation
 
@@ -276,22 +317,34 @@ does **not** block re-listing, sending or equipping it. See
 
 ## KamiMarketVault
 
-The `KamiMarketVault` is a persistent relay contract that handles WETH and
-Kami721 transfers. Buyers approve the vault to spend their WETH, and the vault
-executes transfers when called by authorized systems.
+The `KamiMarketVault` is a persistent relay contract for **WETH**. Buyers
+approve the vault to spend their WETH, and authorized systems call
+`transferWETH(from, to, amount)` when an offer is accepted.
+
+The contract also carries `transferKami` (an ERC-721 `transferFrom`) and a
+header comment saying sellers approve it for Kamis, but **no system calls
+`transferKami` at the pin** — sales reassign `IDOwnsKami` instead (see
+[Kami Ownership on a Sale](#kami-ownership-on-a-sale)), so sellers need no
+Kami721 approval. Upstream's `packages/contracts/docs/KamiMarketplace.md`,
+rewritten at `04cb25f8`, describes the same in-world model.
 
 The vault's address persists across system upgrades, meaning buyer approvals
-remain valid even when marketplace system contracts are redeployed.
+remain valid even when marketplace system contracts are redeployed; the owner
+re-authorizes each redeployed system (`authorizeCaller`).
 
-> Source: `KamiMarketVault.sol:1–49`
+> Source: `KamiMarketVault.sol:1–56` (`transferWETH` `:37–39`, unused
+> `transferKami` `:43–45`, `onlyAuthorized` `:25–28`, `authorizeCaller`
+> `:47–50`), `KamiMarketAcceptOfferSystem.sol:94–99, 160–164` (the only vault
+> calls)
 
 ## TWAP Integration
 
 Every marketplace sale (listing buy or offer acceptance) feeds the sale price
-into the TWAP oracle via `LibTWAP.poke(price)`. This price data is used by the
-[Newbie Vendor](newbie-vendor.md) to determine fair market pricing.
+into the TWAP oracle via `LibTWAP.poke(price)`. Nothing reads the accumulator
+back: the [Newbie Vendor](newbie-vendor.md#price-calculation) prices off the
+cheapest active listing, not the TWAP.
 
-> Source: `KamiMarketBuySystem.sol:65`, `KamiMarketAcceptOfferSystem.sol:100`
+> Source: `KamiMarketBuySystem.sol:65`, `KamiMarketAcceptOfferSystem.sol:103, 167`
 
 ## Logging
 

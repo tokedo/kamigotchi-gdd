@@ -137,7 +137,7 @@ the **previous owner / seller**.
 | Gacha reroll | `KamiGachaRerollSystem` | Depositing Kamis into the gacha pool |
 
 > Source: `LibEquipment.sol:232–255`, `KamiSendSystem.sol:63`,
-> `KamiMarketListSystem.sol:34`, `LibKamiMarket.sol:129, 158, 187`,
+> `KamiMarketListSystem.sol:34`, `LibKamiMarket.sol:134, 163, 192`,
 > `Kami721UnstakeSystem.sol:47`, `LibSacrifice.sol:85`,
 > `KamiGachaRerollSystem.sol:33`
 
