@@ -154,8 +154,9 @@ see [kami-send.md](../core-kami/kami-send.md)); `FriendRequestSystem` and
 > Deployed state (chain, not source): the ten systems changed by upstream
 > commit `04cb25f8` — the eight owner-or-operator systems above plus
 > `KamiSendSystem` and `KamiSacrificeCommitSystem` — were redeployed on chain
-> on 2026-10-21 between about 11:00 and 11:10 UTC (blocks
-> ≈34,757,700–34,758,400). Before that, the eight accepted the owner only.
+> on 2026-10-21 between about 11:00 and 11:25 UTC (the first player call to a
+> new address landed at block 34,758,394, the last call to an old one at
+> block 34,759,109). Before that, the eight accepted the owner only.
 
 > Source: `LibAccount.sol:179–191` (`verifyOperator`, `verifyOwner`),
 > `:253–279` (`getByOperator`, `getByOwner`, `getByOwnerOrOperator`); the
