@@ -228,7 +228,9 @@ flag). It:
 `KamiGachaMintSystem.execute(amount)`:
 
 1. Verify `amount <= 5` (`"too many mints"`)
-2. Resolve the account from the **owner** wallet
+2. Resolve the account — the account's owner wallet **or** its operator may
+   sign (`LibAccount.getByOwnerOrOperator`, `KamiGachaMintSystem.sol:28`; see
+   [accounts.md → Who May Sign](../world/accounts.md#who-may-sign))
 3. **Pool floor check** — `getNumFree() + getSupplyHeadroom() ≥ amount`, else
    `"gacha pool exhausted"`; runs before the ticket burn, so a refused mint
    keeps its tickets
@@ -248,23 +250,28 @@ receives random Kamis from the pool (not necessarily the ones just created).
 
 `KamiGachaRerollSystem.reroll(kamiIDs)`:
 
-1. **Sort and reject duplicates** in `kamiIDs` — the same
+1. Resolve the account — owner or operator
+   (`LibAccount.getByOwnerOrOperator`, `KamiGachaRerollSystem.sol:23`); a
+   sender that is neither reverts `"Account: no account detected"` from the
+   resolver itself (the system no longer carries a separate
+   `"no account detected"` check)
+2. **Sort and reject duplicates** in `kamiIDs` — the same
    `LibArray.sortAndVerifyNoRepeats` guard used by reveal, so the same Kami
    cannot be submitted twice in one call
-2. Verify all Kamis are owned by caller and in `RESTING` state
-3. **Pool floor check** — `getNumFree() > 0`, else `"gacha pool exhausted"`
+3. Verify all Kamis are owned by caller and in `RESTING` state
+4. **Pool floor check** — `getNumFree() > 0`, else `"gacha pool exhausted"`
    (before the ticket burn: on an empty pool a reroll could only hand back
    the deposit)
-4. **Force-unequip all items** from each Kami back to the player's inventory
+5. **Force-unequip all items** from each Kami back to the player's inventory
    (`LibEquipment.unequipAll`) — equipment is recovered before the Kami leaves
    the player's ownership
-5. Extract previous reroll counts from the Kamis
-6. Deduct `kamiIDs.length` Reroll Tokens (item 11) from inventory
-7. **Deposit** the player's Kamis into the gacha pool (ownership → `GACHA_ID`)
-8. Create commits (same amount as Kamis deposited; added to
+6. Extract previous reroll counts from the Kamis
+7. Deduct `kamiIDs.length` Reroll Tokens (item 11) from inventory
+8. **Deposit** the player's Kamis into the gacha pool (ownership → `GACHA_ID`)
+9. Create commits (same amount as Kamis deposited; added to
    `GACHA_COMMITS_PENDING`)
-9. Store previous reroll counts on the commit entities
-10. Log reroll
+10. Store previous reroll counts on the commit entities
+11. Log reroll
 
 On reveal, the player receives the same number of random Kamis. Each received
 Kami's counter is set to the value carried on the commit plus 1 (see Reroll

@@ -74,24 +74,27 @@ shop listings are floored while auctions are not. See
 
 `AuctionBuySystem.execute(itemIndex, amount)`:
 
-1. Verify amount > 0 and item exists
-2. Verify auction exists for this item
-3. Verify purchase won't exceed max supply: `balance + amount ≤ max`
-4. Verify auction has started: `block.timestamp ≥ startTs`
-5. Verify account meets any requirements (`LibConditional`)
-6. **Gacha-pool check (ticket auctions only)** — buying Gacha Tickets
+1. Resolve the buyer's account — the account's owner wallet **or** its
+   operator may sign (`LibAccount.getByOwnerOrOperator`; see
+   [accounts.md → Who May Sign](../world/accounts.md#who-may-sign))
+2. Verify amount > 0 and item exists
+3. Verify auction exists for this item
+4. Verify purchase won't exceed max supply: `balance + amount ≤ max`
+5. Verify auction has started: `block.timestamp ≥ startTs`
+6. Verify account meets any requirements (`LibConditional`)
+7. **Gacha-pool check (ticket auctions only)** — buying Gacha Tickets
    (item 10) requires `getNumFree() + getSupplyHeadroom() > 0`; buying Reroll
    Tokens (item 11) requires `getNumFree() > 0`; otherwise revert
    `"gacha pool exhausted"`. The check stops sales once nothing can be drawn
    but does not ration the amount bought — see
    [gacha.md → Supply Cap and Pool Drawdown](../gacha/gacha.md#supply-cap-and-pool-drawdown)
-7. Calculate cost via GDA formula
-8. Deduct payment from buyer's inventory (currency item)
-9. Add purchased items to buyer's inventory
-10. Increment auction balance (sales counter)
-11. Log purchase and emit `AUCTION_BUY` event
+8. Calculate cost via GDA formula
+9. Deduct payment from buyer's inventory (currency item)
+10. Add purchased items to buyer's inventory
+11. Increment auction balance (sales counter)
+12. Log purchase and emit `AUCTION_BUY` event
 
-> Source: `AuctionBuySystem.sol:20–56`
+> Source: `AuctionBuySystem.sol:20–56` (resolver at 23)
 
 ## Requirements
 

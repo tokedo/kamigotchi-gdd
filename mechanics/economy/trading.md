@@ -13,6 +13,12 @@ Create → Execute → Complete. A maker posts a trade offer (what they want to 
 and what they're selling), a taker fulfills it, and the maker confirms receipt.
 Trades can optionally target a specific taker.
 
+All four player entrypoints (create, execute, complete, cancel) resolve the
+caller with `LibAccount.getByOwnerOrOperator(msg.sender)`: the account's owner
+wallet **or** its operator may sign; an address that is neither reverts
+`"Account: no account detected"`. See
+[accounts.md → Who May Sign](../world/accounts.md#who-may-sign).
+
 ## Trade Entity Shape
 
 | Component | Description |
@@ -48,60 +54,74 @@ Trades are currently limited to:
 
 `TradeCreateSystem.execute(buyIndices, buyAmts, sellIndices, sellAmts, targetID)`:
 
-1. Verify maker has not exceeded `MAX_TRADES_PER_ACCOUNT`
-2. Verify trade structure (one item each side, one must be MUSU)
-3. Verify all items are tradable
-4. Deduct **creation fee** (MUSU)
-5. Deduct **delivery fee** (MUSU) — waived if maker is in the **Trade Room** (room 66)
-6. Create trade entity with state `PENDING`
-7. **Escrow sell-side items**: maker's items are transferred from their inventory
+1. Resolve the maker's account — owner or operator (`getByOwnerOrOperator`)
+2. Verify maker has not exceeded `MAX_TRADES_PER_ACCOUNT`
+   (`"Trade order limit reached"`)
+3. Verify trade structure (one item each side, one must be MUSU)
+4. Verify all items are tradable (`"Trade includes untradeable item"`)
+5. Deduct **creation fee** (MUSU)
+6. Deduct **delivery fee** (MUSU) — waived if maker is in the **Trade Room** (room 66)
+7. Create trade entity with state `PENDING`
+8. **Escrow sell-side items**: maker's items are transferred from their inventory
    to the trade entity's inventory
 
-> Source: `TradeCreateSystem.sol:15–54`, `LibTrade.sol:62–98, 358–368`
+> Source: `TradeCreateSystem.sol:15–54` (resolver at 24),
+> `LibTrade.sol:62–98, 277–313, 358–368`
 
 ### Step 2: Execute (Taker)
 
 `TradeExecuteSystem.execute(tradeID)`:
 
-1. Verify trade exists, is `PENDING`, caller is valid taker (not maker)
-2. If trade has a designated target, verify caller matches
-3. Deduct **delivery fee** from taker (waived in Trade Room)
-4. **Execute buy order**: transfer buy-side items from taker to trade entity
+1. Resolve the taker's account — owner or operator (`getByOwnerOrOperator`)
+2. Verify trade exists (`"not a trade"`) and is `PENDING`
+   (`"Trade is not PENDING"`)
+3. If the trade has a designated target, verify the caller is it
+   (`"Trade target mismatch"`)
+4. Verify the caller is not the maker (`"Trade cannot be executed by Maker"`)
+5. Deduct **delivery fee** from taker (waived in Trade Room)
+6. **Execute buy order**: transfer buy-side items from taker to trade entity
    (held in escrow). Log amounts for both parties.
-5. **Execute sell order**: compute the tax on each sell-side item, **burn** it
+7. **Execute sell order**: compute the tax on each sell-side item, **burn** it
    from the trade entity's escrow, and transfer the rest to the taker. Log
    amounts (pre-tax) and the taker's `TRADE_TAX`.
-6. Set trade state to `EXECUTED`, record taker ID
+8. Set trade state to `EXECUTED`, record taker ID
 
-> Source: `TradeExecuteSystem.sol:15–34`, `LibTrade.sol:104–153`
+> Source: `TradeExecuteSystem.sol:15–34` (resolver at 18),
+> `LibTrade.sol:104–153, 252–272, 298–301`
 
 ### Step 3: Complete (Maker)
 
 `TradeCompleteSystem.execute(tradeID)`:
 
-1. Verify trade is `EXECUTED` and caller is maker
-2. Deduct **delivery fee** from maker (waived in Trade Room)
-3. **Complete buy order**: compute the tax on each buy-side item, **burn** it
+1. Resolve the maker's account — owner or operator (`getByOwnerOrOperator`)
+2. Verify trade exists, is `EXECUTED` (`"Trade is not EXECUTED"`) and caller
+   is maker (`"Trade owner mismatch"`)
+3. Deduct **delivery fee** from maker (waived in Trade Room)
+4. **Complete buy order**: compute the tax on each buy-side item, **burn** it
    from the trade entity's escrow, and transfer the rest to the maker; log the
    maker's `TRADE_TAX`. Clean up order data.
-4. **Complete sell order**: clean up remaining data
-5. **Burn residue**: any MUSU still held by the trade entity is burned, so no
+5. **Complete sell order**: clean up remaining data
+6. **Burn residue**: any MUSU still held by the trade entity is burned, so no
    inventory outlives the trade
-6. Remove all trade entity data
+7. Remove all trade entity data
 
-> Source: `TradeCompleteSystem.sol:16–34`, `LibTrade.sol:160–207`
+> Source: `TradeCompleteSystem.sol:16–34` (resolver at 19),
+> `LibTrade.sol:160–207, 252–260, 298–301`
 
 ### Cancel (Maker only, while PENDING)
 
 `TradeCancelSystem.execute(tradeID)`:
 
-1. Verify trade is `PENDING` and caller is maker
-2. Deduct delivery fee
-3. **Return escrowed items**: sell-side items are transferred back from trade
+1. Resolve the maker's account — owner or operator (`getByOwnerOrOperator`)
+2. Verify trade exists, is `PENDING` and caller is maker
+   (`"Trade owner mismatch"`)
+3. Deduct delivery fee
+4. **Return escrowed items**: sell-side items are transferred back from trade
    entity to maker's inventory
-4. Remove all trade entity data
+5. Remove all trade entity data
 
-> Source: `TradeCancelSystem.sol:16–34`, `LibTrade.sol:213–241`
+> Source: `TradeCancelSystem.sol:16–34` (resolver at 19),
+> `LibTrade.sol:213–241, 252–260, 298–301`
 
 ## Fees
 

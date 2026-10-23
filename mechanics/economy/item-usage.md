@@ -158,10 +158,12 @@ turn-ins ("give item" quests).
 
 `ItemTransferSystem.execute(indices[], amounts[], targetAccountID)`:
 
-Unlike every other item system (which resolves the account from the **operator**
-address), `ItemTransferSystem` authenticates via
-`LibAccount.getByOwner(msg.sender)` — the transfer must be signed by the
-account's **owner** wallet (`ItemTransferSystem.sol:21`).
+Unlike use, cast and burn (which resolve the account from the **operator**
+address only), `ItemTransferSystem` resolves the sender with
+`LibAccount.getByOwnerOrOperator(msg.sender)` — the transfer may be signed by
+the account's **owner** wallet or by its **operator**; owner is checked first
+(`ItemTransferSystem.sol:21`). See
+[accounts.md → Who May Sign](../world/accounts.md#who-may-sign).
 
 1. Verify arrays match in length
 2. Verify all items are flagged as **transferable**

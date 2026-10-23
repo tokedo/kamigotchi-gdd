@@ -1,6 +1,6 @@
 # Accounts & Stamina
 
-> Source: `packages/contracts/src/libraries/LibAccount.sol` (L1–299),
+> Source: `packages/contracts/src/libraries/LibAccount.sol` (L1–311),
 > `packages/contracts/src/systems/AccountRegisterSystem.sol` (L1–42),
 > `packages/contracts/src/systems/AccountSetOperatorSystem.sol` (L1–34),
 > `packages/contracts/src/systems/AccountMoveSystem.sol` (L1–50),
@@ -75,14 +75,93 @@ ID is its owner address, "is an account owner" is the check
 The checks run only when an operator is assigned. An address that was already
 an account's operator before it registered an account of its own is not
 retroactively unassigned; systems that accept either signer resolve such an
-address to **its own** account first (e.g. the token portal's operator lane,
-see [token-portal.md](../marketplace/token-portal.md#player-entrypoints-and-signers)).
+address to **its own** account first (`getByOwnerOrOperator`, and the token
+portal's operator lane — see [Who May Sign](#who-may-sign)).
 
 Operator lookup uses a cache component for efficient reverse mapping
 (`operatorAddress → accountID`).
 
 > Source: `AccountSetOperatorSystem.sol:15–29`, `LibAccount.sol:134–139,
-> 164–177, 253–267`; `TokenPortalSystem.sol:238–244`
+> 164–177, 253–279`; `TokenPortalSystem.sol:238–244`
+
+## Who May Sign
+
+Every player-facing system turns the calling address (`msg.sender`) into an
+account with one of three resolvers (see [Account Queries](#account-queries)).
+This is the complete list at the pin; other pages link here rather than
+restating it.
+
+**Owner only.** The sender must be the owner wallet itself
+(`getByOwner(msg.sender)`); any other address — an operator included —
+reverts `"Account: no account detected"`.
+
+| System | Entrypoints | Source |
+|---|---|---|
+| `AccountSetOperatorSystem` | `execute(operator)` | `AccountSetOperatorSystem.sol:21` |
+| `AccountSetNameSystem` | `execute(name)` | `AccountSetNameSystem.sol:17` |
+| `TokenPortalSystem` | `deposit`, `withdraw`; `claim` / `cancel` of an owner receipt (sender must equal the receipt account's owner, else `"not receipt owner"`) | `TokenPortalSystem.sol:43, 61, 248–261` |
+| `Kami721StakeSystem`, `Kami721UnstakeSystem` | `execute`, `executeBatch` (bridge in / out) | `Kami721StakeSystem.sol:32`, `Kami721UnstakeSystem.sol:36` |
+| `KamiMarketBuySystem` | `executeTyped(listingIDs)` (pays ETH) | `KamiMarketBuySystem.sol:29` |
+| `NewbieVendorBuySystem` | `executeTyped(kamiIndex)` (pays ETH) | `NewbieVendorBuySystem.sol:51` |
+| `GachaBuyTicketSystem` | `buyPublic(amount)`, `buyWL()` | `GachaBuyTicketSystem.sol:43, 63` |
+| `KamiOnyxRenameSystem`, `KamiOnyxRespecSystem` | `execute` — disabled: an unconditional revert runs before the owner lookup | `KamiOnyxRenameSystem.sol:23, 26`, `KamiOnyxRespecSystem.sol:21, 24` |
+
+Registration (`AccountRegisterSystem`) is signed by the wallet that becomes
+the owner: the account ID is derived from `msg.sender`
+(`AccountRegisterSystem.sol:19–32`).
+
+**Owner or operator.** `getByOwnerOrOperator(msg.sender)`: if the sender owns
+an account, that account (owner first — an owner address never resolves to an
+account that merely named it operator); otherwise the account that named the
+sender its operator; an address that is neither reverts
+`"Account: no account detected"`.
+
+| System | Entrypoints | Source |
+|---|---|---|
+| `AuctionBuySystem` | `execute(itemIndex, amt)` | `AuctionBuySystem.sol:23` |
+| `ItemTransferSystem` | `execute(indices, amts, targetID)` | `ItemTransferSystem.sol:21` |
+| `KamiGachaMintSystem` | `execute(amount)` | `KamiGachaMintSystem.sol:28` |
+| `KamiGachaRerollSystem` | `reroll(kamiIDs)` | `KamiGachaRerollSystem.sol:23` |
+| `TradeCreateSystem`, `TradeExecuteSystem`, `TradeCompleteSystem`, `TradeCancelSystem` | `execute` (the complete / cancel `executeAdmin` batches are admin-only) | `TradeCreateSystem.sol:24`, `TradeExecuteSystem.sol:18`, `TradeCompleteSystem.sol:19`, `TradeCancelSystem.sol:19` |
+| `TokenPortalSystem` | `withdrawToOperator` — the same owner-first order through the portal's own helper, but a sender that is neither reverts `"Account: Operator not found"`; `claim` / `cancel` of an operator-lane receipt — the account's owner or its **current** operator, else `"not receipt owner"` | `TokenPortalSystem.sol:88, 240–244, 248–261` |
+
+**Operator.** Every other player-facing system resolves the sender as an
+operator (`getByOperator(msg.sender)` or `verifyOperator()`); an address that
+is no account's operator — an owner wallet included — reverts
+`"Account: Operator not found"`. (`verifyOperator`'s own message
+`"LibAccount: account operator not found"` is unreachable: `getByOperator`
+reverts first.) This covers movement, account bio and picture, item use, cast
+and burn, equipment, crafting, harvesting and liquidation, scavenge claims,
+quests, goals, skills, relationships, friends, chat, Kami level / name / send /
+sacrifice / Onyx revive, the NPC shop (`ListingBuySystem`,
+`ListingSellSystem`), the item pools (`PoolSystem`), and the Kami
+marketplace's list, offer, accept-offer and cancel. The reveal entrypoints
+(`KamiGachaRevealSystem.reveal`, `DroptableRevealSystem.execute`) resolve no
+account: anyone may call them.
+
+**Operators are never owners.** An address that owns an account cannot be
+assigned as an operator (`"Account: Operator is an account
+owner"`, `AccountRegisterSystem.sol:24–25`, `AccountSetOperatorSystem.sol:18–19`),
+and because the owner-or-operator resolvers check ownership first, an owner's
+own account always wins.
+
+Addresses passed as **arguments** follow their own rule: `KamiSendSystem`
+resolves the recipient from its **operator** address (`KamiSendSystem.sol:45`,
+see [kami-send.md](../core-kami/kami-send.md)); `FriendRequestSystem` and
+`FriendBlockSystem` resolve the target from its **owner** address
+(`FriendRequestSystem.sol:20`, `FriendBlockSystem.sol:23`).
+
+> Deployed state (chain, not source): the ten systems changed by upstream
+> commit `04cb25f8` — the eight owner-or-operator systems above plus
+> `KamiSendSystem` and `KamiSacrificeCommitSystem` — were redeployed on chain
+> on 2026-10-21 between about 11:00 and 11:10 UTC (blocks
+> ≈34,757,700–34,758,400). Before that, the eight accepted the owner only.
+
+> Source: `LibAccount.sol:179–191` (`verifyOperator`, `verifyOwner`),
+> `:253–279` (`getByOperator`, `getByOwner`, `getByOwnerOrOperator`); the
+> per-system lines above; operator resolution e.g. `AccountMoveSystem.sol:23`,
+> `KamiMarketListSystem.sol:25`, `KamiSendSystem.sol:44`;
+> `KamiGachaRevealSystem.sol:18`, `DroptableRevealSystem.sol:19`
 
 ## Stamina System
 
@@ -195,9 +274,13 @@ as opposed to items used on Kamis.
 
 | Query | Method |
 |---|---|
-| By owner address | `getByOwner(addr)` — derives entity ID from address |
-| By operator address | `getByOperator(addr)` — uses CacheOperator reverse lookup |
+| By owner address | `getByOwner(addr)` — entity ID `uint256(uint160(addr))`; reverts `"Account: no account detected"` unless that entity is an `ACCOUNT` |
+| By operator address | `getByOperator(addr)` — `CacheOperator` reverse lookup; reverts `"Account: Operator not found"` on 0 |
+| By owner, else operator | `getByOwnerOrOperator(addr)` — `uint256(uint160(addr))` if that entity is an `ACCOUNT`; otherwise the `CacheOperator` lookup; 0 reverts `"Account: no account detected"` |
 | By name | `getByName(name)` — entity type + name component query |
 | Owned Kamis | `getKamis(accID)` — queries `IDOwnsKami` component |
 
-> Source: `LibAccount.sol:242–280`
+`verifyOwner()` / `verifyOperator()` wrap `getByOwner(msg.sender)` /
+`getByOperator(msg.sender)`. No system calls `verifyOwner` at the pin.
+
+> Source: `LibAccount.sol:179–191, 242–292`
