@@ -2,7 +2,7 @@
 
 > Source: `packages/contracts/src/libraries/LibGacha.sol` (L1–197),
 > `packages/contracts/src/systems/KamiGachaMintSystem.sol` (L1–53),
-> `packages/contracts/src/systems/KamiGachaRerollSystem.sol` (L1–64),
+> `packages/contracts/src/systems/KamiGachaRerollSystem.sol` (L1–65),
 > `packages/contracts/src/systems/KamiGachaRevealSystem.sol` (L1–55),
 > `packages/contracts/src/systems/GachaBuyTicketSystem.sol` (L1–143),
 > `packages/contracts/src/libraries/LibKamiCreate.sol` (L72–101, L164–174),
@@ -139,7 +139,7 @@ the 2,222 seeded Kamis (plus any later top-ups) are what mint claims draw down.
 
 > Source: `Kami721.sol:44, 88–97`, `LibKamiCreate.sol:75–101, 164–174`,
 > `_721BatchMinterSystem.sol:312–336, 390–394`, `KamiGachaMintSystem.sol:30–42`,
-> `KamiGachaRerollSystem.sol:28–29`, `AuctionBuySystem.sol:27–37`,
+> `KamiGachaRerollSystem.sol:29–30`, `AuctionBuySystem.sol:27–37`,
 > `LibGacha.sol:89–121`, `LibRandom.sol:78–91`
 
 ## Commit-Reveal Pattern
@@ -281,7 +281,7 @@ On reveal, the player receives the same number of random Kamis. Each received
 Kami's counter is set to the value carried on the commit plus 1 (see Reroll
 Counter below).
 
-> Source: `KamiGachaRerollSystem.sol:21–58`, `LibGacha.sol:31–76`
+> Source: `KamiGachaRerollSystem.sol:22–59`, `LibGacha.sol:31–76`
 
 ## Reroll Counter
 
@@ -380,7 +380,7 @@ at the same time as the whitelist mint.
 `GACHA_REROLL_PRICE` is a dead config: its only reader,
 `LibGacha.getBaseRerollCost` (`LibGacha.sol:136–138`), has no callers, and the
 key is never set by any init script. The only reroll cost is 1 Reroll Token
-(item 11) per Kami (`KamiGachaRerollSystem.sol:40`).
+(item 11) per Kami (`KamiGachaRerollSystem.sol:41`).
 
 > Source: `configs.ts:96–110` (initMint), `configs.ts:53–56` (initProdConfigs),
 > `deployment/world/state/index.ts:73–75, 97–99`,

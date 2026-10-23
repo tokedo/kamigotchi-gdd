@@ -1,6 +1,6 @@
 # Kami Send (In-Game Transfer)
 
-> Source: `packages/contracts/src/systems/KamiSendSystem.sol` (L1–88)
+> Source: `packages/contracts/src/systems/KamiSendSystem.sol` (L1–90)
 
 ## Overview
 
@@ -42,7 +42,7 @@ bypasses the marketplace.
 Supports batch sending of multiple Kamis in one transaction. See
 [Equipment → Force-Unequip on Ownership Change](../economy/equipment.md#force-unequip-on-ownership-change).
 
-> Source: `KamiSendSystem.sol:39–77`
+> Source: `KamiSendSystem.sol:41–80`
 
 ## Cooldown
 
@@ -60,4 +60,4 @@ item use on the Kami (feeding), and liquidating with it** — all revert
 equipping it or rerolling it. See
 [cooldowns.md → What a Cooldown Blocks](../utility/cooldowns.md#what-a-cooldown-blocks).
 
-> Source: `KamiSendSystem.sol:47–50, 70`, `LibCooldown.sol:34–53`
+> Source: `KamiSendSystem.sol:48–51, 72`, `LibCooldown.sol:34–53`

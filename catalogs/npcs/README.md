@@ -4,7 +4,7 @@
 > `packages/contracts/deployment/world/data/listings/listings.csv`,
 > `packages/contracts/deployment/world/data/listings/pricing.csv`,
 > `packages/contracts/deployment/world/data/listings/requirements.csv`
-> Commit: `8302734d`
+> Commit: `04cb25f8`
 
 `listings.csv` here merges the source listing sheet with two lookup sheets:
 the `Buy Price Model` keys resolve via `data/listings/pricing.csv` (GDA tier

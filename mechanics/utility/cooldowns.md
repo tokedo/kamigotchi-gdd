@@ -79,7 +79,7 @@ A Kami that changes hands gets a cooldown on arrival:
 
 | Path | Applied by |
 |---|---|
-| In-game send (`KamiSendSystem`) | `KamiSendSystem.sol:47–50, 70` |
+| In-game send (`KamiSendSystem`) | `KamiSendSystem.sol:48–51, 72` |
 | Marketplace sale (listing bought, offer accepted, collection offer filled) | `LibKamiMarket._setPurchaseCooldown`, `LibKamiMarket.sol:139, 168, 197, 272–277` |
 
 ```
@@ -96,7 +96,7 @@ actions in [What a Cooldown Blocks](#what-a-cooldown-blocks) — harvesting,
 feeding and liquidating with that Kami — and nothing else, so the Kami can be
 sent on or re-listed immediately.
 
-> Source: `KamiSendSystem.sol:47–50, 70`, `LibKamiMarket.sol:271–277`,
+> Source: `KamiSendSystem.sol:48–51, 72`, `LibKamiMarket.sol:271–277`,
 > `_KamiMarketRegistrySystem.sol:70–73`, `LibCooldown.sol:34–53`
 
 ## Config
@@ -106,7 +106,7 @@ sent on or re-listed immediately.
 | `KAMI_STANDARD_COOLDOWN` | `180` s (`30` in local test configs) | Base cooldown duration in seconds |
 | `KAMI_MARKET_PURCHASE_COOLDOWN` | not set by init scripts → `3600` s fallback | Cooldown added to a Kami on send or marketplace sale |
 
-> Source: `configs.ts:31, 124`, `KamiSendSystem.sol:48–50`
+> Source: `configs.ts:31, 124`, `KamiSendSystem.sol:49–51`
 
 ## Bonus Integration
 

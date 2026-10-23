@@ -1,7 +1,7 @@
 # Rooms Catalog
 
 > Source: `packages/contracts/deployment/world/data/rooms/`
-> Commit: `50198c68`
+> Commit: `04cb25f8`
 
 ## Files
 

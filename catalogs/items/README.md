@@ -1,7 +1,7 @@
 # Items Catalog
 
 > Source: `packages/contracts/deployment/world/data/items/`
-> Commit: `50198c68`
+> Commit: `04cb25f8`
 
 ## Files
 

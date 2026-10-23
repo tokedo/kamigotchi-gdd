@@ -102,7 +102,7 @@ therefore **blocks `commit + 1` through `commit + 256`**.
 
 | Constant / rule | Value | Source |
 |---|---|---|
-| Reveal block stored at commit | `block.number` of the commit tx — gacha mint, gacha reroll, droptable (lootbox / scavenge), sacrifice | `KamiGachaMintSystem.sol:41`, `KamiGachaRerollSystem.sol:44–50`, `LibDroptable.sol:47`, `LibSacrifice.sol:76` |
+| Reveal block stored at commit | `block.number` of the commit tx — gacha mint, gacha reroll, droptable (lootbox / scavenge), sacrifice | `KamiGachaMintSystem.sol:41`, `KamiGachaRerollSystem.sol:45–51`, `LibDroptable.sol:47`, `LibSacrifice.sol:76` |
 | Reveal window (expiry) | blocks `commit + 1` … `commit + 256`; outside it the reveal reverts `"Blockhash unavailable. Contact admin"` | `LibCommit.sol:137–142` |
 | `MAX_ROLLS_PER_REVEAL` | `5000` rolls per droptable reveal transaction; a larger commit is revealed in chunks across transactions, each chunk re-reading the **same** reveal blockhash, with outcomes independent of the chunking | `LibDroptable.sol:26–30, 55–68` — see [droptables.md → Chunked Reveal](../economy/droptables.md#chunked-reveal-large-commits) |
 | Gacha mints per transaction | at most `5` (`"too many mints"`) | `KamiGachaMintSystem.sol:22` |

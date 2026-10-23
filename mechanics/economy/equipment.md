@@ -136,10 +136,10 @@ the **previous owner / seller**.
 | Sacrifice | `LibSacrifice` | Burning a Kami in the sacrifice ritual |
 | Gacha reroll | `KamiGachaRerollSystem` | Depositing Kamis into the gacha pool |
 
-> Source: `LibEquipment.sol:232–255`, `KamiSendSystem.sol:63`,
+> Source: `LibEquipment.sol:232–255`, `KamiSendSystem.sol:65`,
 > `KamiMarketListSystem.sol:34`, `LibKamiMarket.sol:134, 163, 192`,
 > `Kami721UnstakeSystem.sol:47`, `LibSacrifice.sol:85`,
-> `KamiGachaRerollSystem.sol:33`
+> `KamiGachaRerollSystem.sol:34`
 
 ## Equipment Instance Shape
 

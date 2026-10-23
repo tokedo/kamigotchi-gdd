@@ -1,7 +1,7 @@
 # Sacrifice
 
 > Source: `packages/contracts/src/libraries/LibSacrifice.sol` (L1–437),
-> `packages/contracts/src/systems/KamiSacrificeCommitSystem.sol` (L1–70),
+> `packages/contracts/src/systems/KamiSacrificeCommitSystem.sol` (L1–73),
 > `packages/contracts/src/systems/KamiSacrificeRevealSystem.sol` (L1–67)
 
 ## Overview
