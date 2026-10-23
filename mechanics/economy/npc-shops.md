@@ -60,7 +60,7 @@ Simple flat price: `price = Value × amount`
 Both buy and sell sides can use FIXED pricing. The price per unit is the
 `Value` component on the listing entity.
 
-> Source: `LibListing.sol:128–129, 196–197`
+> Source: `LibListing.sol:128–129, 165–166`
 
 ### GDA (Gradual Dutch Auction)
 
@@ -183,7 +183,7 @@ and the next buy settles.
 > of `deployment/world/data/listings/listings.csv`, and the deploy script only
 > creates a sell pricing sub-entity when that column is set
 > (`deployment/world/state/listings.ts:60–73`). With no sell pricing entity,
-> `calcSellPrice` reverts (`LibListing.sol:189–202`), so selling to NPCs is
+> `calcSellPrice` reverts (`LibListing.sol:158–171`), so selling to NPCs is
 > effectively disabled under this data.
 >
 > ⚠️ UNCERTAIN: on-chain state created by earlier deployments is not visible
@@ -199,7 +199,7 @@ sellPrice = calcBuyPrice(amount) × scale / 1e9
 Scale is stored with 1e9 precision (e.g., `500000000` = 50% of buy price).
 Must be in range `[0, 1e9]`.
 
-> Source: `LibListing.sol:198–201`, `_ListingRegistrySystem.sol:90–99`
+> Source: `LibListing.sol:167–169`, `_ListingRegistrySystem.sol:90–99`
 
 ## Buy Process
 

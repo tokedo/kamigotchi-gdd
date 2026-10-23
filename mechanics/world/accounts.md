@@ -22,7 +22,7 @@ created the account and the operator is the address that executes actions.
 | `IndexAccount` | Sequential account number (global counter) |
 | `AddressOwner` | Owner wallet address |
 | `AddressOperator` | Operator address (session key) |
-| `CacheOperator` | Reverse lookup: operator address → account ID |
+| `CacheOperator` | Reverse lookup operator address → account ID; written at the **operator's** entity ID (`uint256(uint160(operator))`), not on the account entity (`LibAccount.sol:60–63`) |
 | `IndexRoom` | Current room index (starts at 1) |
 | `Stamina` | Stat struct (base/shift/boost/sync) |
 | `TimeStart` | Account creation timestamp |

@@ -16,7 +16,7 @@ Allocation ID: `keccak256("reward.instance", anchorID, type, index)`
 | Component | Description |
 |---|---|
 | `EntityType` | `"ALLOCATION"` |
-| `IDSource` | Source entity that created this allocation |
+| `IdSource` | Source entity that created this allocation (the component is `IdSourceComponent`; `LibAllo` imports its ID under the alias `IDSourceCompID`, `LibAllo.sol:11`) |
 | `IDAnchor` | Parent entity this allocation belongs to |
 | `Type` | Reward type (see below) |
 | `Index` | Item/stat index (context-dependent) |

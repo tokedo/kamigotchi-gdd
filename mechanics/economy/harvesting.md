@@ -263,7 +263,10 @@ nudge = 5 (multiplied by Violence stat)
 minutesElapsed = floor((now - intensityResetTime) / 60)
 ratio = 480 (inverted — this is the divisor)
 boost = 10 + HARV_INTENSITY_BOOST bonus
+Precision = 10^(RATE_PREC − config[7] + config[3]) = 10^(6 − 0 + 0) = 10^6
 ```
+
+`RATE_PREC` = 6 (`LibHarvest.sol:34`); the division floors.
 
 Intensity **grows linearly** with time spent harvesting (minutes elapsed),
 incentivizing longer harvest sessions but increasing strain risk.

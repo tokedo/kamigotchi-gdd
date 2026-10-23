@@ -12,14 +12,20 @@ bypasses the marketplace.
 
 `KamiSendSystem.execute(kamiIndices[], toAddress)`:
 
-1. Verify sender has an account (via operator address)
-2. Resolve target account via `LibAccount.getByOperator(toAddress)`
-   (`KamiSendSystem.sol:44`) — `toAddress` must be the recipient's **operator**
+1. Reject an empty batch (`"KamiSend: empty batch"`)
+2. Resolve the sender's account from the **operator** address that signs
+   (`LibAccount.verifyOperator`; see
+   [accounts.md → Who May Sign](../world/accounts.md#who-may-sign))
+3. Resolve target account via `LibAccount.getByOperator(toAddress)`
+   (`KamiSendSystem.sol:45`) — `toAddress` must be the recipient's **operator**
    address. Passing an owner wallet or any unregistered address reverts
    (`"Account: Operator not found"`, `LibAccount.sol:260`)
-3. Verify sender is not sending to themselves
-4. For each Kami:
-   a. Verify Kami is owned by sender and in `RESTING` or `LISTED` state
+4. Verify sender is not sending to themselves (`"KamiSend: cannot send to self"`)
+5. For each Kami:
+   a. Verify Kami exists (`"KamiMarket: kami not found"`), is in `RESTING` or
+      `LISTED` state (`"KamiMarket: kami not available"`) and is owned by the
+      sender (`"kami not urs"`) — `LibKamiMarket.verifyKamiOwnedRestingOrListed`,
+      `LibKamiMarket.sol:376–383`
    b. Verify the Kami is **not soulbound** (`LibSoulbound.verify`,
       `"kami is soulbound"`, `KamiSendSystem.sol:59`) — a Kami bought from the
       [Newbie Vendor](../marketplace/newbie-vendor.md#what-the-3-day-soulbind-blocks)

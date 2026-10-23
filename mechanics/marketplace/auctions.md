@@ -55,7 +55,8 @@ Where:
 - `decay` is stored as `int32 × 1e6`, then multiplied by `1e12` to reach WAD
   precision for LibGDA
 
-The result is in WAD (×1e18) and rounded up:
+The result is in WAD (×1e18) and rounded up; a non-positive result reverts
+`"LibAuction: negative GDA cost"`:
 ```
 cost = ceil(LibGDA.calc(params) / 1e18)
 ```

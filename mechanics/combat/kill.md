@@ -131,9 +131,16 @@ threshold = (animosity × efficacy + shift) × totalHealth / precision
 ```
 
 Where:
-- `shift = (ATK_THRESHOLD_SHIFT - DEF_THRESHOLD_SHIFT) × shiftPrecision`
-- `totalHealth` = victim's max HP
+- `efficacy` = [Threshold Efficacy](#threshold-efficacy), seeded with
+  `KAMI_LIQ_THRESHOLD[2]`
+- `shift = (ATK_THRESHOLD_SHIFT − DEF_THRESHOLD_SHIFT) × shiftPrecision`, with
+  the attack bonus read on the attacker and the defense bonus on the victim
+- `shiftPrecision = 10^(6 + config[3] − config[5])` and
+  `precision = 10^(6 + config[3] + config[7])`, where `config` is
+  `KAMI_LIQ_THRESHOLD` and `6` is `ANIMOSITY_PREC` (`LibKill.sol:26`)
+- `totalHealth` = victim's max HP (total `HEALTH` stat, bonuses included)
 - If `animosity × efficacy + shift < 0`, threshold = 0 (unkillable)
+- The division floors
 
 > Source: `LibKill.sol:141–162`
 
