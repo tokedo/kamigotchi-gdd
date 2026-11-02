@@ -145,10 +145,14 @@ instead.
 
 The clamp is applied in `LibListing`, **not** in `LibGDA` — auctions share
 that library and deliberately want unbounded decay. See
-[Auctions](../marketplace/auctions.md).
+[Auctions](../marketplace/auctions.md). Conversely, auctions can skip a pause
+window (e.g. a chain halt) in their elapsed time; listings have no pause
+window and pass their stored `TimeStart` to `LibGDA` unchanged — see
+[Auctions → Pause Windows](../marketplace/auctions.md#pause-windows).
 
 > Source: `LibListing.sol:33, 38` (constants), `:140–152` (batch bound, clamp,
-> unit floor), `:174–180` (`gdaCapSeconds`)
+> unit floor), `:174–180` (`gdaCapSeconds`), `:133` (listing start read from
+> `TimeStart`); `LibAuction.sol:47, 60–69` (auction start from `getPriceStart`)
 
 #### Deficit Settlement on Buy
 
