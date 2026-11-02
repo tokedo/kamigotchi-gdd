@@ -56,7 +56,7 @@ disabled)`, which reverts `"Goal does not exist"` for an unknown index
 (`deployment/world/api/goals.ts:23–32`); `initGoals` enables each goal it
 creates right after adding its rewards, and `enableGoals(indices)`
 (`goals.ts:307–311`, exposed as the world-state command `goals.enable`,
-`world.ts:130`) enables already-created goals by index.
+`world.ts:139`) enables already-created goals by index.
 
 Both player entrypoints check the flag on the **goal entity ID**:
 `LibGoal.verifyEnabled(components, goalID)` → `LibDisabled.verifyEnabled`
@@ -82,7 +82,7 @@ goal (`LibGoal.sol:120`).
 > `_GoalRegistrySystem.sol:43–48`, `GoalContributeSystem.sol:21–23`,
 > `GoalClaimSystem.sol:19–21`, `Goals.t.sol:192–225`,
 > `deployment/world/api/goals.ts:23–32`, `deployment/world/state/goals.ts:219, 307–311`,
-> `deployment/world/world.ts:130`
+> `deployment/world/world.ts:139`
 
 ## Objective
 

@@ -3,7 +3,7 @@
 Technical Game Design Document for [Kamigotchi](https://kamigotchi.io/) — a
 pure on-chain MMORPG on Yominet.
 
-Extracted from source code at commit `04cb25f8`.
+Extracted from source code at commit `8fb6ea58`.
 
 ## What's Here
 

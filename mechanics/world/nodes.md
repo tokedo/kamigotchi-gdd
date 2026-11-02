@@ -172,7 +172,7 @@ Caps reach the chain two ways:
 > Source: `LibNode.sol:91–99, 101–121, 142–156, 207–209, 222–224`,
 > `_NodeRegistrySystem.sol:59–80`, `HarvestStartSystem.sol:44`,
 > `deployment/world/state/rooms/nodes.ts:30–57, 145–195`,
-> `deployment/world/world.ts:160–161`
+> `deployment/world/world.ts:169–170`
 
 ## Scavenging Integration
 
