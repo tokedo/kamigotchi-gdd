@@ -211,12 +211,14 @@ main story at two critical junctures:
 
 ## Dialogues
 
-NPC dialogue data is stored in `dialogues/`:
+NPC dialogue data is stored in `dialogues/` — plain copies of the client's
+`packages/client/src/constants/dialogue/data/npcs.csv` and `npcDialogues.csv`
+at `a99b4b64`:
 
 | File | Description |
 |------|-------------|
-| `npcs.csv` | NPC roster: 9 NPCs with index, name, default image, room, text color, ritual role |
-| `npcDialogues.csv` | Full dialogue trees: 106 lines across 5 NPCs with mood images, branching choices |
+| `npcs.csv` | NPC roster: 11 NPCs with index, name, default image, room, text color, ritual role |
+| `npcDialogues.csv` | Full dialogue trees: 155 rows — Alaina 29, Dimidiatus 23, Zevana 22, Igor 22, Mina 21, Rob 17, Vending Machine 2, an empty stub each for Nurse Why, Dolores and Artie Zbirak, and 16 rows with no speaker — with mood images and branching choices |
 
 ### NPCs with Dialogues
 
@@ -231,6 +233,8 @@ NPC dialogue data is stored in `dialogues/`:
 | 6 | Nurse Why | — | (no dialogue data yet) |
 | 7 | Dolores | — | (no dialogue data yet) |
 | 8 | Artie Zbirak | — | Equipment/Gear Shop (no dialogue data yet) |
+| 9 | Igor | 56 (Butterfly Forest) | Giver of SQ122 / SQ902 |
+| 10 | Alaina | 64 (Burning Room) | The Ballot Shop (merchant NPC 10) |
 
 Dialogue trees use a choice-based branching system. Each NPC has a main
 conversation loop with topic choices that return to the menu. See
