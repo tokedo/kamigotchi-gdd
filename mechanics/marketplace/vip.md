@@ -1,6 +1,6 @@
 # VIP System (Initia Integration)
 
-> Source: `packages/contracts/src/libraries/LibVIP.sol` (L1–71),
+> Source: `packages/contracts/src/libraries/LibVIP.sol` (L1–73),
 > `packages/contracts/src/utils/VipScore.sol` (L1–212),
 > `packages/contracts/src/components/ProxyVIPScoreComponent.sol` (L1–25)
 
@@ -9,6 +9,10 @@
 The VIP system integrates with **Initia VIP** to report player engagement scores
 on-chain. Scores are tracked in **stages** (2-week epochs) and written to both
 the in-game scoring system (`LibScore`) and an external `VipScore` contract.
+
+Voting for Yominet in Initia's VIP gauge is rewarded separately, with
+soulbound **Ballots** — a system kept apart from the VIP score and stages; see
+[ballots.md](ballots.md).
 
 ## Architecture
 
@@ -36,6 +40,13 @@ stage = ((block.timestamp - start) / epochLength) + 1
 
 Configuration: `VIP_STAGE` config array = `[start, epochLength]`
 
+The deploy data anchors stage 1 at **2025-05-01 08:00 UTC**
+(`1746086400`), a week after the real first stage (2025-04-24 08:00 UTC,
+`1745481600`, the value before `a99b4b64`). The data comment gives the reason:
+Initia ran stage 41 for three weeks (to 2026-11-26 08:00 UTC), so moving the
+start a week later keeps stage 42 onward on Initia's grid. With the new anchor
+stage 41 is 2026-11-12 → 2026-11-26 08:00 UTC.
+
 Stages are 1-indexed (stage 0 is invalid). Each stage tracks:
 
 | Field | Type | Description |
@@ -44,7 +55,7 @@ Stages are 1-indexed (stage 0 is invalid). Each stage tracks:
 | `totalScore` | uint64 | Sum of all player scores in this stage |
 | `isFinalized` | bool | Whether the stage is closed for further scoring |
 
-> Source: `LibVIP.sol:61–66`, `VipScore.sol:18–22`
+> Source: `LibVIP.sol:63–68`, `VipScore.sol:18–22`, `configs.ts:236–240`
 
 ## Score Increment
 
@@ -75,7 +86,13 @@ Finalizing a stage:
 2. Emits `FinalizeStage(stage)` event
 3. Creates the next stage (stage + 1) if it doesn't exist
 
-> Source: `LibVIP.sol:49–56`, `VipScore.sol:55–66`
+Per a source comment in `LibVIP` (a comment only, no logic change):
+a stage with no score increase is never created in `VipScore`, so finalizing
+it reverts `StageNotFound` — and with it the score increment that triggered
+the finalize; the recovery is `VipScore.finalizeStage` on the last existing
+stage, called from an allow-listed address.
+
+> Source: `LibVIP.sol:49–58`, `VipScore.sol:55–66`
 
 ## VipScore Contract
 
@@ -147,7 +164,7 @@ This allows both O(1) lookup by address and paginated enumeration.
 
 | Key | Value | Description |
 |---|---|---|
-| `VIP_STAGE` | `[1745481600, 1209600, 0, 0, 0, 0, 0, 0]` | Genesis: 2025-04-24 08:00 UTC, epoch: 1,209,600s (2 weeks) |
+| `VIP_STAGE` | `[1746086400, 1209600, 0, 0, 0, 0, 0, 0]` | Stage-1 anchor: 2025-05-01 08:00 UTC (a week after the real start, see [Stages](#stages)), epoch: 1,209,600s (2 weeks) |
 | `VIP_SCORE_ADDRESS` | (deployment address) | Address of the deployed VipScore contract |
 
-> Source: `configs.ts:189–193`
+> Source: `configs.ts:236–240`
