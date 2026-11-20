@@ -266,40 +266,30 @@ When a kill succeeds, the victim's harvest bounty is split:
 scaleFactor = 10^(config[3] - config[1])
 ratio = config[2] + (config[0] + power) × scaleFactor + DEF_SALVAGE_RATIO bonus
 precision = 10^config[3]
-salvage = ⌊bounty × ratio / precision⌋
+salvage = bounty                          if ratio ≥ precision
+        = ⌊bounty × ratio / precision⌋    otherwise
 ```
 
 - `power` = victim's Power stat (higher Power = more salvage)
 - `config` = `KAMI_LIQ_SALVAGE` = `[0, 2, 0, 3, 0, 0, 0, 0]`
   (`deployment/world/state/configs/configs.ts:149`), so
   `ratio = 10 × power + DEF_SALVAGE_RATIO` and `precision = 1000`
-- The cap check is `if (ratio / precision > 1) return amt` (`LibKill.sol:236`)
-  — **integer division**, so it fires only at `ratio ≥ 2 × precision`
-  (= 2000, i.e. 200%). For `ratio` in `(1000, 1999]` salvage **exceeds** the
-  bounty and is not clamped
+- **Capped at 100 %**: `if (ratio >= precision) return amt` (`LibKill.sol:236`)
+  — from `ratio = 1000` up, salvage is the whole bounty, never more, so the
+  remainder `bounty − salvage` is never negative
 
-> ⚠️ **CONFIRMED UPSTREAM BUG (code-level, at the pin)**: at the deployed
-> config a victim with Power **101–199** (and no `DEF_SALVAGE_RATIO` bonus)
-> yields `ratio` 1010–1990. The clamp at `LibKill.sol:236` does not fire
-> (`1010/1000 = 1`, not `> 1`), so `salvage = ⌊bounty × ratio / 1000⌋`, which
-> **exceeds** the bounty. The subtraction `bounty - salvage` at
-> `HarvestLiquidateSystem.sol:59` then underflows under Solidity ≥0.8 checked
-> arithmetic (`LibKill.sol:2`, `HarvestLiquidateSystem.sol:2`) and the whole
-> liquidation **reverts** — victims in this Power band are unliquidatable.
->
-> Exact condition, since `salvage > bounty` requires the floor to clear an
-> extra unit: `bounty × (ratio − 1000) ≥ 1000`, i.e.
-> `bounty ≥ ⌈1000 / (10·power − 1000)⌉` — a bounty of 100 at Power 101, 10 at
-> Power 110, 2 from Power 150 up. Below that bounty the call still succeeds with
-> `salvage = bounty` and zero spoils.
->
-> Boundary values: at Power **100** (`ratio` exactly 1000) salvage equals the
-> bounty exactly — no underflow, spoils computed on 0. At Power **≥ 200**
-> (`ratio ≥ 2000`) the clamp fires and returns the entire bounty as salvage,
-> again leaving 0 for spoils. So the reverting band is bounded on both sides.
->
-> The band is far above deployed Kami Power in practice (base Power is 10,
-> `configs.ts:115`), so it is a latent defect rather than an observed one.
+> Before `a99b4b64` the guard was `if (ratio / precision > 1)
+> return amt`. Integer division made it fire only from `ratio ≥ 2000` (200 %);
+> for `ratio` in `[1001, 1999]` salvage was `⌊bounty × ratio / 1000⌋`, **more
+> than the bounty**, and the subtraction `bounty − salvage` in
+> `HarvestLiquidateSystem` underflowed, so the whole liquidation reverted (at
+> the deployed config: a victim with Power 101–199 and no `DEF_SALVAGE_RATIO`
+> bonus could not be liquidated once its bounty was large enough for the floor
+> to clear an extra unit). The new guard closes that band: the liquidation
+> goes through, the victim is paid the whole bounty and the killer's spoils are
+> computed on 0 (`Murder.t.sol:94–118`, `testMurderSalvageCapped`;
+> `:147–161`, `testLiqRatioCapBounds` — ratios 500, 999, 1000, 1001, 1999,
+> 2000, 3000).
 
 **Salvage is paid in the item the node yields** — MUSU (item 1) on MUSU nodes,
 VIPP (item 2) on VIPP nodes (the node's `YieldIndex`, see
@@ -331,7 +321,8 @@ the item. A zero salvage is a no-op (no item, no XP).
 scaleFactor = 10^(config[3] - config[1])
 ratio = config[2] + (config[0] + power) × scaleFactor + ATK_SPOILS_RATIO bonus
 precision = 10^config[3]
-spoils = ⌊(bounty - salvage) × ratio / precision⌋
+spoils = (bounty - salvage)                         if ratio ≥ precision
+       = ⌊(bounty - salvage) × ratio / precision⌋    otherwise
 ```
 
 - `power` = attacker's Power stat
@@ -339,28 +330,22 @@ spoils = ⌊(bounty - salvage) × ratio / precision⌋
   (`deployment/world/state/configs/configs.ts:150`), so
   `ratio = 450 + 10 × power + ATK_SPOILS_RATIO` and `precision = 1000`
 - Spoils are added to the killer's **harvest bounty** (not directly to inventory)
-- The cap uses the same integer-division check (`LibKill.sol:254`) and fires
-  only at `ratio ≥ 2000`
+- **Capped at 100 %** by the same guard, `if (ratio >= precision) return amt`
+  (`LibKill.sol:254`): from `ratio = 1000` up the killer gets exactly the
+  remainder `bounty − salvage`, never more. At the deployed config that is
+  every attacker with Power ≥ 55 (no `ATK_SPOILS_RATIO` bonus)
 
-> ⚠️ **CONFIRMED UPSTREAM BUG (code-level, at the pin)**: at the deployed
-> config an attacker with Power **56–154** (and no `ATK_SPOILS_RATIO` bonus)
-> yields `ratio` 1010–1990. The clamp at `LibKill.sol:254` uses the same
-> integer division and does not fire, so
-> `spoils = ⌊(bounty − salvage) × ratio / 1000⌋` — **101–199% of the remaining
-> bounty**, uncapped. `sendSpoils` credits that straight onto the killer's
-> harvest balance (`LibKill.sol:59–62`, `LibHarvest.incBounty`), so the killer
-> gains more of the node's yield item than the victim lost: net issuance, not a
-> transfer.
->
-> Unlike the salvage band this does **not** revert — nothing subtracts the
-> spoils from a smaller quantity. Exact condition for a strict overpay:
-> `(bounty − salvage) ≥ ⌈1000 / (450 + 10·power − 1000)⌉` — 100 at Power 56,
-> 20 at Power 60, 3 at Power 100.
->
-> Boundaries: at Power **55** `ratio` is exactly 1000 (spoils = 100% of the
-> remainder, no overpay). At Power **≥ 155** (`ratio ≥ 2000`) the clamp fires
-> and snaps spoils back to exactly 100% of the remainder. As with salvage, the
-> band sits well above deployed Kami Power.
+> Before `a99b4b64`, with the old integer-division guard
+> (`ratio / precision > 1`) an attacker whose `ratio` fell in `[1001, 1999]`
+> (Power 56–154 at the deployed config, no bonus) received
+> `⌊(bounty − salvage) × ratio / 1000⌋` — **101–199 % of the remainder**,
+> credited straight onto the killer's harvest balance (`LibKill.sol:59–62`,
+> `LibHarvest.incBounty`): the killer gained more of the node's yield item than
+> the victim lost (net issuance, not a transfer). It did not revert, since
+> nothing subtracts the spoils from a smaller amount. From `ratio ≥ 2000` the
+> old guard already returned exactly the remainder. The new guard makes the
+> whole `ratio ≥ 1000` range pay exactly the remainder
+> (`Murder.t.sol:121–144`, `testMurderSpoilsCapped`).
 
 > ⚠️ UNCERTAIN: both functions fold the bonus in as
 > `ratio = config[2] + powerTuning + ratioBonus.toUint256()`
