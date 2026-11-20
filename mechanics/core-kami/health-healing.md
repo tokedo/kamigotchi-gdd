@@ -121,10 +121,15 @@ HP recovered in 1 hour = 18 HP → capped at max HP (total Health stat)
 
 ## Harvest Strain (HP Drain)
 
-While harvesting, Kamis take HP damage proportional to resources gathered:
+While harvesting, Kamis take HP damage proportional to the harvest's **base
+output** — the whole base bounty a sync computes, before the node's harvest
+multiplier K is applied to the credit (`LibHarvest.sync` returns the base
+bounty and `LibKami._sync` drains `calcStrain` of it; `LibHarvest.sol:131–138`,
+`LibKami.sol:93–97`). With K = 1000 on every node the base output equals the
+amount credited; see [harvesting.md](../economy/harvesting.md#harvest-multiplier-k-what-a-sync-credits):
 
 ```
-strain = ceil(harvestedAmount × core × boost / (10^(c_prec + b_prec) × (harmony + denomBase)))
+strain = ceil(baseBounty × core × boost / (10^(c_prec + b_prec) × (harmony + denomBase)))
 ```
 
 Config `KAMI_HARV_STRAIN` = `[denomBase, d_prec, core, c_prec, shift, s_prec, boost, b_prec]`
