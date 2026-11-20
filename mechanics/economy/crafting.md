@@ -72,6 +72,25 @@ Recipes can have **conditional requirements** checked before crafting:
 
 > Source: `LibRecipe.sol:86–93, 163–166`
 
+The deployment writes two kinds of recipe requirement from
+`recipes.csv`:
+
+- **Tool** — a non-empty `Tool Index` adds `ITEM` / `CURR_MIN` 1 of that item
+  (the tool is required, not consumed)
+- **Room** — since `a99b4b64`, a `Room Index` above 0 adds `ROOM` / `BOOL_IS`
+  that room, so the recipe can be crafted only while the account is in it. One
+  recipe uses it: **10002 Offer an Obol** (1 Obol → 1 Silt-Caked Box), room 11
+  — the lake offering, also the objective of the daily quest SQ901 *Wash Your
+  Hands*
+
+The `Min Level` column is not written as a requirement (the level requirement
+is commented out in the deployment script, "until account levels are in").
+
+> Source: `deployment/world/state/recipes/requirements.ts:3–30`,
+> `deployment/world/state/recipes/recipes.ts:70–73`,
+> `deployment/world/data/crafting/recipes.csv` (`Tool Index`, `Room Index`),
+> `LibGetter.sol` (`ROOM`: the target's room equals the index)
+
 ## Stamina Cost
 
 Each recipe has a stamina cost stored in the `Stat.sync` field of the

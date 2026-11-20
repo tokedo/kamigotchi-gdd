@@ -186,7 +186,10 @@ and the next buy settles.
 > sell-side pricing at all** — the `Sell Price` column is empty for every row
 > of `deployment/world/data/listings/listings.csv`, and the deploy script only
 > creates a sell pricing sub-entity when that column is set
-> (`deployment/world/state/listings.ts:60–73`). With no sell pricing entity,
+> (`deployment/world/state/listings.ts:74–87`). Since `a99b4b64` the script also
+> refuses a `Sell Price` on any listing whose item is `NOT_TRADABLE` — selling
+> to a shop does not check tradability, so a sell price would turn a soulbound
+> item into currency (`deployment/world/state/listings.ts:42–47`). With no sell pricing entity,
 > `calcSellPrice` reverts (`LibListing.sol:158–171`), so selling to NPCs is
 > effectively disabled under this data.
 >

@@ -11,36 +11,37 @@ See `mechanics/progression/quests.md` for how the quest system works
 
 ## Summary
 
-**196 quests total** across 5 categories:
+**202 quests total** across 5 categories (data at `a99b4b64`):
 
 | Category | Key Prefix | Index Range | Count | Primary Giver |
 |----------|-----------|-------------|-------|---------------|
 | Main Story | MSQ | 1-109 | 109 | MENU (65), MINA (41), DIMIDIATUS (3) |
 | Mina Line | MIN | 2001-2016, 2100-2101 | 18 | MINA (18) |
-| Side Quests | SQ | 3001-3998 | 61 | MENU (28), MINA (18), ROB (9), ZEVANA (5), DIMIDIATUS (1) |
+| Side Quests | SQ | 3001-3998 | 67 | MENU (31), MINA (18), ROB (9), ZEVANA (5), IGOR (2), DIMIDIATUS (1), REFLECTION (1) |
 | Event/Misc | SQ999/SQ997/TTX01 | 10001-10003 | 3 | MENU / unset |
-| Test | test-* | 1000000-1000004 | 5 | unset |
+| Test | TEST001-TEST005 | 1000000-1000004 | 5 | unset |
 
 > Note: MSQ quests and MIN001-MIN016 have Type=MAIN in the data; MIN100-MIN101
 > are Type=SIDE. The MIN quests form a distinct parallel storyline given
 > exclusively by Mina, focused on crafting education and the Elders faction.
 > They are separated here for clarity. Combined MAIN type count: 128. Combined
-> SIDE type count: 61 (59 SQ + MIN100-MIN101). Remaining 7 have no type set
+> SIDE type count: 67 (65 SQ + MIN100-MIN101). Remaining 7 have no type set
 > (TTX01, SQ999 and the five test quests).
 
 ### By Status
 
 | Status | Count |
 |--------|-------|
-| In Game | 188 |
+| In Game | 194 |
 | Defunct | 3 |
 | Test | 5 |
 
 **`Defunct`** is a retirement marker, not a deployment state. The deployment
-pipeline recognises `To Deploy`, `In Game`, `Test`, `To Update` /
+pipeline recognises `To Deploy`, `In Game`, `To Update` /
 `Revise Deployment` (revise) and `To Remove` (delete); `Defunct` matches none
 of them, so a `Defunct` row is never created, revised or deleted by a bulk
-run. Removing an already-deployed quest requires calling the delete path with
+run. `Test` rows are created only when named by index — since `a99b4b64` a
+bulk init no longer adds them on non-production worlds. Removing an already-deployed quest requires calling the delete path with
 an explicit index.
 
 > ⚠️ UNCERTAIN: because no bulk run acts on the marker, whether SQ802 and
@@ -54,19 +55,25 @@ an explicit index.
 
 | Giver | Count |
 |-------|-------|
-| MENU | 94 |
+| MENU | 97 |
 | MINA | 77 |
 | ROB | 9 |
 | ZEVANA | 5 |
 | DIMIDIATUS | 4 |
+| IGOR | 2 |
+| REFLECTION | 1 |
 | (unset) | 7 |
 
 ### Quest Features
 
-- **2 daily quests** — SQ900 "Warm Your Hands" (index 3900, In Game: the first
-  live daily quest) and test-0 (test only). `Daily=Yes` deploys the quest as
-  repeatable with an 18-hour (64,800 s) window counted from the previous
-  acceptance; see `mechanics/progression/quests.md` → Daily Quests
+- **4 daily quests** — SQ900 "Warm Your Hands" (index 3900), SQ901 "Wash Your
+  Hands" (3901) and SQ902 "Same Time Tomorrow" (3902), all In Game, and TEST001
+  (test only). `Daily=Yes` deploys the quest as repeatable with an 18-hour
+  (64,800 s) window counted from the previous acceptance; see
+  `mechanics/progression/quests.md` → Daily Quests
+- **1 completion-delay requirement** — SQ902 needs SQ122 completed more than
+  one day (86,400 s) earlier (`QUEST_COMPLETED_DELAY`, "Complete SQ122 & wait
+  1 day")
 - **1 time-gated quest** (SQ999, before 25/10/25 0 GMT — now `Defunct`)
 - **3 retired quests** (SQ802, SQ999, TTX01 — all `Defunct`)
 - **1 zone-unlocking quest** (MSQ035 rewards the `FLAG_CAVES_UNLOCKED` flag)
@@ -78,10 +85,10 @@ an explicit index.
 
 | File | Rows | Description |
 |------|------|-------------|
-| `quests.csv` | 196 quests | Full quest definitions: key, index, status, title, type, giver, dialogues, requirements, objectives, rewards |
-| `objectives.csv` | 203 objectives | Objective definitions: description, operator, delta type, tracking type, index, value |
-| `requirements.csv` | 201 requirements | Prerequisite definitions: quest completions, item ownership, room presence, time windows |
-| `rewards.csv` | 68 rewards | Reward definitions: items, reputation, flags |
+| `quests.csv` | 202 quests | Full quest definitions: key, index, status, title, type, giver, dialogues, requirements, objectives, rewards |
+| `objectives.csv` | 209 objectives | Objective definitions: description, operator, delta type, tracking type, index, value |
+| `requirements.csv` | 206 requirements | Prerequisite definitions: quest completions, item ownership, room presence, time windows |
+| `rewards.csv` | 70 rewards | Reward definitions: items, reputation, flags |
 | `quest-lines.md` | — | Quest chain map showing all prerequisite links, storyline branches, and convergence points |
 | `dialogues/` | — | NPC dialogue data (see below) |
 
@@ -90,11 +97,11 @@ an explicit index.
 **quests.csv**:
 `Key, Index, Status, Title, Daily, Type, Giver, Introduction Dialogue, Resolution Dialogue, Requirements, Objectives, Rewards`
 
-- `Key`: Human-readable identifier (MSQ001, MIN003, SQ015, test-0)
+- `Key`: Human-readable identifier (MSQ001, MIN003, SQ015, TEST001)
 - `Index`: Numeric ID used on-chain (1-109, 2001-2016, 3001-3998, 10002-10003, 1000000-1000004)
 - `Status`: Deployment state (In Game, To Deploy, To Update Text, To Update, Test) or the retirement marker `Defunct`
 - `Daily`: Yes/No — `Yes` deploys the quest as repeatable, re-acceptable 18 hours (64,800 s) after the previous run was accepted, once that run is completed
-- `Giver`: The NPC or system that presents the quest (MENU, MINA, DIMIDIATUS, ROB, ZEVANA)
+- `Giver`: The NPC or system that presents the quest (MENU, MINA, DIMIDIATUS, ROB, ZEVANA, IGOR, REFLECTION)
 - `Introduction Dialogue` / `Resolution Dialogue`: Full NPC dialogue text with speaker tags
 - `Requirements`: Comma-separated prerequisite IDs referencing `requirements.csv` entries
 - `Objectives`: Comma-separated objective descriptions referencing `objectives.csv` entries
@@ -112,7 +119,8 @@ Tracking types include: `HARVEST_TIME`, `DROPTABLE_ITEM_TOTAL`, `ITEM_BURN`,
 **requirements.csv**:
 `(empty), Description, Operator, Type, Index, Value`
 
-Requirement types: `QUEST` (quest completion), `ITEM` (item ownership),
+Requirement types: `QUEST` (quest completion), `QUEST_COMPLETED_DELAY` (quest
+completed more than `Value` seconds ago), `ITEM` (item ownership),
 `ROOM` (location check), `BLOCKTIME` (time window), `MINA_LAUNCH_VICTIM`
 (event-specific), `GOAL` (goal completion), `LIQUIDATED_VICTIM`.
 
@@ -177,6 +185,19 @@ main story at two critical junctures:
   "Never Brought to Mind"
 - **Special** (SQ998, SQ997, SQ999): Conditional/event quests. SQ999 is now
   `Defunct`
+- **Butterfly Forest / Igor line** (SQ119-SQ122, then daily SQ902), after
+  MSQ009: "The Legend" (3 scavenge rolls at Butterfly Forest, node 56),
+  "Something Follows You" (harvest more than 720 minutes there; reward: 1
+  Neith's River of Life Spell Card), "The Thing in the Woods" (in the room,
+  craft 1 Igors Amulet — recipe 42), "Trick or Treat" (giver IGOR, in the
+  room: give 1 Igors Amulet; reward: 3 Igors Candy). SQ902 "Same Time
+  Tomorrow" (daily, giver IGOR) repeats the amulet gift for 3 Igors Candy,
+  once SQ122 was completed more than a day earlier and while in the room
+- **Offering** (SQ901, index 3901): "Wash Your Hands" (daily, giver
+  REFLECTION, requires SQ015) — objective: "Offer an Obol at the lake"
+  (`CRAFT_ITEM` 21007 ×1, i.e. recipe 10002 in room 11); reward: +1 reputation
+  with The Nursery (faction 3, "1x Nursery Dedication"). SQ016's
+  introduction now points the player to the water instead of a pop-up shop
 - **Daily** (SQ900, index 3900): "Warm Your Hands" (giver MENU, no
   requirements) — objectives: be in the Trash-Strewn Graves (room 26, `ROOM`)
   and give 3 Wooden Sticks (`ITEM_BURN` 1001 ×3, counted from acceptance);

@@ -1,13 +1,13 @@
 # Crafting Recipes Catalog
 
 > Source: `packages/contracts/deployment/world/data/crafting/recipes.csv`
-> Commit: `d9b50091`
+> Commit: `a99b4b64`
 
 ## Files
 
 | File | Entries | Description |
 |---|---|---|
-| `recipes.csv` | 41 recipes | All crafting recipes with inputs, outputs, tools, and requirements |
+| `recipes.csv` | 43 recipes | All crafting recipes with inputs, outputs, tools, and requirements |
 
 ## recipes.csv Schema
 
@@ -15,7 +15,7 @@
 |---|---|---|
 | Index | uint32 | Unique recipe ID |
 | Name | string | Recipe display name |
-| Status | enum | `In Game`, `To Update`, `To Deploy` |
+| Status | enum | `In Game`, `To Update`, `To Deploy`, `Defunct` (retired, not deployed) |
 | Type | enum | `CONSUMABLE`, `REAGENT`, `MATERIAL`, `SPECIAL`, `HIDDEN` |
 | Output Index | uint32 | Item produced (references `catalogs/items/items.csv`) |
 | Output Name | string | Output item name for reference |
@@ -26,7 +26,8 @@
 | XP Output | uint32 | Experience gained from crafting |
 | Tool Index | uint32 | Required tool item (empty = no tool) |
 | Tool Name | string | Tool name for reference |
-| Min Level | uint32 | Minimum Kami level to craft |
+| Min Level | uint32 | Minimum level listed in the sheet — not written on chain (the deployment's level requirement is commented out) |
+| Room Index | uint32 | Room the account must be in to craft (empty = anywhere); written as a `ROOM` requirement since `a99b4b64` |
 
 ## Recipe Types
 
@@ -35,8 +36,8 @@
 | CONSUMABLE | 18 | Potions, food, offensive items |
 | REAGENT | 13 | Extracted/processed materials (output 250–500 units; Pure Essence outputs 1) |
 | MATERIAL | 7 | Bulk construction materials (Timber, Ingot, Ashlar, Empty Cup) |
-| SPECIAL | 2 | Quest item assembly (Aetheric Sextant, Dowsing Rod) |
-| HIDDEN | 1 | Secret recipe (Wonder Egg from 5 Obols) |
+| SPECIAL | 3 | Quest item assembly (Aetheric Sextant, Dowsing Rod, Igors Amulet) |
+| HIDDEN | 2 | Secret recipes: Offer an Obol (1 Obol → Silt-Caked Box, room 11 only); Craft Wonder Egg (5 Obols, `Defunct`) |
 
 ## Tools
 
@@ -45,17 +46,23 @@
 | Spice Grinder | 23100 | 13 recipes | Extractions and grinding |
 | Portable Burner | 23101 | 20 recipes | Brewing and processing |
 | Screwdriver | 23102 | 3 recipes | Assembly and chiseling |
-| None | — | 5 recipes | No tool required |
+| None | — | 7 recipes | No tool required |
 
 ## Status Distribution
 
 | Status | Count |
 |---|---|
-| In Game | 41 |
+| In Game | 42 |
+| Defunct | 1 (10001 Craft Wonder Egg) |
 
 ## Level Requirements
 
-Most recipes require level 1 (no restriction). Higher-level recipes:
+These are the sheet's `Min Level` values. The deployment does not write them
+as requirements (the level requirement is commented out in
+`deployment/world/state/recipes/requirements.ts`), so no recipe is level-gated
+on chain by the data.
+
+Most recipes list level 1. Higher-level recipes:
 - **Level 15**: Animistic Poison, Cthonic Blight, Toadstool Liquor, all Timber/Ingot/Ashlar recipes, Uninteresting Paste, Irradiated Root, Pale Potion
 - **Level 20**: Flash Talisman, Fortified XP Potion, Pure Essence
 

@@ -166,6 +166,7 @@ Requirements are pre-conditions checked when accepting a quest. They use
 | Type | Description | Examples |
 |---|---|---|
 | `QUEST` (COMPLETE) | Must have completed a specific quest | `Complete MSQ001` |
+| `QUEST_COMPLETED_DELAY` (COMPLETE) | Must have completed a specific quest (`Index`) **more than `Value` seconds ago**: the account's instance of that quest is completed and `block.timestamp > its TimeLast + Value` (`TimeLast` is set at completion) | `Complete SQ122 & wait 1 day` (86,400 s, on SQ902) |
 | `GOAL` (COMPLETE) | Must have completed a community goal | `Complete Goal: A Hole in Reality` |
 | `ITEM` (MIN) | Must own a minimum quantity of an item | `Own at least 1 Obol` |
 | `ROOM` (IS) | Must be in a specific room | `In Room: Marketplace` |
@@ -175,7 +176,8 @@ Requirements are pre-conditions checked when accepting a quest. They use
 
 Most quests require completion of the previous quest in the main story chain.
 
-> Source: `data/quests/requirements.csv`, `LibQuestRegistry.sol:80–87`
+> Source: `data/quests/requirements.csv`, `LibQuestRegistry.sol:80–87`,
+> `LibGetter.sol:85–87`, `LibQuest.sol:275–288` (`checkCompletedDelay`)
 
 ## Completing Quests
 
@@ -225,7 +227,7 @@ Reward anchor: `keccak256("registry.quest.reward", questIndex)`
 
 ## Quest Data Summary
 
-The catalog contains **196 quests** — 188 In Game, 3 Defunct, 5 Test:
+The catalog contains **202 quests** — 194 In Game, 3 Defunct, 5 Test:
 
 | Type | Indices | Keys | Givers | Description |
 |---|---|---|---|---|
@@ -233,15 +235,18 @@ The catalog contains **196 quests** — 188 In Game, 3 Defunct, 5 Test:
 | MAIN | 2001–2016 | MIN001–MIN016 | MINA | Mina's quest line |
 | SIDE | 2100–2101 | MIN100–MIN101 | MINA | Fountain / item-pool intro pair |
 | MAIN | 3100–3102 | SQ100–SQ102 | MENU, MINA | Side-numbered but typed MAIN |
-| SIDE | 3001–3022, 3028–3045, 3104–3118, 3802–3803, 3900, 3998, 10003 | SQ001–SQ118, SQ802–SQ803, SQ900, SQ998, SQ997 | MENU (28), MINA (16), ROB (9), ZEVANA (5), DIMIDIATUS (1) | Side quests (59 SQ-keyed; 61 counting MIN100–MIN101). SQ802 is `Defunct`; SQ900 is daily |
-| (no type) | 10001–10002, 1000000–1000004 | TTX01, SQ999, test-0…test-4 | — | TTX01 and SQ999 are `Defunct`; test-0…test-4 are Status=Test |
+| SIDE | 3001–3022, 3028–3045, 3104–3122, 3802–3803, 3900–3902, 3998, 10003 | SQ001–SQ122, SQ802–SQ803, SQ900–SQ902, SQ998, SQ997 | MENU (31), MINA (16), ROB (9), ZEVANA (5), IGOR (2), DIMIDIATUS (1), REFLECTION (1) | Side quests (65 SQ-keyed; 67 counting MIN100–MIN101). SQ802 is `Defunct`; SQ900, SQ901 and SQ902 are daily |
+| (no type) | 10001–10002, 1000000–1000004 | TTX01, SQ999, TEST001…TEST005 | — | TTX01 and SQ999 are `Defunct`; TEST001…TEST005 are Status=Test |
 
 There is **no `FACTION` quest type** — Mina's MIN001–MIN016 are `Type=MAIN`
 with `Giver=MINA`, while MIN100–MIN101 are `Type=SIDE` with the same giver.
-Index 10003 (SQ997) is a live quest, not a test entry. Two rows are
+Index 10003 (SQ997) is a live quest, not a test entry. Four rows are
 `Daily=Yes`: **SQ900 "Warm Your Hands"** (index 3900, In Game — the first live
-daily quest; see [Daily Quests](#daily-quests-dailyyes)) and test-0 (Status
-Test).
+daily quest; see [Daily Quests](#daily-quests-dailyyes)), **SQ901 "Wash Your
+Hands"** (3901, the lake offering), **SQ902 "Same Time Tomorrow"** (3902,
+gated by `QUEST_COMPLETED_DELAY` on SQ122) — all In Game — and TEST001 (Status
+Test). Test quests are created only when named by index; a bulk init no longer
+adds them (`deployment/world/state/quests/quests.ts:50–53`).
 
 Three rows carry the status **`Defunct`**: SQ802 ("Quest Diagnostics"), SQ999
 ("Claim Your Free Gift!") and TTX01 ("Proof of Honesty", index 10001, a

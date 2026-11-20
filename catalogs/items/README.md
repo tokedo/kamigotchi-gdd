@@ -1,25 +1,25 @@
 # Items Catalog
 
 > Source: `packages/contracts/deployment/world/data/items/`
-> Commit: `04cb25f8`
+> Commit: `a99b4b64`
 
 ## Files
 
 | File | Entries | Description |
 |---|---|---|
-| `items.csv` | 180 items | Complete item catalog with stats, effects, and descriptions |
-| `effects.csv` | 93 effects | Item effect definitions (what items do when used/equipped) |
-| `droptables.csv` | 6 tables | Weighted loot pools for lootbox items |
+| `items.csv` | 190 items | Complete item catalog with stats, effects, and descriptions |
+| `effects.csv` | 99 effects | Item effect definitions (what items do when used/equipped) |
+| `droptables.csv` | 8 tables | Weighted loot pools for lootbox items |
 
 ### Source Files & Transformations
 
 - `items.csv` ← source `data/items/items.csv` (column order rearranged; `Image`
   column dropped).
-- `effects.csv` ← source `data/items/allos.csv`. The GDD carries **94 of the
-  112 source rows**: the 18 excluded rows are empty placeholders (a `Name` key
-  only — no Type, Descriptor, or Value), are referenced by no item, and never
-  reach the chain (allos are deployed only when an item's `Effects` column
-  references them).
+- `effects.csv` ← source `data/items/allos.csv`, all 99 rows (the source's
+  leading blank `.` column dropped). Allos reach the chain only when an item's
+  `Effects` column references them; since `a99b4b64` an `Effects` (or
+  `Requirements`) key with no matching row stops the deployment with an error
+  instead of being skipped.
 - Item requirements come from source `data/items/requirements.csv` (see
   "Item Requirements" below).
 - **Name/description normalization**: the GDD strips decorative curly quotes
@@ -36,69 +36,90 @@
 | Name | string | Display name |
 | Type | enum | Item type category (see types below) |
 | Rarity | enum | Common / Uncommon / Rare / Epic / Legendary |
-| For | enum | Target entity: `Kami`, `Account`, `Enemy_Kami`, `Any_Kami`, `Passport_slot`, `Kami_Pet_Slot`, or empty |
+| For | enum | Target entity: `Kami`, `Account`, `Enemy_Kami`, `Any_Kami`, `RESPEC` (11403 only, used by the skill respec), the equipment slot `Kami_Pet_Slot`, or empty (a basic, unusable item) |
 | Flags | string | Comma-separated flags (e.g., `NOT_TRADABLE`, `BYPASS_BONUS_RESET`) |
 | Effects | string | Comma-separated effect keys (references `effects.csv`) |
 | Requirements | string | Comma-separated requirement keys (see Item Requirements below) |
-| Status | enum | `In Game`, `To Deploy`, `To Update` |
+| Status | enum | `In Game`, `Shelved`, `To Deploy`, `To Update` |
 | Description | string | In-game flavor text |
 
 ## Item Requirements
 
 Requirement keys in `items.csv:Requirements` resolve via source
-`data/items/requirements.csv`, which defines two requirements:
+`data/items/requirements.csv`, which defines five requirements (all `USE`):
 
-| Key | Type | Preposition | Index | Value | Meaning |
-|---|---|---|---|---|---|
-| `VIP_ROOM` | `ROOM` | `AT` | 64 | — | Usable only while the account is in room 64 (Burning Room) |
-| `MOCHI_LIMIT` | `MOCHI_USED` | `MAX` | 0 | 2 | Usable only while the target's `MOCHI_USED` counter is at most 2 |
+| Key | Type | Preposition | Index | Value | Meaning | Items |
+|---|---|---|---|---|---|---|
+| `VIP_ROOM` | `ROOM` | `AT` | 64 | — | Usable only while the account is in room 64 (Burning Room) | VIPP (2) |
+| `MOCHI_LIMIT` | `MOCHI_USED` | `MAX` | 0 | 1 | Usable only while the target Kami's `MOCHI_USED` counter is at most 1 | the four Mochi |
+| `KAMI_CAN_EAT` | `KAMI_CAN_EAT` | `IS` | 0 | — | Target Kami is `RESTING` or `HARVESTING` | 49 Kami / enemy / any-Kami items |
+| `KAMI_DEAD` | `STATE` | `IS` | 3 | — | Target Kami is `DEAD` | the revive items 11001–11004 |
+| `KAMI_RESTING` | `STATE` | `IS` | 1 | — | Target Kami is `RESTING` | none |
+
+Since `a99b4b64` these keys are the only state rules a Kami item has: the
+deployment no longer adds a hidden rule derived from the item's `Type` (see
+[item-usage.md](../../mechanics/economy/item-usage.md#state-rules-come-from-the-items-requirements)).
 
 **VIPP (item 2)** carries `VIP_ROOM` — it can be used/burned only in the
 Burning Room (`catalogs/rooms/rooms.csv` room 64).
 
-The four **Mochi** items (11110 Gaokerena, 11120 Sunset Apple, 11130 Kami,
-11140 Mana) carry `MOCHI_LIMIT`, capping permanent stat mochis at 2 per
-target.
+**Mochi cap — two per Kami, any kind.** The four Mochi (11110 Gaokerena,
+11120 Sunset Apple, 11130 Kami, 11140 Mana) carry `MOCHI_LIMIT` and the effect
+`MOCHI_USED` (a basic allo: `+1` on the Kami's `LibData` counter
+`MOCHI_USED`, index 0). The requirement is checked before the effects apply,
+so the first and second Mochi pass (counter 0, then 1) and the third reverts
+`"Item: requirements not met"`; the counter is shared by all four kinds.
 
-> ⚠️ UNCERTAIN: `MOCHI_USED` is not one of `LibGetter.getBal`'s named types, so
-> it resolves to a generic `LibData` counter
-> (`LibGetter.sol:67–68`). No system in `packages/contracts/src/` writes that
-> key, so the counter reads `0` and the `MAX 2` check always passes — the cap
-> does not bind under this source. Verify live on-chain behavior before
-> publishing it as an enforced limit.
+> Before `a99b4b64` no Mochi carried the `MOCHI_USED` effect and the limit was
+> `MAX 2`: nothing wrote the counter, so it read 0 and the cap never bound.
+
+> Source: `deployment/world/data/items/requirements.csv:2–6`,
+> `deployment/world/data/items/allos.csv` (`MOCHI_USED`),
+> `deployment/world/state/items/allos.ts:37–56`, `LibSetter.sol:64–66`,
+> `LibGetter.sol:67–68`, `LibConditional.sol:288–289`,
+> `LibItem.sol:310–318`, `test/systems/Items/ItemKami.t.sol` (mochi tests)
 
 ## Item Types
 
+`Type` is a display category; since `a99b4b64` the deployment reads it only
+to recognise `Equipment` (see `mechanics/economy/items.md`).
+
 | Type | Count | Description |
 |---|---|---|
-| Food | 44 | Consumables that restore HP, grant XP, or apply buffs to Kami |
-| Material | 41 | Raw and processed crafting ingredients |
+| Material | 42 | Raw and processed crafting ingredients (incl. Holy Dust, 11011) |
 | Equipment | 36 | Equipable pet-slot items with passive stat bonuses |
-| NFT | 14 | Passport items (equippable cosmetics) |
-| Potion | 11 | Consumables with targeted effects (Kami, Enemy_Kami, or Any_Kami) |
-| Key Item | 12 | Quest-related unique items (incl. Ring of Spirits, 22802) |
-| Misc | 7 | Currencies and special items (MUSU, Gacha Ticket, etc.) |
-| Lootbox | 6 | Openable containers that roll on a droptable |
+| Food | 27 | Kami food: HP, XP and buff snacks, the four Mochi, Igors Candy |
+| NFT | 14 | Passport items (cosmetics) |
+| Potion | 14 | Brewed potions, incl. the enemy-Kami poisons and Pale Potion |
+| Consumable | 13 | Other usable items (Red Ribbon Gummy, Djed Pillar, VIPP, jewels, talismans, Energy Drink, ...) |
+| Key Item | 13 | Quest-related unique items (incl. Ring of Spirits 22802, Igors Amulet 100012) |
+| Lootbox | 8 | Openable containers that roll on a droptable (incl. Silt-Caked Box 21007, Golden Box 21008) |
+| Misc | 7 | Currencies and tickets (MUSU, Gacha Ticket, Ballot, Golden Ballot, ...) |
+| Spell Card | 7 | Spell Cards (Cultivation I–IV, Paeon's Field, Neith's River, Melkarth's Awakening) |
+| Cosmetic | 4 | Voter Badges I–IV (15–18) |
 | Tool | 3 | Crafting tools (Grinder, Burner, Screwdriver) |
-| Consumable | 2 | Generic consumables (Djed Pillar, VIPP) |
-| Revive | 2 | Items that resurrect liquidated Kami |
 | ERC20 | 2 | Portal-bridged tokens (Onyx Shard, Ether Shard) |
 
 ## Rarity Distribution
 
 | Rarity | Count | Numeric Value |
 |---|---|---|
-| Common | 21 | 1 |
+| Common | 11 | 1 |
 | Uncommon | 52 | 2 |
-| Rare | 66 | 3 |
-| Epic | 35 | 4 |
-| Legendary | 6 | 5 |
+| Rare | 61 | 3 |
+| Epic | 48 | 4 |
+| Legendary | 18 | 5 |
+
+57 rarities were realigned to the design sheet in this sync's range (e.g. the
+equipment sets now run Rare / Epic / Legendary by tier). Rarity is written only
+when an item is created; the world-state command `items setRarity` rewrites it
+on live items from the sheet.
 
 ## Index Ranges
 
 | Range | Category | Examples |
 |---|---|---|
-| 1–33 | Currency, tickets, passports | MUSU (1), Gacha Ticket (10), Passports (20-33) |
+| 1–33 | Currency, tickets, ballots, passports | MUSU (1), Gacha Ticket (10), Ballot (13), Golden Ballot (14), Voter Badges (15–18), Passports (20-33) |
 | 100, 103 | Bridged tokens (ERC20) | Onyx Shard (100), Ether Shard (103) — see `mechanics/marketplace/token-portal.md` |
 | 1001–1021 | Raw materials | Wooden Stick, Stone, Black Poppy, Bone Chunk |
 | 1102–1303 | Processed materials | Empty Cup, Microplastics, Ashlar, Timber, Ingot |
@@ -107,13 +128,13 @@ target.
 | 11110–11140 | Mochi (permanent stat boost) | Gaokerena, Sunset Apple, Kami, Mana |
 | 11201–11233 | XP items | XP Candies, Heart Crystals, Jewels |
 | 11301–11314 | HP food | Ghost Gum, Cheeseburger, Golden Apple |
-| 11401–11413 | Potions & buffs | XP/Grace/Bless/Respec Potions, Festival Chime |
+| 11401–11414 | Potions & buffs | XP/Grace/Bless/Respec Potions, Festival Chime, Igors Candy |
 | 11501–11502 | Temporary stat potions | Toadstool Liquor, Sarcophagus Honey |
 | 19001–19301 | Offensive potions (Enemy_Kami) | Spirit Glue, Animistic Poison, Curse Tablet |
-| 21001–21206 | Account consumables | Lootboxes, Ice Cream, Spell Cards |
+| 21001–21206 | Account consumables | Lootboxes (incl. Silt-Caked Box 21007, Golden Box 21008), Ice Cream, Spell Cards |
 | 23100–23102 | Tools | Spice Grinder, Portable Burner, Screwdriver |
-| 30001–30036 | Equipment (Pet Slot) | 12 sets of 3 tiers (Common/Uncommon/Rare) |
-| 100001–100011 | Key Items | Quest and co-op items (Astrolabe Disk, Data Chips, etc.) |
+| 30001–30036 | Equipment (Pet Slot) | 12 sets of 3 tiers (Rare/Epic/Legendary) |
+| 100001–100012 | Key Items | Quest and co-op items (Astrolabe Disk, Data Chips, Igors Amulet, etc.) |
 
 ## effects.csv Schema
 
@@ -206,7 +227,7 @@ item can be fed mid-harvest without destroying an active buff
 (`KamiUseItemSystem.sol:34–37`, `LibItem.sol:239–243`). It is read only on the
 own-Kami `USE` path, so it is inert on casts and on account items — including
 for an `Any_Kami` item, which honours the flag when used on your own Kami and
-ignores it when cast. 18 items carry it. Full semantics:
+ignores it when cast. 19 items carry it. Full semantics:
 [bonus-system.md](../../mechanics/combat/bonus-system.md#bypass_bonus_reset-item-flag).
 
 ## droptables.csv Schema
@@ -218,7 +239,10 @@ ignores it when cast. 18 items carry it. Full semantics:
 | Tiers | int[] | Comma-separated weights (higher = more common) |
 | Notes | string | Human-readable summary |
 
-Tier weights determine drop probability: `P(item) = tier / sum(all tiers)`.
+Tier weights are exponential: each tier `t` weighs `2^(t−1)` (0 never drops), so
+`P(item) = 2^(t−1) / Σ 2^(t_i−1)` — see
+[droptables.md](../../mechanics/economy/droptables.md). The `Value` of an
+`ITEM_DROPTABLE` effect is the number of rolls (1 on every row).
 
 ## Cross-References
 
@@ -231,12 +255,7 @@ Tier weights determine drop probability: `P(item) = tier / sum(all tiers)`.
 
 ## Known Discrepancies
 
-> ⚠️ **UNCERTAIN / source bug — Cultivation III Spell Card (11213).** Its
-> `Effects` column references the effect key `XP+10000`, but **no `XP+10000`
-> row exists in `effects.csv`** (`allos.csv` in source). Allo resolution is an
-> exact name-match (`LibBonus`/`addAllos`): an unmatched key is logged as an
-> error and **skipped** at deploy. As written, Cultivation III therefore grants
-> only its `HP+100` effect — the intended 10,000 XP would not apply until an
-> `XP+10000` effect/allo is added. The item description ("grant 10000 XP")
-> reflects the design intent. Source: `items.csv` row 11213 vs `allos.csv`
-> (no `XP+10000`); `deployment/world/state/items/allos.ts:30–33`.
+None open at the pin. The earlier one — Cultivation III Spell Card (11213)
+naming the effect `XP+10000` with no such row in the source — is closed: the
+row exists since this sync's range (`XP`, value 10000), so the card grants its
+`HP+100` and 10,000 XP as its description says.

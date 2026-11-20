@@ -1,7 +1,7 @@
 # Rooms Catalog
 
 > Source: `packages/contracts/deployment/world/data/rooms/`
-> Commit: `04cb25f8`
+> Commit: `a99b4b64`
 
 ## Files
 
@@ -34,9 +34,10 @@
 | Status | enum | `In Game` |
 | Drops | string | Droptable name (references `scavenge-droptables.csv`) |
 | Affinity | enum | `Normal`, `Eerie`, `Insect`, `Scrap`, or multi (e.g., `Eerie, Scrap`) |
-| Level Limit | uint32 | Max kami level for harvesting at this node (empty = no limit): 15 on 6 nodes (1, 2, 3, 29, 30, 55), 35 on 8 nodes (31, 35, 36, 47, 50, 56, 57, 59) |
+| Level Limit | uint32 | Max kami level for harvesting at this node (empty = no limit): 15 on 6 nodes (1, 2, 3, 29, 30, 55), 35 on 7 nodes (31, 35, 36, 47, 50, 57, 59) |
 | YieldIndex | uint32 | Base yield item index: 1 = MUSU (49 nodes) or 2 = VIPP (15 nodes: 6, 18, 48, 49, 52, 58, 60, 61, 62, 65, 73, 75, 79, 83, 88 — e.g., Labs Entrance 6, Cave Crossroads 18, Scrap Trees 60, Treasure Hoard 88) |
 | Scav Cost | uint32 | Scavenge bar point cost (100–1,000) |
+| Harvest Multiplier | decimal | The node's harvest multiplier K as a factor (stored ×1000 on chain, 0.1–60); `1` on all 64 nodes — see [nodes.md](../../mechanics/world/nodes.md#harvest-multiplier-k) |
 
 The source CSV carries one further column, **`💥 Node Effects`**, which is
 dropped here: it is **empty on all 64 source rows** and is never read by the
@@ -66,7 +67,8 @@ node initialiser (`deployment/world/state/rooms/nodes.ts:11–24, 49–52`).
 | Tiers | int[] | Comma-separated weights (higher = more common) |
 | Items (resolved names) | string | Human-readable item names for reference |
 
-Drop probability: `P(item) = tier / sum(all tiers)`
+Drop probability is exponential in the tier: `P(item) = 2^(t−1) / Σ 2^(t_i−1)`
+(see [droptables.md](../../mechanics/economy/droptables.md))
 
 ## Z-Planes (Depth Layers)
 

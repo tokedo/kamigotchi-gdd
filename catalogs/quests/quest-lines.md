@@ -428,7 +428,15 @@ MIN007 --- SQ012  Customer Loyalty Program II
 (Own 1 Obol) --- SQ015  The Wages of Sin
                     |
                   SQ016  Go Suck An Egg
+                    ·
+(Complete SQ015) --- SQ901  Wash Your Hands  (daily, Giver: REFLECTION)
+                       objective: Offer an Obol at the lake (craft 1 Silt-Caked Box,
+                                  recipe 10002, room 11 only)
+                       reward:    +1 reputation with The Nursery
 ```
+
+SQ901 (index 3901) is a daily quest: the offering replaces the obol pop-up
+shop, and SQ016's introduction now sends the player to the water.
 
 ### Annfwn (Other World) Side Quests
 
@@ -504,6 +512,34 @@ SQ115  Dry Conversation  (Complete SQ014)
 SQ116  Lost and Found  (Complete SQ111)  ──→  SQ117  Trash Pickers  ──→  SQ118  Janitorial Supplies
 ```
 
+### Butterfly Forest / Igor Side Quests (SQ119-SQ122, SQ902)
+
+All in or about room 56 (Butterfly Forest); In Game.
+
+```
+(Complete MSQ009) --- SQ119  The Legend  (Giver: MENU)
+                         objective: 3 scavenging rolls at Butterfly Forest
+                         reward:    2x Agency Reputation
+                        |--- SQ120  Something Follows You  (Giver: MENU)
+                               objective: harvest >720 minutes at Butterfly Forest
+                               reward:    1x Neith's River of Life Spell Card
+                              |--- SQ121  The Thing in the Woods  (Giver: MENU)
+                                     objectives: In Room: Butterfly Forest, craft 1 Igors Amulet
+                                    |--- SQ122  Trick or Treat  (Giver: IGOR, + In Room: Butterfly Forest)
+                                           objective: give 1 Igors Amulet
+                                           reward:    3x Igors Candy
+                                          |··· SQ902  Same Time Tomorrow  (daily, Giver: IGOR)
+                                                 requires: SQ122 completed more than 1 day ago,
+                                                           In Room: Butterfly Forest
+                                                 objective: give 1 Igors Amulet
+                                                 reward:    3x Igors Candy
+```
+
+The amulet is crafted with recipe 42 (3 Wooden Stick, 2 Stone, 1 Resin, 15
+stamina, no tool); Igors Candy (11414) is a Kami food giving +50 % harvest
+bounty on the next harvest action (`BOUNTY+50%`, `BYPASS_BONUS_RESET`). SQ902's
+gate is the `QUEST_COMPLETED_DELAY` requirement (index 3122, 86,400 s).
+
 ### Diagnostics Side Quests (SQ802-SQ803)
 
 ```
@@ -530,7 +566,7 @@ SQ999's `BLOCKTIME MAX` window closed on 2025-10-25 and the row is now
 objectives or rewards — only the `Missed Mina` (`MINA_LAUNCH_VICTIM`)
 requirement — and is `Defunct` from its first appearance.
 
-### Daily Side Quest (SQ900)
+### Daily Side Quests (SQ900; also SQ901 and SQ902 above)
 
 ```
 SQ900  Warm Your Hands  (daily, no prereqs, Giver: MENU)
@@ -546,14 +582,15 @@ run was accepted, once that run is completed. No other quest requires it.
 
 ## Test Quests (5 total, Index 1000000-1000004)
 
-Development/testing quests. Not deployed to production.
+Development/testing quests, keys TEST001-TEST005 (formerly test-0…test-4).
+Created only when named by index; a bulk init never adds them.
 
 ```
-test-0  Daily Test Quest  (daily, no prereqs)
-test-1  Crafting Materials  (no prereqs)
-  |--- test-3  Crafting Materials II
-  |--- test-4  Crafting Toolkit
-test-2  Lottery Loving  (no prereqs)
+TEST001  Daily Test Quest  (daily, no prereqs)
+TEST002  Crafting Materials  (no prereqs)
+  |--- TEST004  Crafting Materials II
+  |--- TEST005  Crafting Toolkit
+TEST003  Lottery Loving  (no prereqs)
 ```
 
 ---

@@ -4,7 +4,7 @@
 > `packages/contracts/deployment/world/data/listings/listings.csv`,
 > `packages/contracts/deployment/world/data/listings/pricing.csv`,
 > `packages/contracts/deployment/world/data/listings/requirements.csv`
-> Commit: `04cb25f8`
+> Commit: `a99b4b64`
 
 `listings.csv` here merges the source listing sheet with two lookup sheets:
 the `Buy Price Model` keys resolve via `data/listings/pricing.csv` (GDA tier
@@ -17,8 +17,8 @@ Decay 0.5, Rate = supply), and the `Requirements` keys resolve via
 
 | File | Entries | Description |
 |---|---|---|
-| `npcs.csv` | 2 NPCs | NPC registry with room locations |
-| `listings.csv` | 18 listings | Shop inventories with prices and GDA pricing models |
+| `npcs.csv` | 3 NPCs | NPC registry with room locations |
+| `listings.csv` | 20 listings | Shop inventories with prices and GDA pricing models |
 
 ## npcs.csv Schema
 
@@ -39,7 +39,7 @@ Decay 0.5, Rate = supply), and the `Requirements` keys resolve via
 | NPC Name | string | NPC name for reference |
 | Item Index | uint32 | What item is sold (references `catalogs/items/items.csv`) |
 | Item Name | string | Item name for reference |
-| Currency Index | uint32 | Currency used: `1` = MUSU, `100` = Onyx Shard |
+| Currency Index | uint32 | Currency used: `1` = MUSU, `13` = Ballot, `14` = Golden Ballot, `100` = Onyx Shard |
 | Base Price | number | Starting price in the currency |
 | Buy Price Model | string | Pricing formula (see below) |
 | Requirements | string | Gating conditions (e.g., quest completion) |
@@ -50,6 +50,7 @@ Decay 0.5, Rate = supply), and the `Requirements` keys resolve via
 |---|---|---|---|
 | **Mina** | Convenience Store (Room 13) | 11 | General goods: materials, food, ice cream, tools |
 | **Vending Machine** | Cave Crossroads (Room 18) | 7 | Food and ice cream (cave supply) |
+| **Alaina** (NPC 10) | Burning Room (Room 64) | 2 | The Ballot Shop: Booster Pack for 5 Ballots, Golden Box for 1 Golden Ballot (both `FIXED`) — see [ballots.md](../../mechanics/marketplace/ballots.md#spending-the-ballot-shop) |
 
 ## Pricing Models
 
@@ -71,8 +72,8 @@ for the underlying GDA math (auctions are **not** floored).
 
 ### FIXED
 
-Some items (Spice Grinder, Portable Burner) have fixed prices — no supply limit
-or dynamic pricing.
+Some items (Spice Grinder, Portable Burner, and Alaina's two Ballot Shop
+listings) have fixed prices — no supply limit or dynamic pricing.
 
 ### Onyx Shard Pricing
 
@@ -83,15 +84,18 @@ or dynamic pricing.
 > script contains a commented-out `initLocalListings()` that was used for local
 > ERC-20 testing of these listings.
 
-All active shop items are priced in MUSU.
+All active shop items are priced in MUSU except Alaina's two, priced in Ballots
+(13) and Golden Ballots (14). Neither has a sell price: since `a99b4b64` the
+listing deployment refuses a sell price on a `NOT_TRADABLE` item, because
+selling to a shop skips the tradability check.
 
 ## Statistics
 
-- **Total listings**: 19 (18 in-game, 1 shelved)
-- **Active buyable listings**: 16 (2 Onyx listings are registered but non-functional)
-- **Unique items sold**: 11 distinct items
-- **Currency split**: 2 Onyx Shard listings (dormant), 17 MUSU listings
-- **Pricing models**: 15 GDA, 2 FIXED, 2 dormant (no pricing assigned)
+- **Total listings**: 20 (18 in-game, 2 shelved)
+- **Active buyable listings**: 18
+- **Unique items sold**: 13 distinct items
+- **Currency split**: 17 MUSU, 1 Ballot, 1 Golden Ballot, 1 Onyx Shard (shelved, dormant)
+- **Pricing models**: 15 GDA, 4 FIXED, 1 dormant (no pricing assigned)
 
 ## Cross-References
 
