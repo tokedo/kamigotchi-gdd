@@ -88,7 +88,7 @@ looks up the allos registered under the item's `"USE"` use case and passes them
 to `LibAllo.distribute()`:
 
 - `KamiUseItemSystem` → `applyAllos(..., "USE", 1, kamiID)` (`KamiUseItemSystem.sol:42`)
-- `KamiCastItemSystem` → `applyAllos(..., "USE", 1, targetID)` (`KamiCastItemSystem.sol:38`)
+- `KamiCastItemSystem` → `applyAllos(..., "USE", 1, targetID)` (`KamiCastItemSystem.sol:46`)
 - `AccountUseItemSystem` → `applyAllos(..., "USE", amt, accID)` (`AccountUseItemSystem.sol:30`)
 
 `LibAllo.distribute()` dispatches each allo by its `Type` — stat deltas,
@@ -122,7 +122,7 @@ Items can have flags that modify behavior:
 | Item type as flag | Stored for reverse querying (e.g., `"EQUIPMENT"`) |
 
 Items can also be **disabled** (via `LibDisabled`). The disabled flag blocks
-Kami-use (`KamiUseItemSystem.sol:23`), cast (`KamiCastItemSystem.sol:29`),
+Kami-use (`KamiUseItemSystem.sol:23`), cast (`KamiCastItemSystem.sol:37`),
 equip (`KamiEquipSystem.sol:28`) and, since `a99b4b64`, account use
 (`AccountUseItemSystem.sol:23`) — each reverts `"item is disabled"`. Before
 that commit the account path never called `verifyEnabled`, so a disabled

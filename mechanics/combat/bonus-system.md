@@ -105,7 +105,7 @@ Using several copies of an item in one call does not help either: the
 allocation multiplier `mult` is threaded through `LibAllo.distribute` but
 `giveBonus` ignores it entirely (`LibAllo.sol:241–248`), and the Kami-facing
 item systems pass `1` regardless (`KamiUseItemSystem.sol:42`,
-`KamiCastItemSystem.sol:38`).
+`KamiCastItemSystem.sol:46`).
 
 > Source: `LibBonus.sol:43–48` (header contract: "temp bonuses do not stack"),
 > `140–174` (`assign`), `176–192` (`assignTemporary`), `194–211` (`incBy`),
@@ -129,7 +129,7 @@ item systems pass `1` regardless (`KamiUseItemSystem.sol:42`,
 > (`HarvestStopSystem.sol:99`), and liquidation
 > (`HarvestLiquidateSystem.sol:82`). **Energy Drink**'s `STND_COOLDOWN_SHIFT`
 > −30 buff is the one deployed bonus that uses this terminator
-> (`deployment/world/data/items/allos.csv:11`), so it lasts until the Kami's
+> (`deployment/world/data/items/allos.csv:12`), so it lasts until the Kami's
 > next cooldown is set rather than until its next harvest action. Item 11409
 > also carries the `BYPASS_BONUS_RESET` flag, so feeding it does not clear
 > other temporary bonuses (`KamiUseItemSystem.sol:35–37`).
@@ -141,7 +141,7 @@ item systems pass `1` regardless (`KamiUseItemSystem.sol:42`,
 > equipment bonuses — under the `USE` use case with the bare terminator string
 > from the catalog (`UPON_UNEQUIP`, no slot suffix)
 > (`deployment/world/state/items/allos.ts:64`,
-> `deployment/world/data/items/allos.csv:6–35`), while equipping reads the
+> `deployment/world/data/items/allos.csv:6–37`), while equipping reads the
 > `EQUIP` use-case anchor (`LibEquipment.getEquipBonusAlloID`,
 > `LibEquipment.sol:216–225`) and unequip clears the `UPON_UNEQUIP_{SLOT}` end
 > type (`LibEquipment.sol:48, 252, 276–278`). The live registration therefore
@@ -265,8 +265,8 @@ So, answering the three open questions directly:
 > someone and clears only when the target is itself liquidated. Trust the
 > `Terminator` column, never the key name.
 
-> Source: `deployment/world/data/items/allos.csv:22, 32, 38` (`_KK` rows; the
-> plain `ATR+10%` row at 33), `deployment/world/data/items/items.csv:114, 121`
+> Source: `deployment/world/data/items/allos.csv:23, 33, 39` (`_KK` rows; the
+> plain `ATR+10%` row at 34), `deployment/world/data/items/items.csv:121, 129`
 > (items 11412, 19301), `deployment/world/state/items/allos.ts:58–65`
 > (`addBonus` maps `Descriptor` → bonus type and `Terminator` → end type),
 > `LibAllo.sol:93–115` (`createBonus`), `LibBonus.sol:66–92` (`regCreate`)

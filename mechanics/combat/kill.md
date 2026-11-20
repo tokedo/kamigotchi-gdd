@@ -66,7 +66,7 @@ attacker Violence overwhelms victim Harmony. Efficacy and the threshold shifts
 
 > Source: `LibKill.sol:26, 91–107`,
 > `deployment/world/state/configs/configs.ts:189–193` (`initLiquidation`,
-> array at 145)
+> array at 192)
 
 Result is in 1e6 precision (proportion of total health).
 
@@ -176,7 +176,7 @@ slots are unused by `calcKarma`, which reads `config[2]` and `config[3]` only.
 
 > Source: `LibKill.sol:27, 165–179`,
 > `deployment/world/state/configs/configs.ts:189–203` (`initLiquidation`,
-> array at 154)
+> array at 201)
 
 **Interpretation**: A high-violence victim inflicts more karma on the attacker,
 making it riskier to kill strong opponents.
