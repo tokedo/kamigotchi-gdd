@@ -164,7 +164,7 @@ is chunk-invariant — see
 
 ### Scavenge (Harvest Collect/Stop → Claim)
 - Collecting or stopping a harvest only **increments the node's scav bar** by
-  the harvest output (`LibNode.sol:132` → `LibScavenge.incFor`) — no rolls
+  the harvest output (`LibNode.sol:163` → `LibScavenge.incFor`) — no rolls
   happen at that point
 - `ScavengeClaimSystem` claims rewards: `rolls = ⌊points / tierCost⌋`, and the
   remainder `points mod tierCost` stays on the bar

@@ -84,7 +84,7 @@ tree before skills at that tier become available:
 | 6 | 75 | `KAMI_TREE_REQ[6]` |
 | 7 | 95 | `KAMI_TREE_REQ[7]` |
 
-> Source: `configs.ts:185–187` (`initSkills`, array at 186),
+> Source: `configs.ts:232–234` (`initSkills`, array at 186),
 > `LibSkill.sol:226–228`
 
 > **Index mapping**: this table is 0-indexed by config slot, while

@@ -47,7 +47,7 @@ Instance ID: `keccak256("scavenge.instance", field, index, holderID)`
 The amount added equals the **harvest output** — more productive harvests
 generate more scavenge points.
 
-> Source: `LibScavenge.sol:87–96`, `LibNode.sol:125–133`
+> Source: `LibScavenge.sol:87–96`, `LibNode.sol:156–164`
 
 ## Claiming Rewards
 

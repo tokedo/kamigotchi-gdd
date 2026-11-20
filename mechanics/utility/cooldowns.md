@@ -106,7 +106,7 @@ sent on or re-listed immediately.
 | `KAMI_STANDARD_COOLDOWN` | `180` s (`30` in local test configs) | Base cooldown duration in seconds |
 | `KAMI_MARKET_PURCHASE_COOLDOWN` | not set by init scripts → `3600` s fallback | Cooldown added to a Kami on send or marketplace sale |
 
-> Source: `configs.ts:31, 124`, `KamiSendSystem.sol:49–51`
+> Source: `configs.ts:49, 171`, `KamiSendSystem.sol:49–51`
 
 ## Bonus Integration
 

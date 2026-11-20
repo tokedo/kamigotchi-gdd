@@ -167,7 +167,7 @@ belonged to a dead ID that no system can reach — out of circulation, but still
 counted in `ITEM_COUNT`. Those remnants are not swept by the new code.
 
 > Source: `LibTrade.sol:140–149, 164, 180–189, 195–200, 339–347`,
-> `LibInventory.sol:183–198` (`_decFor`, `ITEM_COUNT`), `configs.ts:181`
+> `LibInventory.sol:183–198` (`_decFor`, `ITEM_COUNT`), `configs.ts:228`
 
 ## Trade Room
 

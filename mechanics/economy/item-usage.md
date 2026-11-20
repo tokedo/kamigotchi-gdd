@@ -2,7 +2,7 @@
 
 > Source: `packages/contracts/src/systems/KamiUseItemSystem.sol` (L1–57),
 > `packages/contracts/src/systems/KamiCastItemSystem.sol` (L1–59),
-> `packages/contracts/src/systems/AccountUseItemSystem.sol` (L1–41),
+> `packages/contracts/src/systems/AccountUseItemSystem.sol` (L1–42),
 > `packages/contracts/src/systems/ItemBurnSystem.sol` (L1–44),
 > `packages/contracts/src/systems/ItemTransferSystem.sol` (L1–46),
 > `packages/contracts/src/systems/DroptableRevealSystem.sol` (L1–50)

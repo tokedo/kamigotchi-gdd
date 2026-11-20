@@ -4,7 +4,7 @@
 > `packages/contracts/src/systems/GoalContributeSystem.sol` (L1–50),
 > `packages/contracts/src/systems/GoalClaimSystem.sol` (L1–36),
 > `packages/contracts/src/systems/_GoalRegistrySystem.sol` (L1–175),
-> `packages/contracts/test/systems/Goals.t.sol` (L192–225),
+> `packages/contracts/test/systems/Goals.t.sol` (L191–224),
 > `packages/contracts/deployment/world/state/goals.ts` (L1–323)
 
 ## Overview
@@ -56,7 +56,7 @@ disabled)`, which reverts `"Goal does not exist"` for an unknown index
 (`deployment/world/api/goals.ts:23–32`); `initGoals` enables each goal it
 creates right after adding its rewards, and `enableGoals(indices)`
 (`goals.ts:307–311`, exposed as the world-state command `goals.enable`,
-`world.ts:139`) enables already-created goals by index.
+`world.ts:148`) enables already-created goals by index.
 
 Both player entrypoints check the flag on the **goal entity ID**:
 `LibGoal.verifyEnabled(components, goalID)` → `LibDisabled.verifyEnabled`
@@ -68,7 +68,7 @@ made before the pause, completion, and unclaimed rewards are kept (the flag
 touches nothing else). The test `testGoalDisabled` covers the cycle: a
 contribution reverts while disabled, succeeds and completes the goal once
 re-enabled; a claim reverts while disabled and pays out once re-enabled
-(`Goals.t.sol:192–225`).
+(`Goals.t.sol:191–224`).
 
 Removing a goal (`LibGoal.remove`) clears the flag along with the rest of the
 goal (`LibGoal.sol:120`).
@@ -80,9 +80,9 @@ goal (`LibGoal.sol:120`).
 
 > Source: `LibGoal.sol:82, 120, 203–205`, `LibDisabled.sol:11–26`,
 > `_GoalRegistrySystem.sol:43–48`, `GoalContributeSystem.sol:21–23`,
-> `GoalClaimSystem.sol:19–21`, `Goals.t.sol:192–225`,
+> `GoalClaimSystem.sol:19–21`, `Goals.t.sol:191–224`,
 > `deployment/world/api/goals.ts:23–32`, `deployment/world/state/goals.ts:219, 307–311`,
-> `deployment/world/world.ts:139`
+> `deployment/world/world.ts:148`
 
 ## Objective
 

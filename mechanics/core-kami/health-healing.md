@@ -2,7 +2,7 @@
 
 > Source: `packages/contracts/src/libraries/LibKami.sol` (L52–170),
 > `packages/contracts/src/libraries/utils/LibCooldown.sol` (L1–109),
-> `packages/contracts/deployment/world/state/configs/configs.ts` (L121, L124, L136)
+> `packages/contracts/deployment/world/state/configs/configs.ts` (L168, L171, L183)
 
 ## Overview
 
@@ -88,7 +88,7 @@ Metabolism(HP/s) = 1000 × (Harmony + 20) × 600 × (1000 + bonusBoost) / 3600
 
 The `REST_METABOLISM_BOOST` bonus can modify the boost multiplier.
 
-> Source: `LibKami.sol:134–145`, `configs.ts:121`
+> Source: `LibKami.sol:134–145`, `configs.ts:168`
 
 ### Recovery Calculation
 
@@ -142,7 +142,7 @@ strain = ceil(amt × 6500 × (1000 + strainBoost) / (10^6 × (Harmony + 20)))
 
 The `STND_STRAIN_BOOST` bonus modifies the boost value.
 
-> Source: `LibKami.sol:155–170`, `configs.ts:136`
+> Source: `LibKami.sol:155–170`, `configs.ts:183`
 
 ## Cooldown System
 
@@ -160,7 +160,7 @@ cooldown_end = block.timestamp + cooldown_duration
 
 A Kami is "on cooldown" when `block.timestamp < TimeNext`.
 
-> Source: `LibCooldown.sol:25–31, 82–108`, `configs.ts:124`
+> Source: `LibCooldown.sol:25–31, 82–108`, `configs.ts:171`
 
 ## Drain & Heal Operations
 

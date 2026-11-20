@@ -48,8 +48,8 @@ an explicit index.
 > SQ999 have actually been deleted from the live world — or merely flagged as
 > retired in the sheet — is chain state and cannot be read from source.
 
-> Source: `deployment/world/state/quests/quests.ts:52–54, 80–101`,
-> `deployment/world/state/utils.ts:40–49`
+> Source: `deployment/world/state/quests/quests.ts:51–53, 79–100`,
+> `deployment/world/state/utils.ts:56–65`
 
 ### By Giver
 

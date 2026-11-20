@@ -37,5 +37,5 @@ The phase system is used in two ways:
 - **Per-phase data logging** — liquidations and harvests are logged under
   phase-suffixed keys that quest objectives can target:
   - `LIQ_WHEN_{PHASE}` — liquidations per phase (`LibKill.sol:296`)
-  - `HARVEST_TIME_{PHASE}` — harvest time per phase (`LibHarvest.sol:380–381`)
-  - `HARVEST_WHEN_{PHASE}` — harvest amounts per phase (`LibHarvest.sol:406`)
+  - `HARVEST_TIME_{PHASE}` — harvest time per phase (`LibHarvest.sol:407–408`)
+  - `HARVEST_WHEN_{PHASE}` — harvest amounts per phase (`LibHarvest.sol:433`)

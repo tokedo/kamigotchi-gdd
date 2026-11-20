@@ -144,4 +144,4 @@ Returns 0 if the score doesn't exist (safe get).
 |---|---|---|
 | `SCORE_EPOCH` | `1` | Current scoring epoch number |
 
-> Source: `configs.ts:67`
+> Source: `configs.ts:114`

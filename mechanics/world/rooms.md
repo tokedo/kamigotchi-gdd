@@ -138,7 +138,7 @@ The checked-in gate list (`gates.ts`, the source of
 
 > Source: `deployment/world/state/rooms/gates.ts:4–27`,
 > `deployment/world/state/goals.ts:149–159`, `deployment/world/data/rooms/rooms.csv`
-> (rows 19, 59), `deployment/world/state/utils.ts:85–91` (`getGoalID`)
+> (rows 19, 59), `deployment/world/state/utils.ts:101–107` (`getGoalID`)
 
 ## Room Sharing
 

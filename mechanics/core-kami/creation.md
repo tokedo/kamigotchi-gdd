@@ -35,7 +35,7 @@ On creation every Kami receives:
 | Property | Initial Value | Source |
 |---|---|---|
 | Owner | `GACHA_ID` (sits in gacha pool) | `LibKamiCreate.sol:107` |
-| Name | `"{BASE_KAMI_NAME}{index}"` (config: `"Kamigotchi "`) | `LibKamiCreate.sol:109`, `configs.ts:62` |
+| Name | `"{BASE_KAMI_NAME}{index}"` (config: `"Kamigotchi "`) | `LibKamiCreate.sol:109`, `configs.ts:109` |
 | State | `"RESTING"` | `LibKamiCreate.sol:110` |
 | Level | `1` | `LibKamiCreate.sol:111` |
 | Skill Points | `1` | `LibKamiCreate.sol:112` |

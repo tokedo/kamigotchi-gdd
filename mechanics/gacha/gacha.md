@@ -132,7 +132,7 @@ the 2,222 seeded Kamis (plus any later top-ups) are what mint claims draw down.
 
 > ⚠️ The 2,222 figure is the seed the **deployment script** passes; it is not
 > asserted on chain, and the pool can be topped up afterwards at any size via
-> `mintToGachaPool` (`gacha.ts:14–21`, exposed as `world.ts:102`) — but only
+> `mintToGachaPool` (`gacha.ts:14–21`, exposed as `world.ts:108`) — but only
 > while headroom remains, since the batch minter is capped too. Unrevealed mint
 > commits made with headroom leave their new Kami resident in the pool until
 > revealed.
@@ -356,7 +356,7 @@ applies only at mint, reroll and auction purchase).
 > is not determinable from source. Gacha Tickets are also sold by the
 > MUSU-priced auction (see [auctions.md](../marketplace/auctions.md)).
 
-> Source: `GachaBuyTicketSystem.sol:17, 42–79, 103–109`, `configs.ts:97–109`,
+> Source: `GachaBuyTicketSystem.sol:17, 42–79, 103–109`, `configs.ts:144–156`,
 > `data/portal/tokens.csv`
 
 ## Mint Config
@@ -382,7 +382,7 @@ at the same time as the whitelist mint.
 key is never set by any init script. The only reroll cost is 1 Reroll Token
 (item 11) per Kami (`KamiGachaRerollSystem.sol:41`).
 
-> Source: `configs.ts:96–110` (initMint), `configs.ts:53–56` (initProdConfigs),
+> Source: `configs.ts:143–157` (initMint), `configs.ts:100–103` (initProdConfigs),
 > `deployment/world/state/index.ts:73–75, 97–99`,
 > `GachaBuyTicketSystem.sol:17–36, 116–118`
 

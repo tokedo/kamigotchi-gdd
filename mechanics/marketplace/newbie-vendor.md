@@ -234,4 +234,4 @@ nothing reads the accumulator back.
 The deploy script also seeds the TWAP accumulator at `0.005 ether`
 (`api.vendor.initTWAP`), which no longer affects the sale price.
 
-> Source: `configs.ts:195–201`
+> Source: `configs.ts:275–281`

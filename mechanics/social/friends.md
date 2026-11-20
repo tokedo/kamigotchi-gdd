@@ -119,4 +119,4 @@ Counts are determined by the `size()` of entities anchored to the counter pointe
 
 The friend limit can be increased by bonuses of type `FRIENDS_LIMIT`.
 
-> Source: `configs.ts:80–81`, `FriendAcceptSystem.sol:30–32`
+> Source: `configs.ts:127–128`, `FriendAcceptSystem.sol:30–32`

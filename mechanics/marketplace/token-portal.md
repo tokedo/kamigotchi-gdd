@@ -4,7 +4,7 @@
 > `packages/contracts/src/systems/TokenPortalSystem.sol` (L1–270),
 > `packages/contracts/src/libraries/utils/LibERC20.sol` (L40–52),
 > `packages/contracts/deployment/world/data/portal/tokens.csv`,
-> `packages/contracts/deployment/world/state/configs/configs.ts` (L37–51, L158–176)
+> `packages/contracts/deployment/world/state/configs/configs.ts` (L55–69, L205–223)
 
 ## Overview
 
@@ -285,7 +285,7 @@ deposit  100,000 shards:  tax = 100,000 × 50 / 10,000 + 1 = 501  →  99,499 sh
 withdraw 100,000 shards:  tax = 501  →  receipt for 99,499 × 10^13 wei = 0.99499 ETH
 ```
 
-> Source: `LibTokenPortal.sol:225–239`, `configs.ts:158–168`
+> Source: `LibTokenPortal.sol:225–239`, `configs.ts:205–215`
 
 ## Withdrawal Delay
 
@@ -293,7 +293,7 @@ withdraw 100,000 shards:  tax = 501  →  receipt for 99,499 × 10^13 wei = 0.99
 |---|---|---|
 | `PORTAL_TOKEN_EXPORT_DELAY` | 43200 (12 hours) | Time before a withdrawal can be claimed |
 
-> Source: `configs.ts:159`, `LibTokenPortal.sol:148, 219–221`
+> Source: `configs.ts:206`, `LibTokenPortal.sol:148, 219–221`
 
 ## Token Scale
 
@@ -376,11 +376,11 @@ operator-lane withdrawal — the route is readable only from the receipt's
 | `ERC20_RECEIVER_ADDRESS` | `0x6a2350...1aAd40` | Used only by the deprecated pre-bridge `LibERC20.spend` path (`LibERC20.sol:57–62`) — portal deposits instead transfer tokens to the `TokenHolderComponent` custody contract (`LibTokenPortal.sol:123`) |
 | `ONYX_BURNER_ADDRESS` | `0x4A8B41...2465Ec` | Address where burned Onyx tokens are sent |
 
-> Source: `configs.ts:158–176`
+> Source: `configs.ts:205–223`
 
 ### Local/Test Overrides
 
 In test environments, `PORTAL_TOKEN_EXPORT_DELAY` is reduced to `60` seconds
 (1 minute) for faster iteration; the tax arrays match production (`[1, 50]`).
 
-> Source: `configs.ts:37–51`
+> Source: `configs.ts:55–69`

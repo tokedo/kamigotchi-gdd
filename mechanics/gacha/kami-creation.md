@@ -169,4 +169,4 @@ weights, stats, and offsets from the trait registry for gas efficiency.
 | `BASE_KAMI_NAME` | `"Kamigotchi "` | Default name prefix for new Kamis |
 | `BASE_URI` | `"i.test.kamigotchi.io/kami"` | Base URL for Kami images |
 
-> Source: `configs.ts:62–63`
+> Source: `configs.ts:109–110`

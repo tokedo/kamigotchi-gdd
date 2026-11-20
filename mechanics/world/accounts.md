@@ -4,7 +4,7 @@
 > `packages/contracts/src/systems/AccountRegisterSystem.sol` (L1–42),
 > `packages/contracts/src/systems/AccountSetOperatorSystem.sol` (L1–34),
 > `packages/contracts/src/systems/AccountMoveSystem.sol` (L1–50),
-> `packages/contracts/src/systems/AccountUseItemSystem.sol` (L1–41),
+> `packages/contracts/src/systems/AccountUseItemSystem.sol` (L1–42),
 > `packages/contracts/deployment/world/state/configs/configs.ts`
 
 ## Overview
@@ -178,10 +178,10 @@ with base/shift/boost/sync fields. The `sync` field tracks current stamina.
 | `[2]` | Movement cost (stamina per move) | 5 | 5 |
 | `[3]` | XP per move | 5 | 5 |
 
-> Source: `configs.ts:24–29, 71–76`
+> Source: `configs.ts:43–48, 118–123`
 >
 > **Local override**: Recovery period is `1` second in local/test environments
-> (vs `60` seconds in production) for faster testing. See `configs.ts:24–29`.
+> (vs `60` seconds in production) for faster testing. See `configs.ts:43–48`.
 
 ### Recovery
 
@@ -269,7 +269,7 @@ reverts `unreachable` even when it is also gated. See
 This is for items that affect the **account** directly (e.g., stamina potions),
 as opposed to items used on Kamis.
 
-> Source: `AccountUseItemSystem.sol:18–36`
+> Source: `AccountUseItemSystem.sol:18–37`
 
 ## Account Queries
 

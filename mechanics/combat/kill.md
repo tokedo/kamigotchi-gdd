@@ -65,7 +65,7 @@ attacker Violence overwhelms victim Harmony. Efficacy and the threshold shifts
 (below) then scale that base.
 
 > Source: `LibKill.sol:26, 91–107`,
-> `deployment/world/state/configs/configs.ts:142–146` (`initLiquidation`,
+> `deployment/world/state/configs/configs.ts:189–193` (`initLiquidation`,
 > array at 145)
 
 Result is in 1e6 precision (proportion of total health).
@@ -175,7 +175,7 @@ in `[0, 1e18]`, karma spans `[0, 2000]` at 1e3 precision — a multiplier of
 slots are unused by `calcKarma`, which reads `config[2]` and `config[3]` only.
 
 > Source: `LibKill.sol:27, 165–179`,
-> `deployment/world/state/configs/configs.ts:142–156` (`initLiquidation`,
+> `deployment/world/state/configs/configs.ts:189–203` (`initLiquidation`,
 > array at 154)
 
 **Interpretation**: A high-violence victim inflicts more karma on the attacker,
@@ -272,7 +272,7 @@ salvage = bounty                          if ratio ≥ precision
 
 - `power` = victim's Power stat (higher Power = more salvage)
 - `config` = `KAMI_LIQ_SALVAGE` = `[0, 2, 0, 3, 0, 0, 0, 0]`
-  (`deployment/world/state/configs/configs.ts:149`), so
+  (`deployment/world/state/configs/configs.ts:196`), so
   `ratio = 10 × power + DEF_SALVAGE_RATIO` and `precision = 1000`
 - **Capped at 100 %**: `if (ratio >= precision) return amt` (`LibKill.sol:236`)
   — from `ratio = 1000` up, salvage is the whole bounty, never more, so the
@@ -311,7 +311,7 @@ the item. A zero salvage is a no-op (no item, no XP).
 > 38–43`; timestamp `1791472013`).
 
 > Source: `LibKill.sol:50–56, 222–238`, `HarvestLiquidateSystem.sol:53–59`,
-> `LibHarvest.sol:97–99`, `Murder.t.sol:63–91` (`testMurderSalvageNodeItem`:
+> `LibHarvest.sol:98–100`, `Murder.t.sol:63–91` (`testMurderSalvageNodeItem`:
 > on a node yielding item 2 the victim receives the salvage as item 2 and no
 > MUSU)
 
@@ -327,7 +327,7 @@ spoils = (bounty - salvage)                         if ratio ≥ precision
 
 - `power` = attacker's Power stat
 - `config` = `KAMI_LIQ_SPOILS` = `[45, 2, 0, 3, 0, 0, 0, 0]`
-  (`deployment/world/state/configs/configs.ts:150`), so
+  (`deployment/world/state/configs/configs.ts:197`), so
   `ratio = 450 + 10 × power + ATK_SPOILS_RATIO` and `precision = 1000`
 - Spoils are added to the killer's **harvest bounty** (not directly to inventory)
 - **Capped at 100 %** by the same guard, `if (ratio >= precision) return amt`

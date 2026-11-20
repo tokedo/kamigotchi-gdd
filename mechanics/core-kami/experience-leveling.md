@@ -2,7 +2,7 @@
 
 > Source: `packages/contracts/src/libraries/LibExperience.sol` (L1–109),
 > `packages/contracts/src/systems/KamiLevelSystem.sol` (L1–51),
-> `packages/contracts/deployment/world/state/configs/configs.ts` (L92–93)
+> `packages/contracts/deployment/world/state/configs/configs.ts` (L139–140)
 
 ## Overview
 
@@ -57,7 +57,7 @@ multiplier = powWad(multiplierBaseFormatted, (level - 1) × 1e18)
 cost = (base × multiplier) / 1e18
 ```
 
-> Source: `LibExperience.sol:46–60`, `configs.ts:92–93`
+> Source: `LibExperience.sol:46–60`, `configs.ts:139–140`
 
 ### XP Cost Table (first 10 levels)
 

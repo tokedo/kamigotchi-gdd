@@ -98,7 +98,7 @@ XP, etc.). See [item-usage.md](item-usage.md) for the per-type breakdown.
 **Stat allos**: the deployment writes an item's stat effect into the allo's
 `Stat` struct with stat totals (HEALTH/POWER/VIOLENCE/HARMONY/STAMINA) in
 `shift` and current-point effects (HP/SP, e.g. healing) in `sync`; `base` is
-never set (`deployment/world/state/items/allos.ts:97–115`). On application,
+never set (`deployment/world/state/items/allos.ts:98–116`). On application,
 `LibStat.add` maps `shift` → `shift`, `boost` → `boost`, `sync` → `sync` and
 **discards the delta's `base` field** (`LibStat.sol:344–347`); a positive
 `sync` delta is clamped so current points cannot exceed the stat's

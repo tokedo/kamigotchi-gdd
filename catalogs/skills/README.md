@@ -15,7 +15,7 @@ plus 16 effect types.
 > The source file still carries the pre-retune display values `20/30/40` for
 > tiers 4–6; the values enforced on chain are `25/40/55`, from the
 > `KAMI_TREE_REQ` config `[0, 5, 15, 25, 40, 55, 75, 95]`
-> (`deployment/world/state/configs/configs.ts:185–187`), read by
+> (`deployment/world/state/configs/configs.ts:232–234`), read by
 > `LibSkill.getTreeTierPoints` (`LibSkill.sol:226–228`) and checked in
 > `LibSkill.meetsTreePrerequisites` (`LibSkill.sol:165–180`).
 >

@@ -227,7 +227,7 @@ if (!LibItem.bypassBonusReset(components, itemIndex)) {
 
 > Source: `KamiUseItemSystem.sol:34–37`, `LibItem.sol:239–243`,
 > `LibBonus.sol:308–311`, `KamiCastItemSystem.sol:18–54`,
-> `AccountUseItemSystem.sol:18–36`
+> `AccountUseItemSystem.sol:18–37`
 
 ### The `_KK` Effect-Key Suffix
 

@@ -1,6 +1,6 @@
 # Harvesting
 
-> Source: `packages/contracts/src/libraries/LibHarvest.sol` (L1–439),
+> Source: `packages/contracts/src/libraries/LibHarvest.sol` (L1–466),
 > `packages/contracts/src/systems/HarvestStartSystem.sol`,
 > `packages/contracts/src/systems/HarvestStopSystem.sol`,
 > `packages/contracts/src/systems/HarvestCollectSystem.sol`,
@@ -8,7 +8,7 @@
 > `packages/contracts/src/libraries/LibKill.sol`,
 > `packages/contracts/src/libraries/LibTax.sol`,
 > `packages/contracts/src/libraries/utils/LibAffinity.sol`,
-> `packages/contracts/deployment/world/state/configs/configs.ts` (L127–137)
+> `packages/contracts/deployment/world/state/configs/configs.ts` (L174–184)
 
 ## Overview
 
@@ -18,7 +18,7 @@ assigned to a **node** (a resource spot within a room) and passively generates
 and other players can **liquidate** (PvP raid) active harvests.
 
 Strictly, the harvest pays out the node's configured yield item
-(`LibNode.getItem`, applied in `LibHarvest.claim` — `LibHarvest.sol:97–99`),
+(`LibNode.getItem`, applied in `LibHarvest.claim` — `LibHarvest.sol:98–100`),
 set per node via the `YieldIndex` column in deployment data: 49 nodes yield
 Musu (item 1) and 15 yield item 2 (VIPP) — see `catalogs/rooms/nodes.csv`.
 Liquidation salvage is paid in the same item (see [Liquidation](#liquidation-pvp)).
@@ -233,8 +233,8 @@ If current HP ≤ 0, `MaxMusu` = 0. If `core × boost` = 0, no cap is applied.
 This is the exact inverse of strain (rounded the opposite way): collecting Musu
 inflicts strain damage, and the cap guarantees that damage tops out at current HP.
 
-> Source: `LibHarvest.sol:172–174` (cap), `LibHarvest.sol:179–195`
-> (`calcMaxMusu`), `LibKami.sol:155–170` (`calcStrain`), `configs.ts:136`
+> Source: `LibHarvest.sol:199–201` (cap), `LibHarvest.sol:206–222`
+> (`calcMaxMusu`), `LibKami.sol:155–170` (`calcStrain`), `configs.ts:183`
 
 #### Strain (HP cost of harvesting)
 
@@ -251,7 +251,7 @@ Higher **Harmony** increases the divisor, reducing strain per Musu (more Harmony
 = more Musu before starving). The starve cutoff above is this equation solved
 for `amt` at `Strain = HP`.
 
-> Source: `LibKami.sol:155–170`, `configs.ts:136`
+> Source: `LibKami.sol:155–170`, `configs.ts:183`
 
 ### Worked Example
 
@@ -298,7 +298,7 @@ Precision = 10^(6 - (3 + 3)) = 10^0 = 1
 
 Effective: `Fertility = Power × 1500 × Efficacy / 3600`
 
-> Source: `LibHarvest.sol:260–272`, `configs.ts:133`
+> Source: `LibHarvest.sol:287–299`, `configs.ts:180`
 
 ### Intensity (Violence-Based Rate)
 
@@ -318,16 +318,16 @@ boost = 10 + HARV_INTENSITY_BOOST bonus
 Precision = 10^(RATE_PREC − config[7] + config[3]) = 10^(6 − 0 + 0) = 10^6
 ```
 
-`RATE_PREC` = 6 (`LibHarvest.sol:34`); the division floors.
+`RATE_PREC` = 6 (`LibHarvest.sol:35`); the division floors.
 
 Intensity **grows linearly** with time spent harvesting (minutes elapsed),
 incentivizing longer harvest sessions but increasing strain risk.
 
-Intensity resets when the harvest starts (`LibHarvest.sol:111`) and when an
+Intensity resets when the harvest starts (`LibHarvest.sol:112`) and when an
 item is used on the Kami (`KamiUseItemSystem.sol:45` → `LibKami.resetIntensity`,
 `LibKami.sol:125–129`).
 
-> Source: `LibHarvest.sol:276–290`, `configs.ts:134`
+> Source: `LibHarvest.sol:303–317`, `configs.ts:181`
 
 ## Affinity & Efficacy System
 
@@ -377,11 +377,11 @@ A poorly matched Kami gets `1000 - 250 - 100 = 650` (0.65x harvest).
 The `HARV_FERTILITY_BOOST` bonus enters the efficacy calc only as the
 **up-shift**: it is added in full on a **Strong** matchup, at half value for a
 `NORMAL` trait, and not at all on Weak or Neutral results
-(`LibHarvest.sol:206–211, 252–256`, `LibAffinity.sol:49–58`).
+(`LibHarvest.sol:233–238, 279–283`, `LibAffinity.sol:49–58`).
 
-Total efficacy is clamped at a minimum of 0 (`LibHarvest.sol:240`).
+Total efficacy is clamped at a minimum of 0 (`LibHarvest.sol:267`).
 
-> Source: `LibHarvest.sol:199–257`, `LibAffinity.sol:34–58`, `configs.ts:129–130`
+> Source: `LibHarvest.sol:226–284`, `LibAffinity.sol:34–58`, `configs.ts:176–177`
 
 ## Tax System
 
@@ -399,7 +399,7 @@ On collection:
 
 Taxes are removed and re-set each time a harvest starts.
 
-> Source: `LibHarvest.sol:83–101`, `LibTax.sol:14, 36, 85–95`
+> Source: `LibHarvest.sol:84–102`, `LibTax.sol:14, 36, 85–95`
 
 ## Liquidation (PvP)
 
@@ -467,19 +467,19 @@ Each harvest is an ECS entity with:
 
 Entity ID: `keccak256("harvest", kamiID)` — one harvest per Kami.
 
-> Source: `LibHarvest.sol:70–79, 108–113, 436–438`
+> Source: `LibHarvest.sol:71–80, 109–116, 463–465`
 
 ## Side Effects on Collection
 
 When bounty is collected (via Collect or Stop):
 
 1. **XP** — Kami gains XP equal to the **post-tax output** (`LibHarvest.claim`
-   returns the after-tax remainder, `LibHarvest.sol:83–101`;
+   returns the after-tax remainder, `LibHarvest.sol:84–102`;
    `LibExperience.inc` at `HarvestCollectSystem.sol:87` /
    `HarvestStopSystem.sol:97`)
 2. **Scavenge** — the post-tax output is added to the account's scavenge-bar
    points for the node (`LibNode.scavenge` → `LibScavenge.incFor`,
-   `LibNode.sol:125–133`, `LibScavenge.sol:87–96`). No droptable roll happens
+   `LibNode.sol:156–164`, `LibScavenge.sol:87–96`). No droptable roll happens
    here — rewards are rolled in a separate `ScavengeClaimSystem` transaction,
    which extracts whole tiers and carries the remainder over
    (`LibScavenge.sol:99–114`). See `mechanics/world/scavenging.md`
