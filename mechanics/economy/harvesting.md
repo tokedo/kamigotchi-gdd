@@ -111,8 +111,9 @@ that Kami instead of reverting.) The Kami stays `HARVESTING` at 0 HP, which
 also leaves it open to liquidation.
 
 The way out is to **feed it first**. `KamiUseItemSystem` has no state or health
-gate of its own, and Food and Potion items carry the type-derived `USE`
-requirement `KAMI_CAN_EAT` (state `RESTING` **or** `HARVESTING`), so an
+gate of its own, and every Kami consumable except the four revive items
+carries the `USE` requirement `KAMI_CAN_EAT` (state `RESTING` **or**
+`HARVESTING`) in its `Requirements` cell, so an
 HP-restoring food can be used on a starving harvesting Kami. The use is subject
 to the normal item-use checks — the owner's account (operator-signed) in the
 Kami's room (`"kami too far"`), Kami off cooldown (`"kami on cooldown"`), item
@@ -124,7 +125,8 @@ long as HP is still above 0 after that call's own strain sync.
 > Source: `HarvestCollectSystem.sol:28–37, 50–57`,
 > `HarvestStopSystem.sol:30–41, 54–61`, `LibKami.sol:202–204, 264–266`,
 > `KamiUseItemSystem.sol:19–52`, `LibGetter.sol:97–100`,
-> `deployment/world/state/items/requirements.ts:56–81`
+> `deployment/world/data/items/requirements.csv:4`,
+> `deployment/world/data/items/items.csv` (`Requirements`)
 
 ### Liquidate (`HarvestLiquidateSystem`)
 

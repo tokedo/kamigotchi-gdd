@@ -47,14 +47,22 @@ Entity ID: `keccak256("registry.item", index)`
 
 ## Item Types
 
-Items are categorized by their `Type` component, which determines behavior:
+Items are registered in one of three shapes:
 
 - **Base items** — simple holdable items (e.g., Musu, crafting materials)
 - **EQUIPMENT** — equippable items that grant bonuses (see [equipment.md](equipment.md))
-- **LOOTBOX** — items that resolve via `LibDroptable` when opened
-- **Consumables** — items used on Kamis or accounts with stat effects
+- **Consumables** — usable items with a `For` shape (Kami, enemy Kami, any
+  Kami, or account); lootboxes are account consumables whose effect is a
+  droptable roll via `LibDroptable`
 
-> Source: `LibItem.sol:53–65`
+The `Type` component is stored on every item, but since `a99b4b64` the
+deployment no longer derives the shape or the use rules from it: type
+`Equipment` makes an equipment item, a non-empty `For` cell makes a consumable,
+anything else is a base item, and state rules are explicit `Requirements` keys
+(see [item-usage.md](item-usage.md#state-rules-come-from-the-items-requirements)).
+`Type` is otherwise a display category (e.g. `Spell Card`, `Cosmetic`).
+
+> Source: `LibItem.sol:53–65`, `deployment/world/state/items/items.ts:8–20`
 
 ## Use Case System
 
@@ -81,7 +89,7 @@ to `LibAllo.distribute()`:
 
 - `KamiUseItemSystem` → `applyAllos(..., "USE", 1, kamiID)` (`KamiUseItemSystem.sol:42`)
 - `KamiCastItemSystem` → `applyAllos(..., "USE", 1, targetID)` (`KamiCastItemSystem.sol:38`)
-- `AccountUseItemSystem` → `applyAllos(..., "USE", amt, accID)` (`AccountUseItemSystem.sol:29`)
+- `AccountUseItemSystem` → `applyAllos(..., "USE", amt, accID)` (`AccountUseItemSystem.sol:30`)
 
 `LibAllo.distribute()` dispatches each allo by its `Type` — stat deltas,
 temporary bonuses, droptable commits, bonus clears, and basic grants (items,
@@ -114,9 +122,11 @@ Items can have flags that modify behavior:
 | Item type as flag | Stored for reverse querying (e.g., `"EQUIPMENT"`) |
 
 Items can also be **disabled** (via `LibDisabled`). The disabled flag blocks
-Kami-use (`KamiUseItemSystem.sol:23`), cast (`KamiCastItemSystem.sol:29`), and
-equip (`KamiEquipSystem.sol:28`) — but `AccountUseItemSystem` never calls
-`verifyEnabled`, so account-targeted use of a disabled item still succeeds.
+Kami-use (`KamiUseItemSystem.sol:23`), cast (`KamiCastItemSystem.sol:29`),
+equip (`KamiEquipSystem.sol:28`) and, since `a99b4b64`, account use
+(`AccountUseItemSystem.sol:23`) — each reverts `"item is disabled"`. Before
+that commit the account path never called `verifyEnabled`, so a disabled
+account item could still be used.
 
 > Source: `LibItem.sol:241–289`
 

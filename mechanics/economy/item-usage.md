@@ -44,11 +44,44 @@ Each system checks the shape with one of two helpers on `LibItem`:
 `AccountUseItemSystem` still uses the exact-match form.
 
 > Source: `KamiUseItemSystem.sol:31`, `KamiCastItemSystem.sol:35`,
-> `AccountUseItemSystem.sol:23`, `LibItem.sol:292–296` (`verifyForShape`),
+> `AccountUseItemSystem.sol:24`, `LibItem.sol:292–296` (`verifyForShape`),
 > `:299–307` (`verifyForShapeOr`)
 
 The only deployed `ANY_KAMI` item is **Flash Talisman (11412)** — see
 [items catalog](../../catalogs/items/items.csv).
+
+**Which shape an item gets is decided by its data row at deployment**: type
+`Equipment` makes an equipment item; otherwise a non-empty `For` cell makes a
+usable item for that shape (upper-cased, so `Kami` → `"KAMI"`); an empty `For`
+makes a basic, unusable item. `Type` is otherwise a label. Item 11403 Respec
+Potion has `For` = `RESPEC`, which no use system accepts — it is spent only by
+the skill respec ([skills.md](../progression/skills.md#resetting-skills-respec)).
+
+> Source: `deployment/world/state/items/items.ts:8–20, 175–189`
+
+### State rules come from the item's `Requirements`
+
+A Kami item's state rule is an ordinary `USE` requirement listed in its
+`Requirements` cell, resolved through `data/items/requirements.csv`:
+
+| Key | Condition | Meaning | Items at the pin |
+|---|---|---|---|
+| `KAMI_CAN_EAT` | `KAMI_CAN_EAT` `IS` | Target state is `RESTING` **or** `HARVESTING` | 49 — every `Kami`, `Enemy_Kami` and `Any_Kami` item except the four below |
+| `KAMI_DEAD` | `STATE` `IS` 3 | Target is `DEAD` | 4 — the revive items 11001–11004 ([death-revival.md](../core-kami/death-revival.md#revive-items-kamiuseitemsystem)) |
+| `KAMI_RESTING` | `STATE` `IS` 1 | Target is `RESTING` | none (defined, unused) |
+
+An unknown key in a `Requirements` (or `Effects`) cell now stops the
+deployment with an error before anything is written, instead of being skipped.
+
+> Before `a99b4b64` the deployment added one hidden state rule per Kami item
+> from its `Type` (`Food` / `Potion` → `KAMI_CAN_EAT`, `Revive` →
+> `STATE == DEAD`, `Consumable` → `STATE == RESTING`). The type mapping is
+> gone; the rule is the data's `Requirements` cell.
+
+> Source: `deployment/world/data/items/requirements.csv:4–6`,
+> `deployment/world/state/items/requirements.ts:21–54`,
+> `deployment/world/state/items/items.ts:101–111`,
+> `deployment/world/state/items/allos.ts:20–34`, `LibGetter.sol:94–100`
 
 ## Use on Own Kami
 
@@ -111,16 +144,22 @@ Three behaviors worth noting:
 
 `AccountUseItemSystem.execute(itemIndex, amount)`:
 
-1. Verify item is for shape `"ACCOUNT"`
-2. Verify item USE requirements against the account
-3. Sync account state
-4. Deduct `amount` items from inventory
-5. Apply item's allocations × amount to the account
-6. Log usage
+1. Verify item is **enabled** — a disabled item reverts `"item is disabled"`
+   (`LibItem.verifyEnabled`, `AccountUseItemSystem.sol:23`)
+2. Verify item is for shape `"ACCOUNT"`
+3. Verify item USE requirements against the account
+4. Sync account state
+5. Deduct `amount` items from inventory
+6. Apply item's allocations × amount to the account
+7. Log usage
 
 Unlike Kami-targeted items, account items can be used in batches (`amount > 1`).
 
-> Source: `AccountUseItemSystem.sol:18–36`
+> Before `a99b4b64` the account path never called `verifyEnabled`, so a
+> disabled account item could still be used; all three use paths (own Kami,
+> cast, account) now refuse a disabled item.
+
+> Source: `AccountUseItemSystem.sol:18–37`, `LibItem.sol:286–289`
 
 ## Item Effects (Allocations)
 

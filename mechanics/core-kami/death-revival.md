@@ -58,7 +58,8 @@ which means they cannot:
 
 Items **can** be used on a dead Kami — `KamiUseItemSystem` performs no state or
 health check; only each item's own `USE` requirements apply (revive items
-require `STATE == DEAD`, food/potions require `RESTING` or `HARVESTING`)
+carry `KAMI_DEAD`, every other Kami consumable `KAMI_CAN_EAT` = `RESTING` or
+`HARVESTING`)
 (`KamiUseItemSystem.sol:26–32`). Quests are account-scoped and are not blocked
 by any Kami's state.
 
@@ -117,35 +118,34 @@ Revival spending is logged in three counters:
 
 ### Revive Items (KamiUseItemSystem)
 
-Two items carry the `USE` requirement `STATE == DEAD` (item type `Revive` maps
-to this requirement at deployment — `requirements.ts:77`) and revive a dead
+Four items carry the `USE` requirement `KAMI_DEAD` (`STATE` `IS` index 3 =
+`DEAD`, `deployment/world/data/items/requirements.csv:5`) and revive a dead
 Kami when used on it. Their effects set state back to `RESTING` and heal a flat
 amount (allos `STATE-RESTING` + `HP+n`):
 
 | Item | Index | Effect | USE requirement |
 |---|---|---|---|
-| Red Ribbon Gummy | 11001 | State → `RESTING`, +10 HP | `STATE == DEAD` |
-| "Melkarth's Heroic Awakening" Spell Card | 11002 | State → `RESTING`, +50 HP | `STATE == DEAD` |
+| Red Ribbon Gummy | 11001 | State → `RESTING`, +10 HP | `KAMI_DEAD` |
+| "Melkarth's Heroic Awakening" Spell Card | 11002 | State → `RESTING`, +50 HP | `KAMI_DEAD` |
+| Djed Pillar | 11003 | State → `RESTING`, +5 HP | `KAMI_DEAD` |
+| Pale Potion | 11004 | State → `RESTING`, +75 HP | `KAMI_DEAD` |
 
 Usage goes through the normal `KamiUseItemSystem` flow: the owner's account must
 be in the Kami's room and the Kami must be off cooldown; there is no state or
 health gate in the system itself (`KamiUseItemSystem.sol:26–32, 40–42`).
 
-Two further items carry the same revival-flavored effects (`STATE-RESTING` +
-heal) but **cannot** be used on a dead Kami — their type-derived `USE`
-requirements exclude the `DEAD` state:
+> Before `a99b4b64` the deployment derived each Kami item's state rule from its
+> `Type` (`Revive` → `STATE == DEAD`, `Food` / `Potion` → `KAMI_CAN_EAT`,
+> `Consumable` → `STATE == RESTING`). Only 11001 and 11002 (type `Revive`) could
+> revive; Djed Pillar (type `Consumable`) required a `RESTING` Kami and Pale
+> Potion (type `Potion`) a `RESTING` or `HARVESTING` one, so both worked only as
+> heals on living Kamis despite their revival text. The rule is now an explicit
+> `Requirements` cell per item, and all four carry `KAMI_DEAD`. Whether each
+> live item was re-registered with the new rule is chain state.
 
-| Item | Index | Effect | USE requirement |
-|---|---|---|---|
-| Djed Pillar | 11003 | State → `RESTING`, +5 HP | `STATE == RESTING` (type `Consumable`) |
-| Pale Potion | 11004 | State → `RESTING`, +75 HP | `KAMI_CAN_EAT` = `RESTING` or `HARVESTING` (type `Potion`) |
-
-> ⚠️ UNCERTAIN: the flavor text of Djed Pillar and Pale Potion describes
-> reviving a liquidated Kami, but their deployed requirements make that
-> impossible — as registered, they only function as heals on living Kamis.
-> Likely a data-entry mismatch in `items.csv` (Type column vs. intent).
-
-> Source: `deployment/world/data/items/items.csv:68–71`,
-> `deployment/world/state/items/requirements.ts:75–79`,
-> `deployment/world/data/items/allos.csv:59` (STATE-RESTING),
+> Source: `deployment/world/data/items/items.csv:75–78`,
+> `deployment/world/data/items/requirements.csv:4–6`,
+> `deployment/world/state/items/items.ts:8–20`,
+> `deployment/world/state/items/requirements.ts:21–54`,
+> `deployment/world/data/items/allos.csv` (STATE-RESTING),
 > `LibGetter.sol:94–100` (STATE / KAMI_CAN_EAT checks)
