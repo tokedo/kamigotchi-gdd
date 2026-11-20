@@ -25,6 +25,7 @@ See `catalogs/rooms/nodes.csv` for the full node catalog.
 | `Name` | Display name |
 | `Description` | Flavor text |
 | `Affinity` | (optional) Node affinity: `NORMAL`, `EERIE`, `SCRAP`, `INSECT`, or compound (e.g., `"EERIE-SCRAP"`) |
+| `HarvestMultiplier` | Harvest multiplier K, per mille (`1000` = ×1.0), low 16 bits — see [Harvest Multiplier (K)](#harvest-multiplier-k) |
 
 Entity ID: `keccak256("node", nodeIndex)`
 
@@ -59,6 +60,41 @@ and deployment converts the CSV's comma format via `.replace(',', '-')`
 (`deployment/world/state/rooms/nodes.ts:16`).
 
 > Source: `LibNode.sol:163–167`, `nodes.ts:16`
+
+## Harvest Multiplier (K)
+
+Every node carries a **harvest multiplier K**, stored per mille in the
+`HarvestMultiplier` component (`component.harvest.multiplier`; `1000` = ×1.0,
+today's output). A harvest credits its base output × K at each sync, with K
+copied from the node when the stretch opens; HP strain stays on the base output
+— the credit rule is in
+[harvesting.md](../economy/harvesting.md#harvest-multiplier-k-what-a-sync-credits).
+
+| Rule | Source |
+|---|---|
+| Precision `HARV_MULT_PREC = 1000`; bounds `HARV_MULT_MIN = 100` (×0.1) to `HARV_MULT_MAX = 60000` (×60), so a stored K is never 0 | `LibNode.sol:25–29` |
+| Read as the low 16 bits (`uint16`) of the component value | `LibNode.sol:135–137` (`getBaseMultiplier`) |
+| Written only by `LibNode.setMultiplierByIndex(index, k)`: reverts `"Node: does not exist"` for an unknown index and `"Node: multiplier out of range"` outside the bounds | `LibNode.sol:140–145` |
+| **Set at creation**: `_NodeRegistrySystem.create` decodes a trailing `uint32 k` — `(index, type, item, room, name, description, affinity, k)` — and sets it right after creating the node | `_NodeRegistrySystem.sol:21–40` |
+| **Changed on a live node**: `_NodeRegistrySystem.setMultiplier(uint32 index, uint32 k)`, `onlyAdmin`; harvests on the node pick it up at their next sync | `_NodeRegistrySystem.sol:42–45` |
+| **Kept on removal**: `LibNode.remove` does not clear K, so a harvest on a node being revised (remove, then create) never reads a missing K; the re-create overwrites it | `LibNode.sol:119–120` |
+
+Deployment reads K from the required `Harvest Multiplier` column of
+`nodes.csv` as a decimal factor (`toPerMille`: `0.1` to `60`, at most three
+decimals, stored ×1000; anything else throws before any call is queued, and a
+revise checks every row before deleting a node). The world-state command
+`nodes.setMultipliers <indices>` sets K from the CSV on live nodes without a
+revise, so running harvests are untouched.
+
+**At the pin every node has K = 1000**: the column is `1` on all 64 rows of
+`nodes.csv` (see [`catalogs/rooms/nodes.csv`](../../catalogs/rooms/nodes.csv)).
+
+> Source: `LibNode.sol:25–29, 119–120, 135–152`,
+> `_NodeRegistrySystem.sol:21–45`, `HarvestMultiplierComponent.sol`,
+> `deployment/world/state/rooms/nodes.ts:11–30, 46–51, 100–101, 195–212`,
+> `deployment/world/state/utils.ts:16–25` (`toPerMille`),
+> `deployment/world/api/nodes.ts:11–29, 101–106`,
+> `deployment/world/world.ts:183–185`
 
 ## Node Bonuses
 
@@ -95,8 +131,8 @@ Deleting a node removes its whole bonus set via `regRemoveByAnchor`
 > - `deployment/world/data/rooms/nodes.csv` has a trailing
 >   **`💥 Node Effects`** column, but it is **empty on all 64 rows**, and the
 >   node initialiser never reads it — `initNode` consumes only `Index`,
->   `YieldIndex`, `Name`, `Affinity`, and separately `Level Limit` and
->   `Scav Cost` (`deployment/world/state/rooms/nodes.ts:11–24, 49–52`).
+>   `YieldIndex`, `Name`, `Affinity` and `Harvest Multiplier`, and separately
+>   `Level Limit` and `Scav Cost` (`deployment/world/state/rooms/nodes.ts:11–24, 49–52`).
 > - The admin helper `api.node.bonus.add` exists
 >   (`deployment/world/api/nodes.ts:35–42, 102–104`) but has **zero callers** anywhere
 >   in the repo at the pin.
@@ -138,14 +174,19 @@ anchor).
 The only requirement the deployment scripts write is a **level cap**: a node's
 `Level Limit` cell becomes `LEVEL` / `CURR_MAX` / value = the limit / for
 `KAMI` (`addRequirement`, "hardcoded to only allow max levels"). At the pin
-14 nodes carry one:
+13 nodes carry one:
 
 | Max level | Nodes |
 |---|---|
 | 15 | 1 Misty Riverside, 2 Tunnel of Trees, 3 Torii Gate, 29 Misty Forest Path, 30 Scrapyard Entrance, 55 Shady Path |
-| 35 | 31 Scrapyard Exit, 35 Elder Path, 36 Parting Path, 47 Scrap Paths, 50 Ancient Forest Entrance, 56 Butterfly Forest, 57 River Crossing, 59 Black Pool |
+| 35 | 31 Scrapyard Exit, 35 Elder Path, 36 Parting Path, 47 Scrap Paths, 50 Ancient Forest Entrance, 57 River Crossing, 59 Black Pool |
 
-The other 50 nodes have no cap. See
+The other 51 nodes have no cap. Node 56 Butterfly Forest's cell went from 35
+to empty in this sync's range (the room hosts quests SQ119–SQ122 and SQ902).
+Emptying a cell removes nothing on chain by itself; only a re-create of the
+node (`reviseNodes`: remove, then create) drops the old cap, and the data
+marks node 56 for a revise (its row went `To Update`, then back to
+`In Game`, within the range). See
 [`catalogs/rooms/nodes.csv`](../../catalogs/rooms/nodes.csv).
 
 Caps reach the chain two ways:
@@ -165,7 +206,7 @@ Caps reach the chain two ways:
 
 > ⚠️ UNCERTAIN: the helper only adds; whether a given live node already
 > carried a cap before it was run is chain state, not source. In particular
-> the eight level-35 caps are in the CSV at the pin, but which of those nodes
+> the seven level-35 caps are in the CSV at the pin, but which of those nodes
 > carry the cap on chain depends on whether the helper (or a node re-create)
 > was run for them.
 

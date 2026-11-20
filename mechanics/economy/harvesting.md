@@ -153,7 +153,52 @@ Config `KAMI_HARV_BOUNTY` = `[0, 9, 0, 0, 0, 0, 1000, 3]`
 > converts them to actual Musu. Always compute the full bounty formula for
 > real-world harvest rates.
 
-> Source: `LibHarvest.sol:156–175`
+> Source: `LibHarvest.sol:183–202`
+
+### Harvest Multiplier K (what a sync credits)
+
+The bounty above (after the starve cutoff below) is the harvest's **base
+output** for the stretch since the last sync. It is not credited as is: each
+node carries a **harvest multiplier K** (per mille, `1000` = ×1.0), and a sync
+credits the base output × K, rounded to the nearest whole unit:
+
+```
+base   = calcBounty(harvest)                       (formula above, starve-capped)
+credit = ⌊(base × K + 500) / 1000⌋                 (calcCredit, HARV_MULT_PREC = 1000)
+balance += credit
+```
+
+- **K is copied onto the harvest when a stretch opens.** `start` stores the
+  node's current K on the harvest; every sync credits the stretch with the
+  stored copy and then re-copies the node's current K for the next stretch.
+  So an admin change of a node's K reaches a running harvest at its next sync,
+  and the stretch already accrued is paid at the K it opened with. A harvest
+  that has no stored copy (one started before K existed) reads the node's
+  current K. The copy is written only when it changes.
+- **Strain is charged on the whole base output, not the credit.**
+  `LibHarvest.sync` still returns `base`, and `LibKami._sync` drains
+  `calcStrain(base)` HP. K changes the yield per HP spent, not the HP cost; the
+  starve cutoff (below) caps `base`, so nothing is credited past zero HP
+  (`base = 0` → credit 0).
+- **Bounds:** a node's K is written only within `100 … 60000` (×0.1 … ×60;
+  `HARV_MULT_MIN`, `HARV_MULT_MAX`), so a stored K is never 0. K lives in the
+  low 16 bits of the `HarvestMultiplier` component, on the node and on the
+  harvest. A node with no K stored at all would credit 0.
+- **Every node has K = 1000 (×1.0) in the deploy data at the pin** — the
+  `Harvest Multiplier` column of `nodes.csv` is `1` on all 64 rows — so the
+  credit equals the base output and every number on this page is unchanged.
+  How K is set per node: [nodes.md](../world/nodes.md#harvest-multiplier-k).
+
+Spoils from a liquidation are added to the killer's harvest balance directly
+(`LibHarvest.incBounty`), without K; the victim's salvage and the killer's
+spoils are both computed on the victim's **balance**, which is already the
+credited amount.
+
+> Source: `LibHarvest.sol:109–116` (`start`), `:131–138` (`sync`),
+> `:142–148` (`calcCredit`), `:152–155` (`getCopy`), `:158–161` (`setCopy`),
+> `LibNode.sol:25–29, 135–137`, `LibKami.sol:93–97` (`_sync`),
+> `HarvestMultiplierComponent.sol`, `LibKill.sol:59–62`,
+> `deployment/world/data/rooms/nodes.csv` (`Harvest Multiplier`)
 
 ### Starve Cutoff (Bounty Cap by HP)
 
@@ -191,7 +236,9 @@ inflicts strain damage, and the cap guarantees that damage tops out at current H
 
 #### Strain (HP cost of harvesting)
 
-Each Musu collected inflicts HP **strain** (rounded up):
+Each Musu of **base output** inflicts HP **strain** (rounded up) — `amt` is
+the sync's base output before the harvest multiplier K, so K never changes the
+HP cost:
 
 ```
 Strain = ceil(amt × core × boost / Divisor)
@@ -221,6 +268,9 @@ Precision = 10^(6 + 0 + 3) = 10^9
 Bounty = 4,802 × 3,600 × 1,000 / 1,000,000,000
        = 17 Musu in 1 hour (integer division)
 ```
+
+With K = 1000 (every node in the deploy data) the credit is the same 17 Musu:
+`⌊(17 × 1000 + 500) / 1000⌋ = 17`.
 
 For comparison — a Power=20 Kami with perfect affinity match (efficacy 2000):
 ```
@@ -411,6 +461,7 @@ Each harvest is an ECS entity with:
 | `TimeLast` | Timestamp of last sync |
 | `TimeReset` | Timestamp of last intensity reset |
 | `Value` | Accrued but unclaimed bounty |
+| `HarvestMultiplier` | The node's K copied when the current stretch opened (per mille, low 16 bits) — see [Harvest Multiplier K](#harvest-multiplier-k-what-a-sync-credits) |
 
 Entity ID: `keccak256("harvest", kamiID)` — one harvest per Kami.
 
