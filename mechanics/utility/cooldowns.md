@@ -63,8 +63,9 @@ A Kami's cooldown is read by exactly these entrypoints, all of which revert
 | Liquidation | the **killer** (not the victim) | `HarvestLiquidateSystem.sol:33` |
 | Item use on a Kami (feeding, potions) | the target Kami | `KamiUseItemSystem.sol:28` |
 
-The batched `executeAllowFailure` variants of collect and stop skip a Kami on
-cooldown (return `0`) instead of reverting. Conditions can also test it: the
+The `executeAllowFailure` variants of collect and stop, and since `1b0b34e5`
+of start (`HarvestStartSystem.sol:62–72, 98–113`), skip a Kami on cooldown
+(return `0`) instead of reverting. Conditions can also test it: the
 `COOLDOWN` condition type is true while the target's cooldown is active
 (`LibGetter.sol:92–93`).
 

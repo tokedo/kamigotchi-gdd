@@ -161,7 +161,9 @@ Deleting a node removes its whole bonus set via `regRemoveByAnchor`
 Nodes can have **conditional requirements** that a Kami (or its account) must
 meet to start harvesting. Checked via `LibConditional.check()` when a harvest
 **starts** (`HarvestStartSystem.sol:44`) — a Kami that fails reverts
-`"node reqs not met"`; nothing re-checks a harvest already running.
+`"node reqs not met"`. The skip-on-failure entry points, added in `1b0b34e5`,
+skip it instead and return `0` (`HarvestStartSystem.sol:62–72, 98–113`; see
+`mechanics/economy/harvesting.md`). Nothing re-checks a harvest already running.
 
 Requirements are anchored to: `keccak256(abi.encodePacked("node.requirement",
 nodeIndex))` (`LibNode.genReqAnchor`). They are written only by the

@@ -52,7 +52,93 @@ START → [accruing bounty, taking strain] → COLLECT (partial) or STOP (full)
 6. Set Kami state → `HARVESTING`
 7. Start cooldown (consumes `UPON_COOLDOWN_SET` bonuses, e.g. Energy Drink)
 
-> Source: `HarvestStartSystem.sol:24–57`
+> Source: `HarvestStartSystem.sol:24–59`
+
+#### Entry points
+
+| Function | Inputs | On a rejected start |
+|---|---|---|
+| `execute(bytes)` | `abi.encode(kamiID, nodeIndex, taxerID, taxAmt)` | reverts the transaction |
+| `executeTyped(uint256,uint32,uint256,uint256)` | the same four, typed | reverts the transaction |
+| `executeBatched(uint256[],uint32,uint256,uint256)` | many Kamis, one node, one tax for all | one rejected Kami reverts the whole batch |
+| `executeAllowFailure(bytes)` | as `execute` | skips it: returns `0`, writes nothing |
+| `executeBatchedAllowFailure(uint256[],uint32,uint256,uint256)` | as `executeBatched` | skips that Kami, starts the rest |
+
+> Source: `HarvestStartSystem.sol:24, 62, 74–81, 84–94, 98–113`
+
+#### Skip-on-failure start (`executeAllowFailure`, `executeBatchedAllowFailure`)
+
+Since `1b0b34e5` the start system has the skip-on-failure entry points that
+collect and stop already had.
+
+`executeAllowFailure` runs `execute` through a delegatecall to its own address,
+which keeps `msg.sender` (the operator). If `execute` succeeds, the call returns
+what `execute` returns — the harvest id, ABI-encoded. If `execute` reverts with
+revert data (every rule above reverts with a reason string), the delegatecall
+undoes every write that start made — including the health sync — and the call
+returns `abi.encode(uint256(0))` instead of reverting. If `execute` fails with
+**no** revert data — which is how running out of gas shows — the whole call
+reverts `"start reverted without reason"`. Skipping such a failure would make
+the result depend on the gas limit, so it is never skipped.
+
+Every rejection `execute` makes with a reason is skipped. In the order
+`execute` checks them:
+
+| Rejection | Revert reason | Source |
+|---|---|---|
+| the caller is no account's operator | `"Account: Operator not found"` | `HarvestStartSystem.sol:29`, `LibAccount.sol:253–261` |
+| the node index does not exist | `"node does not exist"` | `HarvestStartSystem.sol:30–31` |
+| the Kami is not the account's (another account's Kami, or an unstaked one — unstaking sets the owner to 0) | `"kami not urs"` | `HarvestStartSystem.sol:34`, `LibKami.sol:242–244, 442–445` |
+| the Kami is not `RESTING` (harvesting or dead) | `"kami not RESTING"` | `HarvestStartSystem.sol:35`, `LibKami.sol:284–286` |
+| the Kami is on cooldown | `"kami on cooldown"` | `HarvestStartSystem.sol:36`, `LibKami.sol:251–253` |
+| the Kami has no HP after its health sync (starving) | `"kami starving.."` | `HarvestStartSystem.sol:39–42`, `LibKami.sol:264–266` |
+| the account is not in the node's room | `"not in same room"` | `HarvestStartSystem.sol:43`, `LibRoom.sol:97–99` |
+| the Kami fails the node's requirements | `"node reqs not met"` | `HarvestStartSystem.sol:44`, `LibNode.sol:173–176` |
+| `taxAmt` above 2000 (20 %) | `"LibTax: cannot be more than 20%"` | `HarvestStartSystem.sol:51`, `LibHarvest.sol:63–64`, `LibTax.sol:36` |
+
+Two failures carry no revert data and therefore revert the whole call with
+`"start reverted without reason"`: arguments that do not decode as
+`(uint256, uint32, uint256, uint256)` (`HarvestStartSystem.sol:25–28`), and an
+id that has never had an owner record. Reading such an id's owner fails
+without a reason, because `checkAccount` uses the strict `get`, which decodes
+the empty value (`LibKami.sol:176–182`; `Uint256Component.sol:54–56`;
+`solecs/components/types/standard.sol:115–117`).
+
+`executeBatchedAllowFailure` first checks the three things every entry
+shares, and these **revert the whole call**: the caller is no account's
+operator (`"Account: Operator not found"`), the node does not exist
+(`"node does not exist"`), the account is not in the node's room
+(`"not in same room"`). It then runs `executeAllowFailure` once per Kami id,
+in the order given. It returns one entry per id, in that order: the harvest id
+for a Kami that started, `0` for a Kami that was skipped. An empty array
+returns an empty array. A tax over the cap fails every start on its own, so
+the batch starts nothing and returns all zeros without reverting. A Kami id
+whose start fails without revert data (above) reverts the whole batch.
+
+> Source: `HarvestStartSystem.sol:61–72, 96–113`; behaviour exercised in
+> `test/systems/Harvest/HarvestStartAllowFailure.t.sol`
+
+**The start skip differs from collect and stop.** Their `executeAllowFailure`
+versions check each rule with a boolean and return `0`, rather than undoing a
+reverted call. Because they sync the Kami's health before the health check, a
+starving Kami's sync stays written when its collect or stop is skipped. A
+skipped start keeps none of its writes. Their operator lookup still reverts,
+not skips (`HarvestCollectSystem.sol:45–61`, `HarvestStopSystem.sol:49–65`).
+
+#### Batch sizes
+
+The contracts set no batch limit. Every batched entry point of start, collect
+and stop loops over the whole array it is given, with no length check
+(`HarvestStartSystem.sol:90–92, 109–111`, `HarvestCollectSystem.sol:68–78`,
+`HarvestStopSystem.sol:72–82`), so a batch is bounded only by gas. The
+official client caps a batch in its party modal. Since `1b0b34e5` the caps are
+at most **8 Kamis to add, 5 to collect, 5 to stop** (12 each before), and
+12 to stake in the external view. The code comment gives the reason: these
+sizes keep a transaction under about 9M gas, because the RPC cannot estimate
+a transaction above about 10M. This is a **client** limit, not a contract rule.
+
+> Source: client `packages/client/src/app/components/modals/party/constants.ts:24–26`,
+> `Toolbar.tsx:200–203, 240`
 
 ### Collect (`HarvestCollectSystem`)
 
@@ -106,8 +192,12 @@ reverts `"kami starving.."`)
 Collect and Stop both sync the Kami — applying the strain accrued since the
 last sync — and then require `HP > 0`. A harvesting Kami whose HP has reached 0
 therefore **cannot be collected from or stopped**: both revert
-`"kami starving.."`. (The batched `executeAllowFailure` variants return `0` for
-that Kami instead of reverting.) The Kami stays `HARVESTING` at 0 HP, which
+`"kami starving.."`. (The `executeAllowFailure` variants of collect and stop
+return `0` for that Kami instead of reverting, and keep its health sync. A
+resting Kami at 0 HP after its sync is likewise skipped by start's
+`executeAllowFailure` variants, which keep nothing — see
+[Skip-on-failure start](#skip-on-failure-start-executeallowfailure-executebatchedallowfailure).)
+The Kami stays `HARVESTING` at 0 HP, which
 also leaves it open to liquidation.
 
 The way out is to **feed it first**. `KamiUseItemSystem` has no state or health
